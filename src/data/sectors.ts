@@ -1,11 +1,11 @@
 import type { IconGridItem } from "@/components/Site/ContentIconGrid.astro";
-import iconInfrastructure from "@/assets/Icons/infrastructure.svg";
-import iconConstruction from "@/assets/Icons/construction.svg";
-import iconUtilities from "@/assets/Icons/utilities.svg";
-import iconTelecommunications from "@/assets/Icons/telecommunications.svg";
-import iconRenewableEnergy from "@/assets/Icons/renewable-energy.svg";
-import iconAgriculture from "@/assets/Icons/agriculture.svg";
-import iconCommercialLand from "@/assets/Icons/commercial-land.svg";
+import iconInfrastructure from "@/assets/icons/infrastructure.svg";
+import iconConstruction from "@/assets/icons/construction.svg";
+import iconUtilities from "@/assets/icons/utilities.svg";
+import iconTelecommunications from "@/assets/icons/telecommunications.svg";
+import iconRenewableEnergy from "@/assets/icons/renewable-energy.svg";
+import iconAgriculture from "@/assets/icons/agriculture.svg";
+import iconCommercialLand from "@/assets/icons/commercial-land.svg";
 
 /**
  * The sectors Farrelly Bros works across, shared by every page that lists
