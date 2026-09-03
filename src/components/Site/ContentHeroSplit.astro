@@ -115,6 +115,13 @@ const media = await slotContent(Astro.slots, "media");
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+
+      /* Below the 2-column breakpoint the grid is a single stack in DOM
+         order (content, then media) — reordered here so the gallery/image
+         leads on mobile, with the heading and copy underneath it. */
+      @media (width < 64rem) {
+        order: 1;
+      }
     }
 
     .hero-split_actions {
@@ -124,6 +131,10 @@ const media = await slotContent(Astro.slots, "media");
     .hero-split_media,
     .hero-split_media_wrap {
       width: 100%;
+
+      @media (width < 64rem) {
+        order: 0;
+      }
     }
 
     .hero-split_media {

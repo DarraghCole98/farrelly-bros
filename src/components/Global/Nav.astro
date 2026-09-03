@@ -42,15 +42,20 @@ const afterServices = restLinks;
             alt=""
           />
         </a>
-        <button
-          class="nav_toggle"
-          type="button"
-          aria-label="Menu"
-          aria-expanded="false"
-          aria-controls="nav-menu"
-        >
-          <span class="nav_toggle_icon" />
-        </button>
+        <div class="nav_controls">
+          <Button element="link" href="/contact/" class="nav_cta_bar">
+            Discuss a Project
+          </Button>
+          <button
+            class="nav_toggle"
+            type="button"
+            aria-label="Menu"
+            aria-expanded="false"
+            aria-controls="nav-menu"
+          >
+            <span class="nav_toggle_icon" />
+          </button>
+        </div>
         <nav class="nav_menu" id="nav-menu" aria-label="Main">
           <div class="nav_menu_inner">
             <ul class="nav_links">
@@ -258,6 +263,17 @@ const afterServices = restLinks;
       }
     }
 
+    .nav_controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .nav_cta_bar {
+      padding: 0.6em 1em;
+      font-size: var(--text-small);
+    }
+
     .nav_toggle {
       --_icon-width: 1.5rem;
       --_bar-gap: 0.5rem;
@@ -460,11 +476,14 @@ const afterServices = restLinks;
     }
 
     .nav_cta {
-      margin-top: var(--space-4);
-      align-self: flex-start;
+      display: none;
     }
 
     @media (width >= 48rem) {
+      .nav_controls {
+        display: none;
+      }
+
       .nav_toggle {
         display: none;
       }
@@ -554,7 +573,7 @@ const afterServices = restLinks;
       }
 
       .nav_cta {
-        margin-top: 0;
+        display: inline-flex;
       }
     }
   }
