@@ -67,7 +67,9 @@ const {
                   variant={item.span === "large" ? "large" : "medium"}
                 />
               )}
-              <span class="text-style-h5">{item.label}</span>
+              <span class="icon-grid_item_label text-style-h5">
+                {item.label}
+              </span>
             </span>
           </a>
         </li>
@@ -163,6 +165,16 @@ const {
       gap: inherit;
       min-width: 0;
       overflow-wrap: break-word;
+    }
+
+    /* At two narrow columns, a long single word like "Infrastructure" can
+       outgrow the tile at the full h5 size and get force-broken mid-word.
+       A smaller size below the 2-column breakpoint gives it room to wrap
+       at a word boundary instead. */
+    .icon-grid_item_label {
+      @media (width < 48rem) {
+        font-size: var(--text-main);
+      }
     }
 
     /* Decorative — faded into the tile's corner behind the icon and label,
