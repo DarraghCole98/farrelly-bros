@@ -1,7 +1,12 @@
 ---
 import logo from "@/assets/Images/farrelly-brothers-logo.svg";
 import woodgrain from "@/assets/Images/Woodgrain log dark.webp";
-import { SITE_NAME, SITE_CONTACT, SITE_SOCIAL } from "@/consts.ts";
+import {
+  SITE_NAME,
+  SITE_CONTACT,
+  SITE_SOCIAL,
+  GOOGLE_ANALYTICS_ID,
+} from "@/consts.ts";
 import {
   FOOTER_NAV,
   SERVICE_LINKS,
@@ -16,6 +21,7 @@ const { render = true } = Astro.props;
 
 const hasContact = Object.values(SITE_CONTACT).some(Boolean);
 const hasSocial = SITE_SOCIAL.length > 0;
+const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
 ---
 
 {
@@ -117,9 +123,20 @@ const hasSocial = SITE_SOCIAL.length > 0;
             &copy; <span id="year">{new Date().getFullYear()}</span>&#160;
             {SITE_NAME}
           </p>
-          <a class="footer_legal_link text-style-small" href="/privacy-policy/">
-            Privacy Policy
-          </a>
+          <div class="footer_legal_links">
+            <a class="footer_legal_link text-style-small" href="/privacy-policy/">
+              Privacy Policy
+            </a>
+            {hasAnalytics && (
+              <button
+                type="button"
+                id="cookie-preferences"
+                class="footer_legal_link footer_legal_button text-style-small"
+              >
+                Cookie Preferences
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </footer>
@@ -132,6 +149,12 @@ const hasSocial = SITE_SOCIAL.length > 0;
   if (year) {
     year.textContent = new Date().getFullYear().toString();
   }
+
+  document
+    .getElementById("cookie-preferences")
+    ?.addEventListener("click", () => {
+      window.dispatchEvent(new Event("cookie-consent:reopen"));
+    });
 </script>
 
 <style is:global>
@@ -278,6 +301,13 @@ const hasSocial = SITE_SOCIAL.length > 0;
       color: var(--text-2);
     }
 
+    .footer_legal_links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-4);
+    }
+
     .footer_legal_link {
       color: var(--text-2);
       text-decoration: none;
@@ -287,6 +317,14 @@ const hasSocial = SITE_SOCIAL.length > 0;
           color: var(--text);
         }
       }
+    }
+
+    .footer_legal_button {
+      padding: 0;
+      background: none;
+      border: 0;
+      font: inherit;
+      cursor: pointer;
     }
   }
 </style>

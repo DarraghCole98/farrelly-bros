@@ -1,0 +1,173 @@
+---
+// EU/UK law (ePrivacy + GDPR) requires consent before setting non-essential
+// cookies such as Google Analytics'. This banner blocks gtag.js entirely
+// until the visitor accepts — nothing analytics-related loads on "Reject",
+// and nothing loads at all while GOOGLE_ANALYTICS_ID is unset. See
+// docs/DECISIONS.md.
+import Button from "@/components/Button.astro";
+import { GOOGLE_ANALYTICS_ID } from "@/consts.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
+---
+
+{
+  render && hasAnalytics && (
+    <div
+      class="cookie-consent_wrap"
+      id="cookie-consent"
+      role="dialog"
+      aria-live="polite"
+      aria-label="Cookie consent"
+      hidden
+    >
+      <p class="cookie-consent_text text-style-small">
+        This site uses Google Analytics to understand how visitors use it.
+        These cookies are only set if you accept. See our{" "}
+        <a class="cookie-consent_link" href="/privacy-policy/">
+          Privacy Policy
+        </a>
+        {" "}for details.
+      </p>
+      <div class="cookie-consent_actions">
+        <Button
+          id="cookie-consent-reject"
+          emphasis="secondary"
+          class="cookie-consent_button"
+        >
+          Reject
+        </Button>
+        <Button id="cookie-consent-accept" class="cookie-consent_button">
+          Accept
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+{
+  hasAnalytics && (
+    <script is:inline define:vars={{ gaId: GOOGLE_ANALYTICS_ID }}>
+      const STORAGE_KEY = "cookie-consent";
+      let analyticsLoaded = false;
+
+      function loadAnalytics() {
+        if (analyticsLoaded) return;
+        analyticsLoaded = true;
+
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          window.dataLayer.push(arguments);
+        }
+        window.gtag = gtag;
+        gtag("js", new Date());
+        gtag("config", gaId);
+      }
+
+      function setBannerVisible(visible) {
+        const banner = document.getElementById("cookie-consent");
+        if (banner) banner.hidden = !visible;
+      }
+
+      function applyDecision(decision) {
+        localStorage.setItem(STORAGE_KEY, decision);
+        setBannerVisible(false);
+        if (decision === "accepted") {
+          loadAnalytics();
+        } else if (analyticsLoaded) {
+          // gtag.js is already running for this page view and can't be
+          // unloaded in place, so reload with the rejection already stored —
+          // it won't be requested again.
+          location.reload();
+        }
+      }
+
+      function init() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+
+        if (stored === "accepted") {
+          loadAnalytics();
+        } else if (stored !== "rejected") {
+          setBannerVisible(true);
+        }
+
+        document
+          .getElementById("cookie-consent-accept")
+          ?.addEventListener("click", () => applyDecision("accepted"));
+        document
+          .getElementById("cookie-consent-reject")
+          ?.addEventListener("click", () => applyDecision("rejected"));
+
+        // Fired by the footer's "Cookie preferences" link, so a visitor can
+        // change their mind after the first decision.
+        window.addEventListener("cookie-consent:reopen", () =>
+          setBannerVisible(true),
+        );
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    </script>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .cookie-consent_wrap {
+      position: fixed;
+      z-index: 90;
+      inset-inline: var(--space-4);
+      bottom: var(--space-4);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      max-width: 40rem;
+      margin-inline: auto;
+      padding: var(--space-4);
+      background-color: var(--background);
+      color: var(--text);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-main);
+      box-shadow: var(--shadow-large, 0 0.5rem 1.5rem rgb(0 0 0 / 0.16));
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .cookie-consent_text {
+      flex: 1 1 16rem;
+      color: var(--text-2);
+    }
+
+    .cookie-consent_link {
+      color: var(--brand-accent);
+      text-underline-offset: 0.2em;
+    }
+
+    .cookie-consent_actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .cookie-consent_button {
+      padding: 0.6em 1.25em;
+    }
+  }
+</style>

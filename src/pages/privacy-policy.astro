@@ -5,7 +5,11 @@ import Eyebrow from "@/components/Typography/Eyebrow.astro";
 import Heading from "@/components/Typography/Heading.astro";
 import RichText from "@/components/Typography/RichText.astro";
 import ContentNotice from "@/components/Site/ContentNotice.astro";
-import { SITE_CONTACT, FORM_ENDPOINT } from "@/consts.ts";
+import {
+  SITE_CONTACT,
+  FORM_ENDPOINT,
+  GOOGLE_ANALYTICS_ID,
+} from "@/consts.ts";
 
 /**
  * A privacy policy is a legal document, and docs/PROJECT.md forbids
@@ -21,6 +25,7 @@ import { SITE_CONTACT, FORM_ENDPOINT } from "@/consts.ts";
  */
 
 const formLive = FORM_ENDPOINT.length > 0;
+const analyticsLive = GOOGLE_ANALYTICS_ID.length > 0;
 const contactPoint = SITE_CONTACT.email ?? SITE_CONTACT.phone;
 
 /** Each gap a person has to fill in before this can be published. */
@@ -63,15 +68,10 @@ const OUTSTANDING = [
       <h2>What this website collects</h2>
 
       <p>
-        This is a static website. It does not use cookies, local storage or
-        any other means of storing information on your device, and it does
-        not build a profile of you as you move between pages.
-      </p>
-
-      <p>
-        There are no analytics, advertising or tracking scripts on this
-        site. Nothing you do here is recorded or reported to a third party
-        for measurement or marketing.
+        This is a static website. Beyond the cookie banner described below,
+        it does not use cookies, local storage or any other means of storing
+        information on your device, and it does not build a profile of you
+        as you move between pages.
       </p>
 
       <p>
@@ -79,6 +79,44 @@ const OUTSTANDING = [
         font service, so loading a page does not disclose your visit or IP
         address to a font provider.
       </p>
+
+      <h2>Cookies and analytics</h2>
+
+      {
+        analyticsLive ? (
+          <>
+            <p>
+              This site uses Google Analytics to understand how visitors use
+              it — which pages are viewed, and in broad terms how people
+              found the site. Google Analytics sets cookies on your device
+              to do this, and the information it collects is processed by
+              Google.
+            </p>
+            <p>
+              These cookies are <strong>not set until you accept them</strong>{" "}
+              in the cookie banner shown on your first visit. If you reject
+              them, or take no action, Google Analytics does not run and no
+              analytics cookies are set. You can change your decision at any
+              time using the <strong>Cookie Preferences</strong> link in the
+              footer.
+            </p>
+            <p>
+              This site is also submitted to Google Search Console, which
+              lets Google report back how the site performs in search
+              results. Search Console verification does not set cookies or
+              track visitors — it only confirms ownership of the site to
+              Google.
+            </p>
+          </>
+        ) : (
+          <p>
+            There are no analytics, advertising or tracking scripts on this
+            site, and it does not set cookies. Nothing you do here is
+            recorded or reported to a third party for measurement or
+            marketing.
+          </p>
+        )
+      }
 
       <h2>The enquiry form</h2>
 

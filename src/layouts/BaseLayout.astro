@@ -5,6 +5,7 @@ import SkipLink from "@/components/Global/SkipLink.astro";
 import Nav from "@/components/Global/Nav.astro";
 import Footer from "@/components/Global/Footer.astro";
 import Motion from "@/components/Global/Motion.astro";
+import CookieConsent from "@/components/Global/CookieConsent.astro";
 import type { SeoProps } from "@/types.ts";
 
 type Props = SeoProps & {
@@ -35,5 +36,6 @@ const { theme = "inherit", overlap = false, ...seo } = Astro.props;
     </main>
     <Footer />
     <Motion />
+    <CookieConsent />
   </body>
 </html>

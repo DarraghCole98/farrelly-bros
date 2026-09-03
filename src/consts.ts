@@ -63,3 +63,23 @@ export const FORM_ENDPOINT = "https://api.web3forms.com/submit";
  * FORM_ENDPOINT and the docs/DECISIONS.md entry.
  */
 export const FORM_ACCESS_KEY = "55a0f22e-9f81-4ed9-bf09-a5db7c70f4fa";
+
+/**
+ * Google Analytics 4 measurement id (e.g. "G-XXXXXXXXXX"). Empty until
+ * Farrelly Bros' GA4 property is created and shared.
+ *
+ * Left empty, `CookieConsent` and its gtag.js loader render nothing, so the
+ * site ships with no analytics and no cookie banner — accurate to what
+ * privacy-policy.astro currently states. Once set, both switch on together;
+ * see docs/DECISIONS.md.
+ */
+export const GOOGLE_ANALYTICS_ID = "";
+
+/**
+ * Google Search Console HTML-tag verification code — just the token, not
+ * the full `<meta>` tag (e.g. "abc123..." from
+ * `<meta name="google-site-verification" content="abc123...">`). Search
+ * Console verification sets no cookies, so unlike GA it renders unconditionally
+ * and needs no consent.
+ */
+export const GOOGLE_SITE_VERIFICATION = "";

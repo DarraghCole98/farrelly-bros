@@ -387,3 +387,43 @@ is still `info@agriman.ie`, itself flagged in src/consts.ts as unconfirmed
 against the farrellybros.ie domain. Both need Farrelly Bros' confirmed
 inbox before launch: re-issue the Web3Forms key against that address and
 update `FORM_ACCESS_KEY`, and update `SITE_CONTACT.email` to match.
+
+## 2026-09-03 — Cookie Consent for Google Analytics & Search Console
+
+Decision:
+Added `GOOGLE_ANALYTICS_ID` and `GOOGLE_SITE_VERIFICATION` to
+src/consts.ts (both empty placeholders) and a `CookieConsent` component
+that gates Google Analytics behind explicit accept/reject consent, per
+EU ePrivacy/GDPR rules on non-essential cookies.
+
+Reason:
+The site is about to be connected to Google Analytics and Google Search
+Console. GA sets cookies and profiles visitors, which requires prior
+consent under EU law; Search Console's verification tag sets no cookies
+and needs none.
+
+How it works:
+- `CookieConsent.astro` renders a fixed bottom banner only when
+  `GOOGLE_ANALYTICS_ID` is set. gtag.js is not requested at all until the
+  visitor clicks Accept — reject or no action loads nothing analytics-
+  related. The decision is stored in `localStorage` so the banner does
+  not reappear.
+- A "Cookie Preferences" link in the footer (also gated on
+  `GOOGLE_ANALYTICS_ID`) re-opens the banner so a visitor can change
+  their decision later, satisfying the "as easy to withdraw as to give"
+  consent requirement.
+- `GOOGLE_SITE_VERIFICATION` renders an unconditional
+  `<meta name="google-site-verification">` tag in BaseHead — it sets no
+  cookies, so it does not go through the consent flow.
+- privacy-policy.astro now describes cookies/analytics conditionally on
+  `GOOGLE_ANALYTICS_ID`, the same pattern already used for the enquiry
+  form's `FORM_ENDPOINT` — so the page keeps describing only what the
+  site actually does, per the Content Integrity decision above.
+
+Consequence:
+With both constants still empty, the site ships with no analytics, no
+cookie banner and no verification tag — unchanged from before this
+entry. Setting `GOOGLE_ANALYTICS_ID` to a real GA4 measurement id (and
+`GOOGLE_SITE_VERIFICATION` to the Search Console token) switches on the
+banner, gtag.js loading, the verification meta tag, and the privacy
+policy's cookie section together.

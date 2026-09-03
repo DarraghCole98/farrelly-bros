@@ -1,6 +1,11 @@
 ---
 import { Font } from "astro:assets";
-import { SITE_NAME, SITE_DESCRIPTION, SITE_CONTACT } from "@/consts.ts";
+import {
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  SITE_CONTACT,
+  GOOGLE_SITE_VERIFICATION,
+} from "@/consts.ts";
 import { isNoindexRoute } from "@/utils/seo.ts";
 import type { SeoProps } from "@/types.ts";
 
@@ -49,6 +54,11 @@ const businessSchema = {
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 {isNoindex && <meta name="robots" content="noindex, nofollow" />}
+{
+  GOOGLE_SITE_VERIFICATION && (
+    <meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />
+  )
+}
 
 <meta property="og:type" content={type} />
 <meta property="og:site_name" content={SITE_NAME} />
