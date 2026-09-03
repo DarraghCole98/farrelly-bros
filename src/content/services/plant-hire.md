@@ -37,10 +37,14 @@ overview:
     - "Operated hire where local knowledge and experience matter."
     - "Short-term and longer hire periods, sized to the job."
 applications:
-  - "Site clearance and groundworks"
-  - "Agricultural contracting"
-  - "Pipeline and utility projects"
-  - "Estate and land management"
+  - label: "Site clearance and groundworks"
+    text: "Excavators and wheeled plant matched to the ground conditions and access of the site."
+  - label: "Agricultural contracting"
+    text: "Machinery drawn from the same fleet used on the business's own farming and land contracts."
+  - label: "Pipeline and utility projects"
+    text: "Equipment sized to corridor and working-strip work, operated or self-drive as the job needs."
+  - label: "Estate and land management"
+    text: "Flail, mulching and agricultural attachments for ongoing land and boundary work."
 process:
   eyebrow: "How it runs"
   heading: "From enquiry to machine on site."

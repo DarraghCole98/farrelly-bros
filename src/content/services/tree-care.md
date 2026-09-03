@@ -37,10 +37,14 @@ overview:
     - "Technically demanding felling where there is no room to drop a stem whole."
     - "Work sequenced around site access rather than around the tree alone."
 applications:
-  - "Development and construction sites"
-  - "Land and estate management"
-  - "Infrastructure and utility corridors"
-  - "Storm and emergency response"
+  - label: "Development and construction sites"
+    text: "Site and access-restricted felling sequenced around what a build programme needs cleared."
+  - label: "Land and estate management"
+    text: "Routine crown reduction, pruning and removals handled by the same team as one-off heavier work."
+  - label: "Infrastructure and utility corridors"
+    text: "Technically demanding felling where there's no room to drop a stem whole, close to lines and corridors."
+  - label: "Storm and emergency response"
+    text: "Hazardous and storm-damaged trees removed, drawing on heavier machinery already in the business."
 process:
   eyebrow: "How it runs"
   heading: "From first look to leaving site."

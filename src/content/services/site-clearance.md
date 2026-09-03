@@ -37,10 +37,14 @@ overview:
     - "Material chipped, removed or left on site, agreed before work starts."
     - "Ground left level and accessible, not just cut back and abandoned."
 applications:
-  - "Development and construction sites"
-  - "Infrastructure and utility sites"
-  - "Renewable energy sites"
-  - "Agricultural and estate land"
+  - label: "Development and construction sites"
+    text: "Scrub, hedgerow and tree clearance sequenced around a fixed project start date."
+  - label: "Infrastructure and utility sites"
+    text: "Ground taken back to a workable surface and handed over ready for the next contractor."
+  - label: "Renewable energy sites"
+    text: "Clearance planned around what the site is being prepared for, not treated as a generic cut."
+  - label: "Agricultural and estate land"
+    text: "Flail, mulching and stump removal capability for overgrown or neglected ground."
 process:
   eyebrow: "How it runs"
   heading: "From overgrown to ready."

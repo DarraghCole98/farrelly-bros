@@ -37,10 +37,14 @@ overview:
     - "Sized to the job, from a single tree to a large-scale clearance."
     - "Chippings removed from site or left for reuse, as agreed."
 applications:
-  - "Tree and site clearance follow-on"
-  - "Storm and emergency clean-up"
-  - "Land and estate management"
-  - "Hedgerow and scrub material"
+  - label: "Tree and site clearance follow-on"
+    text: "Chipping arranged as part of the same job, not a separate visit booked in afterwards."
+  - label: "Storm and emergency clean-up"
+    text: "Chipping capacity brought alongside emergency tree and clean-up work so cut material doesn't sit on site."
+  - label: "Land and estate management"
+    text: "Bulk material processed and removed, or left for reuse, as part of ongoing land upkeep."
+  - label: "Hedgerow and scrub material"
+    text: "Scales from a single tree's brash to bulk material from a large-scale clearance."
 process:
   eyebrow: "How it runs"
   heading: "From cut material to cleared site."

@@ -9,7 +9,7 @@ import Textarea from "@/components/Form/Textarea.astro";
 import Button from "@/components/Button.astro";
 import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
 import ContentNotice from "@/components/Site/ContentNotice.astro";
-import { FORM_ENDPOINT, SITE_CONTACT } from "@/consts.ts";
+import { FORM_ENDPOINT, FORM_ACCESS_KEY, SITE_CONTACT } from "@/consts.ts";
 
 interface Props extends HTMLAttributes<"div"> {
   /** Set to `false` to skip rendering this component and its children. */
@@ -150,6 +150,14 @@ const detailsLabel = "Tell us about your project";
           errorMessage="That did not send. Please try again, or contact us directly."
           class="enquiry-form_form"
         >
+          <input type="hidden" name="access_key" value={FORM_ACCESS_KEY} />
+          <input
+            type="checkbox"
+            name="botcheck"
+            tabindex="-1"
+            autocomplete="off"
+            hidden
+          />
           {context && <input type="hidden" name="reference" value={context} />}
           <Fieldset legend="About you" variant="columns" legendStyle="hidden">
             <Input label="Name" variant="text" required />

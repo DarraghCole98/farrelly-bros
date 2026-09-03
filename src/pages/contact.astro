@@ -16,7 +16,7 @@ import ContentNotice from "@/components/Site/ContentNotice.astro";
 import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
 import Img from "@/components/Media/Img.astro";
 import Overlay from "@/components/Media/Overlay.astro";
-import { SITE_CONTACT, FORM_ENDPOINT } from "@/consts.ts";
+import { SITE_CONTACT, FORM_ENDPOINT, FORM_ACCESS_KEY } from "@/consts.ts";
 import { SERVICE_LINKS } from "@/components/Global/navigation.ts";
 import heroImage from "@/assets/Images/farrelly-brothers-herro5.webp";
 
@@ -151,6 +151,14 @@ const WHAT_HAPPENS = [
             successMessage="Thanks — we have your enquiry and will be in touch."
             errorMessage="That did not send. Please try again, or contact us directly."
           >
+            <input type="hidden" name="access_key" value={FORM_ACCESS_KEY} />
+            <input
+              type="checkbox"
+              name="botcheck"
+              tabindex="-1"
+              autocomplete="off"
+              hidden
+            />
             <Fieldset legend="About you" variant="columns" legendStyle="label">
               <Input label="Name" variant="text" required />
               <Input label="Company" variant="text" />

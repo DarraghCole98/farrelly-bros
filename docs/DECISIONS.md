@@ -363,3 +363,27 @@ follow it.
 Reason:
 On a sparse service it would otherwise sit directly on top of the closing
 banner, asking the same question twice in two different boxes.
+
+## 2026-09-03 — Enquiry Form Backend
+
+Decision:
+`FORM_ENDPOINT` is set to Web3Forms (`https://api.web3forms.com/submit`),
+switching both the contact page and `ContentEnquiryForm` on. A
+`FORM_ACCESS_KEY` constant was added alongside it, and a hidden
+`access_key` field plus a hidden honeypot `botcheck` checkbox were added
+to both forms' markup — Web3Forms requires both to accept and to
+spam-filter a submission.
+
+Reason:
+Resolves the highest-priority launch blocker recorded above (no way for a
+visitor to make contact). The site remains fully static — Web3Forms is a
+third-party POST target, so no SSR adapter or serverless function was
+introduced, consistent with the Rendering and Forms decisions above.
+
+Consequence — temporary destination:
+The Web3Forms access key currently in use delivers to
+darragh@offgridstudio.ie, not a Farrelly Bros address. `SITE_CONTACT.email`
+is still `info@agriman.ie`, itself flagged in src/consts.ts as unconfirmed
+against the farrellybros.ie domain. Both need Farrelly Bros' confirmed
+inbox before launch: re-issue the Web3Forms key against that address and
+update `FORM_ACCESS_KEY`, and update `SITE_CONTACT.email` to match.

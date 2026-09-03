@@ -1,6 +1,5 @@
 ---
 import { getCollection, getEntries, render } from "astro:content";
-import type { CollectionEntry } from "astro:content";
 import Layout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/Wrapper/Section.astro";
 import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
@@ -27,6 +26,70 @@ import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
 import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
 import ContentEnquiryForm from "@/components/Site/ContentEnquiryForm.astro";
 import { SITE_NAME } from "@/consts.ts";
+import type { CollectionEntry } from "astro:content";
+import type { SvgComponent } from "astro/types";
+import iconSprout from "@/assets/Icons/sprout.svg";
+import iconLayers from "@/assets/Icons/layers.svg";
+import iconMap from "@/assets/Icons/map.svg";
+import iconWrench from "@/assets/Icons/wrench.svg";
+import iconCircleUser from "@/assets/Icons/circle-user.svg";
+import iconScissors from "@/assets/Icons/scissors.svg";
+import iconAxe from "@/assets/Icons/axe.svg";
+import iconTriangleAlert from "@/assets/Icons/triangle-alert.svg";
+import iconCloudLightning from "@/assets/Icons/cloud-lightning.svg";
+import iconRecycle from "@/assets/Icons/recycle.svg";
+import iconTruck from "@/assets/Icons/truck.svg";
+import iconRoute from "@/assets/Icons/route.svg";
+import iconFence from "@/assets/Icons/fence.svg";
+import iconShovel from "@/assets/Icons/shovel.svg";
+import iconArboriculture from "@/assets/Icons/arboriculture.svg";
+import iconVegetationManagement from "@/assets/Icons/vegetation-management.svg";
+import iconLandManagement from "@/assets/Icons/land-management.svg";
+import iconSpecialistPlant from "@/assets/Icons/specialist-plant.svg";
+import iconAgriculture from "@/assets/Icons/agriculture.svg";
+import iconConstruction from "@/assets/Icons/construction.svg";
+import iconTelecommunications from "@/assets/Icons/telecommunications.svg";
+
+/**
+ * Keyed by the capability's own title (lowercased) — the same lookup
+ * pattern projects/[slug].astro uses for sector icons. Falls back to a
+ * generic mark for any capability title not covered here, so a new one
+ * added later never renders with no icon at all.
+ */
+const capabilityIcons: Record<string, SvgComponent> = {
+  "ground cultivation and preparation": iconSprout,
+  "forage and silage work": iconAgriculture,
+  "hedge cutting and topping": iconScissors,
+  "land and drainage maintenance": iconLandManagement,
+  "corridor reinstatement": iconRoute,
+  "topsoil and subsoil handling": iconLayers,
+  "ground restoration and reseeding": iconSprout,
+  "multi-landholding coordination": iconMap,
+  "excavators and wheeled plant": iconTruck,
+  "flail and mulching attachments": iconWrench,
+  "agricultural and forestry machinery": iconSpecialistPlant,
+  "operated or self-drive hire": iconCircleUser,
+  "scrub and vegetation clearance": iconVegetationManagement,
+  "tree and hedgerow clearance": iconArboriculture,
+  "stump removal and grinding": iconShovel,
+  "ground preparation": iconSprout,
+  "pre-construction clearance": iconConstruction,
+  "ongoing vegetation and grass management": iconVegetationManagement,
+  "site access and boundary maintenance": iconFence,
+  "access route clearance": iconRoute,
+  "mast compound maintenance": iconTelecommunications,
+  "ongoing vegetation management": iconVegetationManagement,
+  "restricted and rural site access": iconRoute,
+  "tree removal": iconArboriculture,
+  "crown reduction and pruning": iconScissors,
+  "hazardous and storm-damage work": iconTriangleAlert,
+  "site and access-restricted felling": iconAxe,
+  "timber and brash chipping": iconRecycle,
+  "bulk material clearance": iconTruck,
+  "storm and emergency clean-up support": iconCloudLightning,
+  "chip removal or reuse": iconRecycle,
+};
+const fallbackCapabilityIcon = iconSpecialistPlant;
 
 export async function getStaticPaths() {
   const services = await getCollection("services");
@@ -63,6 +126,9 @@ const capabilityItems =
   data.capabilities?.map((capability) => ({
     title: capability.title,
     text: capability.description,
+    icon:
+      capabilityIcons[capability.title.toLowerCase()] ??
+      fallbackCapabilityIcon,
   })) ?? [];
 
 const whyUsPoints = data.whyUs?.points ?? [];
@@ -153,6 +219,11 @@ const serviceSchema = {
   {
     capabilityItems.length > 0 && (
       <Section paddingTop="large" paddingBottom="large">
+        <ContentSectionHeader
+          eyebrow="Capabilities"
+          heading="What this covers."
+          variant="h3"
+        />
         <ContentFeatureRow items={capabilityItems} />
       </Section>
     )
@@ -417,7 +488,7 @@ const serviceSchema = {
     )
   }
 
-  <Section theme="dark" paddingTop="large" paddingBottom="none">
+  <Section paddingBottom="none" theme="dark" paddingTop="small">
     <ContentCtaMain overlap />
   </Section>
 </Layout>

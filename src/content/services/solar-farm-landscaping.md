@@ -37,10 +37,14 @@ overview:
     - "Topsoil handling and access track levelling for the construction contractor."
     - "Ongoing grass and scrub management once the site is operational."
 applications:
-  - "Solar farm construction"
-  - "Panel array vegetation management"
-  - "Site boundaries and access tracks"
-  - "Post-construction land management"
+  - label: "Solar farm construction"
+    text: "Panel footprint and cable route clearance, phased field by field around the construction timeline."
+  - label: "Panel array vegetation management"
+    text: "Ongoing grass and scrub management to keep growth under panels in check once the site is operational."
+  - label: "Site boundaries and access tracks"
+    text: "Access routes and boundary lines prepared for the construction contractor and kept clear afterwards."
+  - label: "Post-construction land management"
+    text: "The same contractor available for scheduled upkeep long after the panels are in place."
 process:
   eyebrow: "How it runs"
   heading: "From clearance to ongoing management."

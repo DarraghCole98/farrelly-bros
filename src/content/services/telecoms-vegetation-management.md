@@ -37,10 +37,14 @@ overview:
     - "Compound apron and boundary vegetation kept back from fencing and cabling."
     - "Scheduled maintenance available to prevent routes closing back in."
 applications:
-  - "Mast and compound sites"
-  - "Access tracks and routes"
-  - "Rural and remote infrastructure"
-  - "Scheduled maintenance contracts"
+  - label: "Mast and compound sites"
+    text: "Vegetation kept back from compound boundaries, fencing and cabling, hand-cut where machinery can't safely reach."
+  - label: "Access tracks and routes"
+    text: "Routes cleared and widened so vehicles and cranes can reach the site on the day they're booked."
+  - label: "Rural and remote infrastructure"
+    text: "Restricted and hard-to-reach sites worked as readily as accessible ones."
+  - label: "Scheduled maintenance contracts"
+    text: "Ongoing visits to stop growth closing a cleared route back in again."
 process:
   eyebrow: "How it runs"
   heading: "From closed-in access to a clear route."

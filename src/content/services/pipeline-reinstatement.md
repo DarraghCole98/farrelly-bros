@@ -37,10 +37,14 @@ overview:
     - "Topsoil and subsoil kept separate and replaced in the correct sequence."
     - "Ground decompacted and reseeded to match the land it borders."
 applications:
-  - "Gas and utility pipeline corridors"
-  - "Agricultural land"
-  - "Infrastructure projects"
-  - "Multi-landholding corridors"
+  - label: "Gas and utility pipeline corridors"
+    text: "Corridor reinstatement, topsoil handling and reseeding carried out along the working strip once pipe-laying is complete."
+  - label: "Agricultural land"
+    text: "The same agricultural contracting and land experience the business runs day to day, applied to reinstating farmed ground."
+  - label: "Infrastructure projects"
+    text: "Ground restoration and reseeding tied to wider infrastructure works, not just the corridor itself."
+  - label: "Multi-landholding corridors"
+    text: "Work sequenced landholding by landholding, so each owner's agreed condition is what gets delivered."
 process:
   eyebrow: "How it runs"
   heading: "From working strip to reinstated land."

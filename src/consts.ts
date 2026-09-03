@@ -51,10 +51,15 @@ export const SITE_SOCIAL: Array<{ label: string; href: string }> = [];
 /**
  * Where the enquiry form posts.
  *
- * Empty until a form strategy is chosen — docs/DECISIONS.md records that no
- * backend has been decided, and the site is deployed as static assets with
- * no SSR. While this is empty the contact form renders disabled behind a
- * notice, rather than silently reporting success to someone who typed out
- * an enquiry. Set it to an endpoint URL to switch the form on.
+ * See docs/DECISIONS.md — Web3Forms, delivering to darragh@offgridstudio.ie
+ * as a temporary destination until Farrelly Bros confirm their real inbox.
  */
-export const FORM_ENDPOINT = "";
+export const FORM_ENDPOINT = "https://api.web3forms.com/submit";
+
+/**
+ * Web3Forms access key tied to the destination inbox above. Not a secret in
+ * the traditional sense — it's designed to be embedded in public form HTML —
+ * but it does control where submissions land, so it moves in lockstep with
+ * FORM_ENDPOINT and the docs/DECISIONS.md entry.
+ */
+export const FORM_ACCESS_KEY = "55a0f22e-9f81-4ed9-bf09-a5db7c70f4fa";
