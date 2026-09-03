@@ -1,0 +1,101 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Grid from "@/components/Wrapper/Grid.astro";
+import Card from "@/components/Item/Card.astro";
+
+type ImageSource = ImageMetadata | string;
+
+export interface CardGridItem {
+  /** An imported asset, a remote `http(s)` URL, or a path to a file in `public/`. */
+  image?: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+  /** Small line of text above the heading. */
+  eyebrow?: string;
+  /** The card's title. */
+  heading?: string;
+  /** Body copy under the heading. */
+  text?: string;
+  /** Label of the closing button. Nothing renders without one. */
+  buttonLabel?: string;
+  /** Where the button leads. Left out, it renders as a plain button. */
+  buttonHref?: string;
+}
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The cards to show. Renders nothing when empty. */
+  items: CardGridItem[];
+  /**
+   * Columns below 30rem. The base every larger size falls back to.
+   *
+   * @min 1
+   * @max 12
+   * @int
+   */
+  xsmall?: number;
+  /**
+   * Columns from 30rem up. Inherits `xsmall` when unset.
+   *
+   * @min 1
+   * @max 12
+   * @int
+   */
+  small?: number;
+  /**
+   * Columns from 48rem up. Inherits `small` when unset. Defaults to 2.
+   *
+   * @min 1
+   * @max 12
+   * @int
+   */
+  medium?: number;
+  /**
+   * Columns from 64rem up. Inherits `medium` when unset. Defaults to 3.
+   *
+   * @min 1
+   * @max 12
+   * @int
+   */
+  large?: number;
+}
+
+const {
+  render = true,
+  items,
+  xsmall = 1,
+  small,
+  medium = 2,
+  large = 3,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <Grid
+      variant="columns"
+      xsmall={xsmall}
+      small={small}
+      medium={medium}
+      large={large}
+      class={className}
+      {...rest}
+    >
+      {items.map((item) => (
+        <Card
+          variant="stacked"
+          image={item.image}
+          imageAlt={item.imageAlt}
+          eyebrow={item.eyebrow}
+          heading={item.heading}
+          text={item.text}
+          buttonLabel={item.buttonLabel}
+          buttonHref={item.buttonHref}
+        />
+      ))}
+    </Grid>
+  )
+}

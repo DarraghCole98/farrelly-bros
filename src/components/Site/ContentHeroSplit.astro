@@ -1,0 +1,154 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import Img from "@/components/Media/Img.astro";
+import { slotContent } from "@/utils/slots.ts";
+
+type ImageSource = ImageMetadata | string;
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** Small line of text above the heading. */
+  eyebrow?: string;
+  /** The page's opening statement. */
+  heading: string;
+  /** The supporting paragraph under it. */
+  text?: string;
+  /**
+   * An imported asset, a remote `http(s)` URL, or a path to a file in
+   * `public/`. Ignored when the `media` slot is used instead — for
+   * anything more than a single still image, such as `ContentHeroGallery`.
+   */
+  image?: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+  /** Heading level, for the page outline. Defaults to `h1`. */
+  headingTag?: "h1" | "h2";
+  /**
+   * Type size of the heading, independent of its level.
+   *
+   * - `h1` — the usual opening size for a split hero (default)
+   * - `display` — louder, for a hero carrying very short copy
+   * - `h2` — quieter, for a secondary page
+   */
+  variant?: "display" | "h1" | "h2";
+}
+
+const {
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  image,
+  imageAlt,
+  headingTag = "h1",
+  variant = "h1",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const actions = await slotContent(Astro.slots);
+const media = await slotContent(Astro.slots, "media");
+---
+
+{
+  render && (
+    <div class:list={["hero-split_wrap", className]} {...rest}>
+      <div class="hero-split_content">
+        {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+        <Heading tag={headingTag} variant={variant} maxWidth={19}>
+          {heading}
+        </Heading>
+        {text && (
+          <Paragraph variant="large" maxWidth={44}>
+            {text}
+          </Paragraph>
+        )}
+        {actions && (
+          <div class="hero-split_actions">
+            <Fragment set:html={actions} />
+          </div>
+        )}
+      </div>
+
+      {media ? (
+        <div class="hero-split_media_wrap">
+          <Fragment set:html={media} />
+        </div>
+      ) : (
+        image && (
+          <div class="hero-split_media">
+            <Img
+              src={image}
+              alt={imageAlt}
+              loading="eager"
+              fetchPriority="high"
+              variant="constrained"
+              sizes="(width >= 64rem) 50vw, 100vw"
+              class="hero-split_image"
+            />
+          </div>
+        )
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .hero-split_wrap {
+      display: grid;
+      align-items: center;
+      gap: var(--space-8) var(--site-gutter);
+      width: 100%;
+
+      @media (width >= 64rem) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--section-space-small);
+      }
+    }
+
+    .hero-split_content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hero-split_actions {
+      margin-top: var(--space-6);
+    }
+
+    .hero-split_media,
+    .hero-split_media_wrap {
+      width: 100%;
+    }
+
+    .hero-split_media {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-large);
+      aspect-ratio: 3 / 2;
+
+      @media (width >= 64rem) {
+        aspect-ratio: 1 / 1;
+      }
+    }
+
+    /* Absolutely positioned rather than sized with `height: 100%`: a
+       percentage height doesn't reliably resolve against a box whose own
+       height comes from `aspect-ratio` (see Card.astro's `.card_visual`
+       for the fuller version of this note), so the image would fall back
+       to its own natural ratio instead of the media box's. */
+    .hero-split_image {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+</style>

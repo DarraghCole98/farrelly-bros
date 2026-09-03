@@ -1,0 +1,264 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Img from "@/components/Media/Img.astro";
+import Button from "@/components/Button.astro";
+
+export interface Testimonial {
+  /** What the client said. */
+  quote: string;
+  /** Who said it — a name, and where the work was. */
+  attribution: string;
+  /** Out of 5. Left unset, no rating is shown. */
+  rating?: number;
+  /** An imported asset, a remote `http(s)` URL, or a path to a file in `public/`. */
+  image?: ImageMetadata | string;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+}
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /**
+   * The testimonials to show, most relevant first. Renders nothing when
+   * empty, so the section stays out of the page until real client words
+   * are confirmed. More than one gets prev/next controls.
+   */
+  testimonials?: Testimonial[];
+}
+
+const STAR = "M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.771l-7.416 3.642 1.48-8.279L0 9.306l8.332-1.151z";
+
+const {
+  render = true,
+  testimonials = [],
+  class: className,
+  ...rest
+} = Astro.props;
+
+const items = testimonials.filter((item) => item.quote && item.attribution);
+const hasMedia = items.some((item) => item.image);
+---
+
+{
+  render && items.length > 0 && (
+    <div class:list={["testimonial_wrap", className]} {...rest}>
+      <div class="testimonial_content">
+        <div class="testimonial_panels">
+          {items.map((item) => (
+            <figure class="testimonial_panel">
+              {item.rating && (
+                <div class="testimonial_rating" aria-hidden="true">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <svg viewBox="0 0 24 24" class="testimonial_star">
+                      <path
+                        d={STAR}
+                        fill={i < item.rating! ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        vector-effect="non-scaling-stroke"
+                        style="stroke-width: var(--border-width)"
+                      />
+                    </svg>
+                  ))}
+                </div>
+              )}
+              <blockquote class="testimonial_quote">
+                <p class="text-style-h3">{item.quote}</p>
+              </blockquote>
+              <figcaption class="testimonial_attribution text-style-small">
+                {item.attribution}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        {items.length > 1 && (
+          <div class="testimonial_nav">
+            <Button
+              variant="arrow"
+              emphasis="secondary"
+              direction="back"
+              label="Previous testimonial"
+              data-step="-1"
+            />
+            <Button
+              variant="arrow"
+              emphasis="secondary"
+              label="Next testimonial"
+              data-step="1"
+            />
+          </div>
+        )}
+      </div>
+
+      {hasMedia && (
+        <div class="testimonial_media">
+          {items.map(
+            (item, i) =>
+              item.image && (
+                <div
+                  class="testimonial_media_item"
+                  data-item-index={i}
+                  style={`--_stack-i: ${i}`}
+                >
+                  <Img
+                    src={item.image}
+                    alt={item.imageAlt}
+                    variant="constrained"
+                    sizes="(width >= 64rem) 45vw, 100vw"
+                    class="testimonial_image"
+                  />
+                </div>
+              ),
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+<script>
+  for (const wrap of document.querySelectorAll<HTMLElement>(
+    ".testimonial_wrap",
+  )) {
+    const panels = [
+      ...wrap.querySelectorAll<HTMLElement>(".testimonial_panel"),
+    ];
+    const media = [
+      ...wrap.querySelectorAll<HTMLElement>(".testimonial_media_item"),
+    ];
+    if (panels.length < 2) continue;
+
+    let current = 0;
+
+    const show = (next: number) => {
+      current = (next + panels.length) % panels.length;
+      panels.forEach((panel, i) =>
+        panel.classList.toggle("is-active", i === current),
+      );
+      media.forEach((item) => {
+        const index = Number(item.dataset.itemIndex);
+        const distance = (index - current + panels.length) % panels.length;
+        item.style.setProperty("--_stack-i", String(distance));
+      });
+    };
+
+    for (const step of wrap.querySelectorAll<HTMLButtonElement>(
+      "[data-step]",
+    )) {
+      step.addEventListener("click", () =>
+        show(current + Number(step.dataset.step)),
+      );
+    }
+
+    show(0);
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .testimonial_wrap {
+      display: grid;
+      align-items: center;
+      gap: var(--space-7) var(--site-gutter);
+      width: 100%;
+
+      @media (width >= 64rem) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: var(--section-space-small);
+      }
+    }
+
+    .testimonial_content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      min-width: 0;
+    }
+
+    .testimonial_panels {
+      display: grid;
+    }
+
+    .testimonial_panel {
+      grid-area: 1 / 1;
+      margin: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity var(--open-duration) var(--open-ease),
+        visibility var(--open-duration) var(--open-ease);
+
+      &:first-child,
+      &.is-active {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    .testimonial_rating {
+      display: flex;
+      gap: var(--space-1);
+      margin-bottom: var(--space-4);
+      color: var(--heading-accent);
+    }
+
+    .testimonial_star {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    .testimonial_quote {
+      margin: 0;
+    }
+
+    .testimonial_attribution {
+      display: block;
+      margin-top: var(--space-4);
+      color: var(--text-2);
+      font-weight: var(--primary-semibold);
+    }
+
+    .testimonial_nav {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .testimonial_media {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      width: 100%;
+      max-width: 26rem;
+
+      @media (width >= 64rem) {
+        justify-self: end;
+      }
+    }
+
+    .testimonial_media_item {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-large);
+      overflow: clip;
+      /* Each photo behind the front one fans out a little further, so the
+         set reads as a stack rather than a single flat image. */
+      --_stack-i: 0;
+      rotate: calc(var(--_stack-i) * 4deg);
+      translate: calc(var(--_stack-i) * 1.25rem) calc(var(--_stack-i) * -0.75rem);
+      z-index: calc(10 - var(--_stack-i));
+      box-shadow: 0 1rem 2.5rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
+      transition:
+        rotate var(--open-duration) var(--open-ease),
+        translate var(--open-duration) var(--open-ease);
+    }
+
+    .testimonial_image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** Caption in the corner explaining what belongs here. */
+  label?: string;
+}
+
+const {
+  render = true,
+  label = "Photography to follow",
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && (
+    <div class:list={["image", "media-placeholder", className]} {...rest}>
+      <span class="media-placeholder_label text-style-small">{label}</span>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .media-placeholder {
+      aspect-ratio: 3 / 2;
+      display: flex;
+      align-items: flex-end;
+      background-color: var(--background-2);
+    }
+
+    .media-placeholder_label {
+      margin: var(--space-4);
+      color: var(--text-2);
+    }
+  }
+</style>

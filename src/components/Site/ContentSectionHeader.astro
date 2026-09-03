@@ -1,0 +1,98 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import { slotContent } from "@/utils/slots.ts";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** Small line of text above the heading. */
+  eyebrow?: string;
+  /** The section's heading. */
+  heading: string;
+  /** A short introduction below it. */
+  text?: string;
+  /** Heading level, for the page outline. Defaults to `h2`. */
+  headingTag?: "h2" | "h3";
+  /**
+   * Type size of the heading, independent of its level.
+   *
+   * - `h2` — the usual size for a section opening (default)
+   * - `h1` — for the one section that carries a page
+   * - `h3` — for a lesser section within a page
+   */
+  variant?: "h1" | "h2" | "h3";
+}
+
+const {
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  headingTag = "h2",
+  variant = "h2",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const aside = await slotContent(Astro.slots, "aside");
+---
+
+{
+  render && (
+    <div class:list={["section-header_wrap", className]} {...rest}>
+      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+      <Heading tag={headingTag} variant={variant} maxWidth={24}>
+        {heading}
+      </Heading>
+      {(text || aside) && (
+        <div class="section-header_row">
+          {text ? (
+            <Paragraph variant="main" maxWidth={68}>
+              {text}
+            </Paragraph>
+          ) : (
+            <span />
+          )}
+          {aside && (
+            <div class="section-header_aside">
+              <Fragment set:html={aside} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .section-header_wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .section-header_row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-5);
+      width: 100%;
+
+      @media (width >= 48rem) {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space-7);
+      }
+    }
+
+    .section-header_aside {
+      flex-shrink: 0;
+    }
+  }
+</style>

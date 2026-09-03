@@ -1,7 +1,11 @@
 ---
-import Icon from "@/components/Media/Icon.astro";
-import logo from "@/assets/logo/logo.svg";
-import { SITE_NAME } from "@/consts.ts";
+import logo from "@/assets/Images/farrelly-brothers-logo.svg";
+import woodgrain from "@/assets/Images/Woodgrain log dark.webp";
+import { SITE_NAME, SITE_CONTACT, SITE_SOCIAL } from "@/consts.ts";
+import {
+  FOOTER_NAV,
+  SERVICE_LINKS,
+} from "@/components/Global/navigation.ts";
 
 interface Props {
   /** Set to `false` to skip rendering this component and its children. */
@@ -9,36 +13,113 @@ interface Props {
 }
 
 const { render = true } = Astro.props;
+
+const hasContact = Object.values(SITE_CONTACT).some(Boolean);
+const hasSocial = SITE_SOCIAL.length > 0;
 ---
 
 {
   render && (
-    <footer class="footer_wrap">
+    <footer class="footer_wrap theme-dark">
+      <img
+        class="footer_bg_graphic"
+        src={woodgrain.src}
+        width={woodgrain.width}
+        height={woodgrain.height}
+        alt=""
+        loading="lazy"
+      />
       <div class="footer_inner">
         <div class="footer_top">
-          <a class="footer_logo" href="/" aria-label={SITE_NAME}>
-            <Icon src={logo} variant="full-width" />
-          </a>
-          <nav aria-label="Footer">
+          <div class="footer_brand">
+            <a class="footer_logo" href="/" aria-label={SITE_NAME}>
+              <img
+                class="footer_logo_mark"
+                src={logo.src}
+                width={logo.width}
+                height={logo.height}
+                alt=""
+              />
+            </a>
+            {hasContact && (
+              <ul class="footer_contact">
+                {SITE_CONTACT.phone && (
+                  <li>
+                    <a
+                      class="footer_contact_link"
+                      href={`tel:${SITE_CONTACT.phone}`}
+                    >
+                      {SITE_CONTACT.phone}
+                    </a>
+                  </li>
+                )}
+                {SITE_CONTACT.email && (
+                  <li>
+                    <a
+                      class="footer_contact_link"
+                      href={`mailto:${SITE_CONTACT.email}`}
+                    >
+                      {SITE_CONTACT.email}
+                    </a>
+                  </li>
+                )}
+                {SITE_CONTACT.address && (
+                  <li class="footer_contact_text">{SITE_CONTACT.address}</li>
+                )}
+              </ul>
+            )}
+          </div>
+
+          <nav class="footer_nav" aria-label="Footer">
+            <p class="footer_heading text-style-small">Navigation</p>
             <ul class="footer_links">
-              <li>
-                <a class="footer_link" href="/">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a class="footer_link" href="/example-components">
-                  Example Components
-                </a>
-              </li>
+              {FOOTER_NAV.map((item) => (
+                <li>
+                  <a class="footer_link" href={item.href}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </nav>
+
+          <nav class="footer_nav" aria-label="Services">
+            <p class="footer_heading text-style-small">Services</p>
+            <ul class="footer_links">
+              {SERVICE_LINKS.map((service) => (
+                <li>
+                  <a class="footer_link" href={service.href}>
+                    {service.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {hasSocial && (
+            <nav class="footer_nav" aria-label="Social">
+              <p class="footer_heading text-style-small">Follow</p>
+              <ul class="footer_links">
+                {SITE_SOCIAL.map((social) => (
+                  <li>
+                    <a class="footer_link" href={social.href}>
+                      {social.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
         </div>
+
         <div class="footer_bottom">
           <p class="footer_copyright text-style-small">
             &copy; <span id="year">{new Date().getFullYear()}</span>&#160;
             {SITE_NAME}
           </p>
+          <a class="footer_legal_link text-style-small" href="/privacy-policy/">
+            Privacy Policy
+          </a>
         </div>
       </div>
     </footer>
@@ -56,35 +137,74 @@ const { render = true } = Astro.props;
 <style is:global>
   @layer components {
     .footer_wrap {
+      /* --_lift is set by an overlapping CTA banner, which pulls itself up
+         into this padding rather than the footer reaching out for it. */
+      --_lift: 0rem;
+      position: relative;
       display: flex;
       justify-content: center;
-      padding-block: var(--section-space-small);
+      padding-block: calc(var(--section-space-medium) + var(--_lift))
+        var(--section-space-small);
       padding-inline: var(--site-margin);
       background-color: var(--background);
       color: var(--text);
-      border-top: var(--border-width) solid var(--border);
+      overflow: hidden;
+    }
+
+    /* Wood-ring texture, tinted to the footer's forest background so it
+       reads as a subtle surface rather than a photo dropped on top. */
+    .footer_bg_graphic {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0.16;
+      mix-blend-mode: luminosity;
+      pointer-events: none;
     }
 
     .footer_inner {
+      position: relative;
       width: 100%;
       max-width: var(--max-width-main);
       display: flex;
       flex-direction: column;
-      gap: var(--space-6);
+      gap: var(--space-8);
     }
 
     .footer_top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4) var(--space-6);
+      display: grid;
+      gap: var(--space-6) var(--site-gutter);
+      grid-template-columns: 1fr;
+      @media (width >= 48rem) {
+        grid-template-columns: minmax(12rem, 1.2fr) repeat(3, minmax(0, 1fr));
+        align-items: start;
+      }
     }
 
+    .footer_brand {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    /* The badge is full-colour and dark-outlined, so it needs a light
+       ground of its own to stay legible on the forest footer. */
     .footer_logo {
-      display: block;
-      width: 7.5rem;
+      display: inline-flex;
+      width: fit-content;
       max-width: 100%;
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--light-100);
+      border-radius: var(--radius-main);
+
+      & .footer_logo_mark {
+        display: block;
+        width: auto;
+        height: 5rem;
+      }
       transition: opacity var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
         &:hover {
@@ -93,17 +213,18 @@ const { render = true } = Astro.props;
       }
     }
 
-    .footer_links {
+    .footer_contact {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-4);
-      font-size: var(--text-small);
-      font-weight: var(--primary-medium);
+      flex-direction: column;
+      gap: var(--space-2);
+      font-size: var(--text-main);
+      font-weight: var(--primary-semibold);
+      color: var(--text);
     }
 
-    .footer_link {
-      color: var(--text-2);
+    .footer_contact_link {
+      color: var(--brand-accent);
+      text-underline-offset: 0.3em;
       text-decoration: none;
       transition: color var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
@@ -113,13 +234,59 @@ const { render = true } = Astro.props;
       }
     }
 
+    .footer_nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .footer_heading {
+      color: var(--text-2);
+      font-weight: var(--primary-semibold);
+    }
+
+    .footer_links {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      font-size: var(--text-main);
+      font-weight: var(--primary-semibold);
+    }
+
+    .footer_link {
+      color: var(--text);
+      text-decoration: none;
+      transition: color var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          color: var(--brand-accent);
+        }
+      }
+    }
+
     .footer_bottom {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2) var(--space-4);
       padding-top: var(--space-4);
       border-top: var(--border-width) solid var(--border);
     }
 
     .footer_copyright {
       color: var(--text-2);
+    }
+
+    .footer_legal_link {
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
     }
   }
 </style>

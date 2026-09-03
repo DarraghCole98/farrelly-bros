@@ -1,0 +1,82 @@
+---
+title: "Wood Chipping"
+summary: "Specialist wood and timber chipping."
+seo:
+  title: "Wood Chipping"
+  description: "Specialist wood and timber chipping."
+hero:
+  intro: "On-site chipping for timber and brash left over from tree work, clearance and storm clean-up — processed on site rather than hauled away whole."
+  image: "../../assets/Images/farrelly-brothers-woodchipping.webp"
+  imageAlt: "Farrelly Bros wood chipper loading processed timber into a trailer on site."
+capabilities:
+  - title: "Timber and brash chipping"
+    description: "On-site processing of material from tree work and clearance."
+  - title: "Bulk material clearance"
+    description: "Larger volumes of cut material processed and removed efficiently."
+  - title: "Storm and emergency clean-up support"
+    description: "Chipping capacity brought in alongside emergency tree and clearance work."
+  - title: "Chip removal or reuse"
+    description: "Chippings removed from site or left for reuse, depending on what suits the job."
+whyUs:
+  heading: "Chipping that follows the work, not a separate booking."
+  intro: "Wood chipping is most useful when it happens alongside the job that generates the material — tree removal, clearance or storm work — rather than as a separate visit booked in afterwards."
+  image: "../../assets/Images/farrelly-brothers-herro4.webp"
+  imageAlt: "Tractor working across open ground."
+  points:
+    - "Chipping capacity available alongside tree care, clearance and storm response work."
+    - "Material processed on site instead of being hauled away whole."
+    - "Chippings removed or left on site, agreed as part of the same job."
+    - "Scales from a single tree's brash to bulk material from a large clearance."
+overview:
+  heading: "Timber and brash dealt with, not just cut."
+  body: "Wood chipping covers the timber and brash left over from tree care, site clearance and storm-damage work — processed on site into material that's far easier to handle or remove than whole trunks and branches. Because it sits alongside tree care and clearance in the same business, chipping is usually arranged as part of the same job rather than a separate call-out."
+  image: "../../assets/Images/farrelly-brothers-services-7.webp"
+  imageAlt: "Agricultural machinery working across open farmland."
+  points:
+    - "Processed alongside tree removal, clearance or storm clean-up."
+    - "Sized to the job, from a single tree to a large-scale clearance."
+    - "Chippings removed from site or left for reuse, as agreed."
+applications:
+  - "Tree and site clearance follow-on"
+  - "Storm and emergency clean-up"
+  - "Land and estate management"
+  - "Hedgerow and scrub material"
+process:
+  eyebrow: "How it runs"
+  heading: "From cut material to cleared site."
+  intro: "What happens to timber and brash is agreed before the cutting starts, so chipping runs alongside the main job rather than being arranged after the fact."
+  image: "../../assets/Images/farrelly-brothers-services-6.webp"
+  imageAlt: "Excavator operator at the controls."
+  steps:
+    - title: "We agree what happens to the material"
+      description: "Chipping, removal or leaving material on site is settled as part of the wider job's quote."
+      image: "../../assets/Images/farrelly-brothers-herro1.webp"
+      imageAlt: "A mature tree standing in open parkland."
+    - title: "Cutting work goes ahead"
+      description: "Tree care, clearance or storm work is carried out, generating the material to be processed."
+    - title: "Material is chipped on site"
+      description: "Timber and brash are processed as the job progresses, keeping the site clear as work continues."
+      image: "../../assets/Images/farrelly-brothers-herro3.webp"
+      imageAlt: "Cleared land with machinery working in the background."
+    - title: "Chippings are removed or left"
+      description: "The site is finished to the arrangement agreed at the outset — chippings removed, or left for reuse."
+faq:
+  - question: "Can you chip material from a job someone else has already cut?"
+    answer: "Yes — chipping can be arranged as a standalone visit for existing cut timber and brash, not only alongside our own tree or clearance work."
+  - question: "What size of material can be chipped?"
+    answer: "That depends on the equipment brought to the job — get in touch with what you have and we'll advise on what's practical."
+  - question: "Do you take the chippings away?"
+    answer: "Either — chippings can be removed from site, or left in place where they're wanted for mulch or ground cover. It's agreed as part of the job."
+  - question: "Is chipping available for storm or emergency work?"
+    answer: "Yes, chipping capacity is brought alongside emergency tree and clean-up work so cut material doesn't sit on site."
+relatedServices:
+  - collection: "services"
+    id: "tree-care"
+  - collection: "services"
+    id: "site-clearance"
+  - collection: "services"
+    id: "agricultural-contracting"
+relatedProjects:
+  - collection: "projects"
+    id: "wicklow-storm-damage-clearance"
+---

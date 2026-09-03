@@ -945,6 +945,10 @@
   border-radius: var(--radius-main);
 }
 
+.radius-large {
+  border-radius: var(--radius-large);
+}
+
 .radius-round {
   border-radius: var(--radius-round);
 }

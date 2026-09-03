@@ -1,0 +1,54 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"ul"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The labels to list. */
+  items: string[];
+}
+
+const { render = true, items, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <ul class:list={["label-row_wrap", className]} {...rest}>
+      {items.map((item) => (
+        <li class="label-row_item text-style-h5">{item}</li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .label-row_wrap {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: var(--space-6);
+      row-gap: var(--space-3);
+    }
+
+    .label-row_item {
+      position: relative;
+      padding-left: var(--space-6);
+      color: var(--text-2);
+      &:first-child {
+        padding-left: 0;
+      }
+      &::before {
+        content: "";
+        position: absolute;
+        left: calc(var(--space-6) / -2);
+        top: 0.35em;
+        bottom: 0.35em;
+        width: var(--border-width);
+        background-color: var(--border);
+      }
+      &:first-child::before {
+        display: none;
+      }
+    }
+  }
+</style>

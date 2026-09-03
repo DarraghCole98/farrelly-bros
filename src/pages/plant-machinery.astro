@@ -1,0 +1,191 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import { sortByServiceOrder } from "@/components/Global/navigation.ts";
+import heroImage from "@/assets/Images/farrelly-brothers-herro8.webp";
+
+/**
+ * The equipment collection is empty. docs/CONTENT.md is explicit that
+ * manufacturer, model and specification details must not be invented, so
+ * the listing carries an empty state and fills itself in as entries are
+ * added. Categories are read from the entries themselves rather than
+ * hardcoded, so no fleet is implied that has not been confirmed.
+ */
+const equipment = await getCollection("equipment");
+
+const categories = [
+  ...new Map(
+    equipment.map((item) => [item.data.category, item.data.category]),
+  ).values(),
+].sort((a, b) => a.localeCompare(b));
+
+const services = sortByServiceOrder(await getCollection("services"));
+
+/** One card-grid dataset per equipment category, precomputed so the template
+ * can pass a plain identifier to `ContentCardGrid` instead of an inline
+ * multi-line `.filter().map()` — Stacki's visual editor can't represent an
+ * expression that complex directly inside a JSX attribute. */
+const equipmentByCategory = categories.map((category) => ({
+  category,
+  items: equipment
+    .filter((item) => item.data.category === category)
+    .map((item) => ({
+      image: item.data.image,
+      imageAlt: item.data.imageAlt,
+      eyebrow:
+        [item.data.manufacturer, item.data.model]
+          .filter(Boolean)
+          .join(" ") || undefined,
+      heading: item.data.name,
+      text: item.data.summary,
+    })),
+}));
+
+const serviceCards = services.map((service) => ({
+  image: service.data.hero?.image,
+  imageAlt: service.data.hero?.imageAlt,
+  heading: service.data.title,
+  text: service.data.summary,
+  buttonLabel: "View Service",
+  buttonHref: `/services/${service.id}/`,
+}));
+
+const MACHINERY_MATTERS = [
+  {
+    title: "It decides what is reachable.",
+    text: "Height, reach and ground clearance are what separate a tree that can be taken down safely from one that cannot be touched.",
+  },
+  {
+    title: "It decides what a site will take.",
+    text: "Weight, width and track type govern what can get onto soft ground, through a gateway or along a working corridor.",
+  },
+  {
+    title: "It decides the schedule.",
+    text: "The right machine on site turns a week of hand-work into a day, and keeps the rest of a programme from slipping.",
+  },
+];
+---
+
+<Layout
+  title="Plant & Machinery"
+  description="The specialist plant and machinery behind Farrelly Bros' arboriculture, vegetation management, site clearance and land contracting work."
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Fragment slot="background">
+      <Img src={heroImage} alt="" loading="eager" fetchPriority="high" />
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>Plant &amp; Machinery</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={19}>
+      The equipment behind the work.
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      Specialist plant is what turns a difficult site into a manageable one.
+      What is available, and what it can reach, is usually the first thing
+      that decides how a job gets done.
+    </Paragraph>
+    <ButtonWrapper>
+      <Button element="link" href="/contact/">Discuss a Project</Button>
+    </ButtonWrapper>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentStatement
+      statement="<strong>Machinery is not a detail.</strong> On specialist sites it sets what is possible, what is safe and how long the work takes."
+      maxWidth={34}
+    />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large" class="background-2">
+    <ContentSectionHeader
+      eyebrow="Why it matters"
+      heading="What the right machine changes."
+      variant="h3"
+    />
+    <ContentFeatureRow items={MACHINERY_MATTERS} />
+  </Section>
+
+  {
+    equipment.length > 0 &&
+      equipmentByCategory.map(({ category, items }) => (
+        <Section paddingTop="large" paddingBottom="large">
+          <ContentSectionHeader
+            eyebrow="Equipment"
+            heading={category}
+            variant="h3"
+          />
+          <ContentCardGrid items={items} />
+        </Section>
+      ))
+  }
+
+  {
+    equipment.length === 0 && (
+      <Section paddingTop="large" paddingBottom="large">
+        <Heading tag="h2" variant="h3" maxWidth={22}>
+          The fleet listing is being compiled.
+        </Heading>
+        <Paragraph variant="large" maxWidth={42}>
+          Machine-by-machine detail is being confirmed before it goes up, so
+          that what is listed matches what is actually available. If you need
+          to know whether a particular site can be worked, ask — the answer
+          depends on access and ground conditions as much as on the machine.
+        </Paragraph>
+        <ButtonWrapper>
+          <Button element="link" href="/contact/">Discuss a Project</Button>
+          <Button element="link" href="/services/plant-hire/" emphasis="secondary">
+            About Plant Hire
+          </Button>
+        </ButtonWrapper>
+      </Section>
+    )
+  }
+
+  <Section paddingTop="large" paddingBottom="large" class="background-2">
+    <ContentWrapper variant="columns">
+      <Heading tag="h2" variant="h2" maxWidth={17}>
+        Plant hire, and plant we run ourselves.
+      </Heading>
+      <Fragment slot="column2">
+        <Paragraph variant="large" maxWidth={40}>
+          Plant Hire is a service you can book on its own. This page is
+          about the wider capability behind every other service — the
+          machinery that clearance, reinstatement and tree work draw on
+          without it needing to be hired in.
+        </Paragraph>
+        <ButtonWrapper>
+          <Button element="link" href="/services/plant-hire/" variant="link">
+            View Plant Hire
+          </Button>
+        </ButtonWrapper>
+      </Fragment>
+    </ContentWrapper>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentSectionHeader
+      eyebrow="Related services"
+      heading="What this equipment is used for."
+      variant="h3"
+    />
+    <ContentCardGrid items={serviceCards} />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="none">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

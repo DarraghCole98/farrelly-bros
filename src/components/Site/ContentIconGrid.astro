@@ -1,0 +1,188 @@
+---
+import type { HTMLAttributes, SvgComponent } from "astro/types";
+import Icon from "@/components/Media/Icon.astro";
+import Img from "@/components/Media/Img.astro";
+import woodgrainTexture from "@/assets/Images/Woodgrain texture.svg";
+
+export interface IconGridItem {
+  /** The label shown beside the icon. */
+  label: string;
+  /** An SVG imported from `src/assets`. Left unset, the tile shows only the label. */
+  icon?: SvgComponent;
+  /** Where the tile leads. Left out, the tile is not a link. */
+  href?: string;
+  /**
+   * How much room the tile takes in the bento layout, from 48rem up.
+   *
+   * - `1x1` — a single cell (default)
+   * - `wide` — two columns
+   * - `tall` — two rows
+   * - `large` — two columns and two rows
+   */
+  span?: "1x1" | "wide" | "tall" | "large";
+}
+
+type ImageSource = ImageMetadata | string;
+
+interface Props extends HTMLAttributes<"ul"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The items to list. Renders nothing when empty. */
+  items: IconGridItem[];
+  /**
+   * A faded texture shown in the corner of every tile. An imported asset, a
+   * remote `http(s)` URL, or a path to a file in `public/`. Set to `false`
+   * to leave tiles plain.
+   */
+  texture?: ImageSource | false;
+}
+
+const {
+  render = true,
+  items,
+  texture = woodgrainTexture,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <ul class:list={["icon-grid_wrap", className]} {...rest}>
+      {items.map((item) => (
+        <li
+          class:list={[
+            "icon-grid_item",
+            item.span && item.span !== "1x1" && item.span,
+          ]}
+        >
+          <a href={item.href} class="icon-grid_item_content">
+            {texture && (
+              <Img src={texture} alt="" class="icon-grid_item_texture" />
+            )}
+            <span class="icon-grid_item_body">
+              {item.icon && (
+                <Icon
+                  src={item.icon}
+                  variant={item.span === "large" ? "large" : "medium"}
+                />
+              )}
+              <span class="text-style-h5">{item.label}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .icon-grid_wrap {
+      display: grid;
+      /* minmax(0, 1fr), not a bare 1fr — a bare fr track keeps an implied
+         auto minimum, so a long unbreakable label (or a wide texture image)
+         can force the track past the tile's own width and push the grid
+         off the edge of the viewport. */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: minmax(8rem, auto);
+      /* Dense at every width, not just >=48rem — a tile given a mobile
+         column span (below) would otherwise strand an empty cell next to
+         it, since row-order placement doesn't backfill gaps on its own. */
+      grid-auto-flow: dense;
+      gap: var(--site-gutter);
+      width: 100%;
+      list-style: none;
+
+      @media (width >= 48rem) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    /* A handful of tiles run wider or taller than the rest, so the grid
+       reads as a bento — not a repeated string of identical labels. */
+    .icon-grid_item {
+      /* A "tall" tile's label (e.g. "Telecommunications") is usually the
+         longest in the set — on a 2-column mobile grid a row-span does
+         nothing for that, so it gets the full row's width instead. Dense
+         packing above backfills whatever gap that leaves. */
+      &.tall {
+        @media (width < 48rem) {
+          grid-column: span 2;
+        }
+      }
+
+      @media (width >= 48rem) {
+        &.wide {
+          grid-column: span 2;
+        }
+        &.tall {
+          grid-row: span 2;
+        }
+        &.large {
+          grid-column: span 2;
+          grid-row: span 2;
+        }
+      }
+    }
+
+    .icon-grid_item_content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      /* Lets the tile shrink below its label's min-content width instead of
+         forcing the grid track wider than the space available. */
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+      padding: var(--space-5);
+      overflow: clip;
+      color: inherit;
+      background-color: var(--background-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-main);
+      transition: border-color var(--hover-duration) var(--hover-ease);
+
+      &:not([href]) {
+        cursor: default;
+      }
+
+      @media (hover: hover) {
+        &[href]:hover {
+          border-color: var(--text-2);
+        }
+      }
+    }
+
+    .icon-grid_item_body {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: inherit;
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
+    /* Decorative — faded into the tile's corner behind the icon and label,
+       swappable per instance via the `texture` prop. */
+    .icon-grid_item_texture {
+      position: absolute;
+      z-index: 0;
+      inset-block-end: -12%;
+      inset-inline-end: -12%;
+      width: 65%;
+      height: auto;
+      opacity: 0.18;
+      mix-blend-mode: soft-light;
+      mask-image: radial-gradient(circle at bottom right, black 0%, transparent 70%);
+      -webkit-mask-image: radial-gradient(
+        circle at bottom right,
+        black 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+  }
+</style>

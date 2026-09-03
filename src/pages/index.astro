@@ -1,41 +1,295 @@
 ---
+import { getCollection } from "astro:content";
 import Layout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/Wrapper/Section.astro";
-import Heading from "@/components/Typography/Heading.astro";
-import Eyebrow from "@/components/Typography/Eyebrow.astro";
-import Img from "@/components/Media/Img.astro";
-import lumos_background from "@/assets/graphics/lumos-background.svg";
-import Icon from "@/components/Media/Icon.astro";
-import logo_icon from "@/assets/logo/logo-icon.svg";
 import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Card from "@/components/Item/Card.astro";
+import Slider from "@/components/Interactive/Slider.astro";
+import Tabs from "@/components/Interactive/Tabs.astro";
+import TabLink from "@/components/Interactive/TabLink.astro";
+import ContentHeroSplit from "@/components/Site/ContentHeroSplit.astro";
+import ContentHeroGallery from "@/components/Site/ContentHeroGallery.astro";
+import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentIconGrid from "@/components/Site/ContentIconGrid.astro";
+import ContentSectors from "@/components/Site/ContentSectors.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import { sortByServiceOrder } from "@/components/Global/navigation.ts";
+import Grid from "@/components/Wrapper/Grid.astro";
+import heroImage from "@/assets/Images/farrely-bros-top-of-tree.webp";
+import plantImage from "@/assets/Images/farrelly-brothers-herro7.webp";
+import approachImage1 from "@/assets/Images/farrelly-brothers6.webp";
+import approachImage2 from "@/assets/Images/farrelly-brothers-services-4.webp";
+import approachImage3 from "@/assets/Images/farrelly-brothers5.webp";
+import ctaImage from "@/assets/Images/farrelly-brothers-herro4.webp";
+import iconInfrastructure from "@/assets/Icons/infrastructure.svg";
+import iconArboriculture from "@/assets/Icons/arboriculture.svg";
+import iconVegetationManagement from "@/assets/Icons/vegetation-management.svg";
+import iconLandManagement from "@/assets/Icons/land-management.svg";
+import iconSpecialistPlant from "@/assets/Icons/specialist-plant.svg";
+import hero_full_bleed_glass_illustration from "@/assets/Images/hero_full_bleed_glass_illustration.webp";
+import farrelly_bros_john_deere from '@/assets/Images/farrelly-bros-john-deere.webp';
+import heroGallery2 from "@/assets/Images/farrely-bros-in-a-tree-lift.webp";
+import heroGallery3 from "@/assets/Images/farrely-bros-chainsaw-cutting.webp";
+import heroGallery4 from "@/assets/Images/farrelly-brothers-hedge-cutting.webp";
+import heroGallery5 from "@/assets/Images/farrelly-brothers-woodchipping.webp";
+import ContentTestimonial, {
+  type Testimonial,
+} from "@/components/Site/ContentTestimonial.astro";
+
+const services = sortByServiceOrder(await getCollection("services"));
+
+/**
+ * Newest first, same ordering as /projects/. Shown as a taste of real work
+ * once there is any — docs/CONTENT.md forbids fabricating a project, so this
+ * degrades to nothing rather than an empty section when the collection is.
+ */
+const featuredProjects = [...(await getCollection("projects"))]
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0))
+  .slice(0, 3);
+
+const CAPABILITIES = [
+  {
+    label: "Arboriculture",
+    icon: iconArboriculture,
+    href: "/services/tree-care/",
+    span: "large" as const,
+  },
+  {
+    label: "Vegetation Management",
+    icon: iconVegetationManagement,
+    href: "/services/site-clearance/",
+  },
+  {
+    label: "Infrastructure",
+    icon: iconInfrastructure,
+    href: "/services/telecoms-vegetation-management/",
+  },
+  {
+    label: "Land Management",
+    icon: iconLandManagement,
+    href: "/services/agricultural-contracting/",
+  },
+  {
+    label: "Specialist Plant",
+    icon: iconSpecialistPlant,
+    href: "/services/plant-hire/",
+  },
+];
+
+const APPROACH = [
+  {
+    label: "One contractor",
+    title: "One contractor, every stage.",
+    text: "Arboriculture, clearance, plant and land contracting sit inside the same business — so a project doesn't need splitting across suppliers to get done properly.",
+    image: approachImage1,
+    imageAlt: "Excavator working a cleared site.",
+  },
+  {
+    label: "Planned access",
+    title: "Planned before it starts.",
+    text: "Every job begins with the access it needs, the equipment it calls for, and the people who know how to run it. That planning is what keeps specialist work on schedule.",
+    image: approachImage2,
+    imageAlt: "Pipeline laid across a field, ready for reinstatement.",
+  },
+  {
+    label: "Difficult sites",
+    title: "Equipped for difficult sites.",
+    text: "Specialist plant is what turns a constrained or awkward site into a manageable one — reaching and moving what can't be handled by hand.",
+    image: approachImage3,
+    imageAlt: "Forage harvester working a field at dusk.",
+  },
+];
+
+/**
+ * No client testimonials have been confirmed yet. The section renders nothing
+ * until some are supplied — see the content-integrity rules in docs/PROJECT.md.
+ */
+const TESTIMONIALS: Testimonial[] = [];
 ---
 
-<Layout theme="dark">
-  <Section
-    paddingBottom="even"
-    containerClass="flex-grow"
-    paddingTop="even"
-    class="flex-grow"
-    style="min-height: calc(100svh - var(--nav-height));"
-  >
-    <ContentWrapper
-      class="flex-grow theme-brand"
-      variant="card"
-      mediaOpacity={100}
+<Layout
+  description="Farrelly Bros provide specialist arboriculture, vegetation management, site clearance and land contracting — working across infrastructure, utility, renewable-energy and agricultural sites."
+>
+  <Section paddingTop="large" paddingBottom="large" class="background-2">
+    <ContentHeroSplit eyebrow="Arboriculture & Specialist Contracting" heading="Specialist contracting for land, trees and infrastructure." text="Farrelly Bros work across arboriculture, vegetation management, site clearance and land contracting — bringing the plant, people and experience demanding sites need, from a single tree to large-scale infrastructure work.">
+      <ButtonWrapper>
+        <Button element="link" href="/services/">Explore Our Services</Button>
+        <Button element="link" href="/contact/" emphasis="secondary">
+          Discuss a Project
+        </Button>
+      </ButtonWrapper>
+      <ContentHeroGallery
+        slot="media"
+        image1={farrelly_bros_john_deere}
+        image1Alt="Farrelly Bros tractor working a field."
+        image2={heroGallery2}
+        image2Alt="Farrelly Bros crew working from an aerial lift, cutting back a mature tree."
+        image3={heroGallery3}
+        image3Alt="Chainsaw cutting through a felled tree trunk."
+        image4={heroGallery4}
+        image4Alt="Flail hedge-cutter working along a site boundary."
+        image5={heroGallery5}
+        image5Alt="Timber being processed through a wood chipper."
+      />
+    </ContentHeroSplit>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large" gap="6">
+    <Eyebrow>Working across</Eyebrow>
+    <ContentIconGrid items={CAPABILITIES} />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentStatement
+      statement="<strong>Not just a tree surgeon.</strong> Farrelly Bros works at the scale specialist land and vegetation projects demand — arboriculture, clearance and plant hire delivered by one contractor."
+      maxWidth={36}
+    />
+  </Section>
+
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <ContentSectionHeader
+      eyebrow="Services"
+      heading="Eight specialist services, one contractor."
+      text="From a single tree to a cleared site, the work is planned and resourced by the same team. Explore what each service covers, and what it's suited to."
+    />
+    <Slider
+      variant="crop-start"
+      label="Farrelly Bros services"
+      xsmall={1.15}
+      small={1.7}
+      medium={2.4}
+      large={3.4}
     >
-      <Icon src={logo_icon} variant="large" />
-      <Heading variant="display" tag="h1" class="margin-block-8"
-        >Style Guide</Heading
-      >
-      <Eyebrow variant="tag">v0.0.3</Eyebrow>
+      {
+        services.map((service) => (
+          <Card
+            variant="stacked"
+            heading={service.data.shortTitle ?? service.data.title}
+            text={service.data.summary}
+            image={service.data.hero?.image}
+            imageAlt={service.data.hero?.imageAlt}
+            buttonLabel="View Service"
+            buttonHref={`/services/${service.id}/`}
+          />
+        ))
+      }
+    </Slider>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentSectionHeader
+      eyebrow="How we work"
+      heading="Planned, resourced and delivered properly."
+      variant="h3"
+    />
+    <Tabs playback="auto" id="approach">
+      <Fragment slot="links">
+        {APPROACH.map((item) => <TabLink>{item.label}</TabLink>)}
+      </Fragment>
+      {
+        APPROACH.map((item) => (
+          <ContentWrapper variant="columns">
+            <Heading tag="h3" variant="h4" maxWidth={17}>
+              {item.title}
+            </Heading>
+            <Paragraph maxWidth={36}>{item.text}</Paragraph>
+            <Img
+              slot="column2"
+              src={item.image}
+              alt={item.imageAlt}
+              class="radius-large"
+            />
+          </ContentWrapper>
+        ))
+      }
+    </Tabs>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentWrapper variant="sticky-visual">
+      <Eyebrow>Plant &amp; Machinery</Eyebrow>
+      <Heading tag="h2" variant="h2" maxWidth={19}>
+        The right equipment changes what's possible.
+      </Heading>
+      <Paragraph variant="large" maxWidth={38}>
+        Specialist plant is what turns a difficult site into a manageable one —
+        reaching what can't be reached by hand, moving what can't be moved by
+        hand, and keeping a project on schedule.
+      </Paragraph>
+      <ButtonWrapper>
+        <Button element="link" href="/plant-machinery/" emphasis="secondary">
+          View Plant &amp; Machinery
+        </Button>
+      </ButtonWrapper>
       <Img
         slot="column2"
-        src={lumos_background}
-        width={1920}
-        height={1080}
-        loading="eager"
-        fetchPriority="high"
+        src={plantImage}
+        alt="Close-up of tractor cab and grille in the field."
+        class="radius-large"
       />
     </ContentWrapper>
+  </Section>
+
+  {
+    featuredProjects.length > 0 && (
+      <Section paddingTop="large" paddingBottom="large" class="background-2">
+        <ContentSectionHeader
+          eyebrow="Selected Work"
+          heading="Recent projects."
+          text="Specialist work is easiest to judge by the sites it has been done on."
+          variant="h3"
+        />
+        <Grid variant="columns" xsmall={1} medium={3}>
+          {featuredProjects.map((project) => (
+            <Card
+              variant="stacked"
+              image={project.data.heroImage}
+              imageAlt={project.data.heroImageAlt}
+              eyebrow={project.data.sector}
+              heading={project.data.title}
+              text={project.data.summary}
+              buttonLabel="View Project"
+              buttonHref={`/projects/${project.id}/`}
+            />
+          ))}
+        </Grid>
+        <ButtonWrapper marginTop="6">
+          <Button element="link" href="/projects/" emphasis="secondary">
+            View All Projects
+          </Button>
+        </ButtonWrapper>
+      </Section>
+    )
+  }
+
+  <Section
+    theme="dark"
+    paddingTop="large"
+    paddingBottom="large"
+    gap="8"
+    image={hero_full_bleed_glass_illustration}
+    imageAlt=""
+  >
+    <ContentSectors
+      eyebrow="Where our services apply"
+      heading="Working sites, not just gardens."
+      variant="h3"
+    />
+    <ContentTestimonial testimonials={TESTIMONIALS} />
+  </Section>
+
+  <Section paddingBottom="none" theme="light">
+    <ContentCtaMain
+      overlap
+      image={ctaImage}
+      imageAlt="Forage harvester cutting a field under a red sunset sky."
+    />
   </Section>
 </Layout>

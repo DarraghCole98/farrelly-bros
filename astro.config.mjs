@@ -13,18 +13,15 @@ export default defineConfig({
   ],
   fonts: [
     {
-      name: "Inter",
-      cssVariable: "--font-inter",
-      provider: fontProviders.local(),
-      options: {
-        variants: [
-          {
-            weight: 400,
-            style: "normal",
-            src: ["./src/assets/fonts/inter-regular.woff2"],
-          },
-        ],
-      },
+      // Geometric-humanist sans. Downloaded and self-hosted at build time —
+      // nothing is requested from Google at runtime.
+      name: "Figtree",
+      cssVariable: "--font-figtree",
+      provider: fontProviders.google(),
+      weights: [400, 500, 600, 700],
+      styles: ["normal"],
+      subsets: ["latin"],
+      fallbacks: ["system-ui", "sans-serif"],
     },
   ],
   vite: { build: { cssTarget: "safari15.4" } },

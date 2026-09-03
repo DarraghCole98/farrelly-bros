@@ -1,11 +1,22 @@
 /** Site name. Appended to every page title and used as `og:site_name`. */
-export const SITE_NAME = "Lumos Framework";
-/** Fallback meta description for pages that don't set their own. */
+export const SITE_NAME = "Farrelly Bros";
+/**
+ * Fallback meta description for pages that don't set their own.
+ *
+ * Placeholder derived only from the industry positioning confirmed in
+ * docs/PROJECT.md — not approved marketing copy. Replace once real copy
+ * is signed off.
+ */
 export const SITE_DESCRIPTION =
-  "Lumos is a cutting-edge framework for building Astro sites. It's designed with efficiency, scaleability, and accessibility at its core.";
-/** Canonical origin. Resolves canonical URLs, social images, and the sitemap. */
-export const SITE_URL = "https://preview.lumosframework.com";
-/** BCP 47 locale tag used to format dates and numbers. */
+  "Farrelly Bros provide specialist arboriculture, vegetation management and contracting services.";
+/**
+ * Canonical origin. Resolves canonical URLs, social images, and the sitemap.
+ *
+ * TODO: production domain not yet confirmed. Left as a dev-safe placeholder
+ * so builds and the sitemap keep working — replace before launch.
+ */
+export const SITE_URL = "http://localhost:4321";
+/** BCP 47 locale tag used to format dates and numbers. TODO: confirm — still the Lumos scaffold default, not yet verified for Farrelly Bros. */
 export const SITE_LOCALE = "en-US";
 /**
  * Routes kept out of search results. Each is excluded from the sitemap and
@@ -14,4 +25,36 @@ export const SITE_LOCALE = "en-US";
  * Surrounding slashes are optional: `"/thanks"`, `"thanks"` and `"/thanks/"`
  * all match the same route.
  */
-export const NOINDEX_ROUTES: string[] = ["/404"];
+export const NOINDEX_ROUTES: string[] = ["/404", "/privacy-policy"];
+
+/**
+ * Business contact details, as confirmed via the Farrelly Bros.ie Facebook
+ * page. `email` is @agriman.ie rather than @farrellybros.ie — worth
+ * double-checking that's the address they actually want published, since
+ * it doesn't match the site's own domain.
+ */
+export const SITE_CONTACT: {
+  phone?: string;
+  mobile?: string;
+  email?: string;
+  address?: string;
+} = {
+  phone: "046 924 0404",
+  mobile: "087 351 7069",
+  email: "info@agriman.ie",
+  address: "Carnaross, Co. Meath, Ireland",
+};
+
+/** Social profile links. Empty until confirmed. */
+export const SITE_SOCIAL: Array<{ label: string; href: string }> = [];
+
+/**
+ * Where the enquiry form posts.
+ *
+ * Empty until a form strategy is chosen — docs/DECISIONS.md records that no
+ * backend has been decided, and the site is deployed as static assets with
+ * no SSR. While this is empty the contact form renders disabled behind a
+ * notice, rather than silently reporting success to someone who typed out
+ * an enquiry. Set it to an endpoint URL to switch the form on.
+ */
+export const FORM_ENDPOINT = "";

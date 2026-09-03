@@ -1,0 +1,280 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import Form from "@/components/Form/Form.astro";
+import Fieldset from "@/components/Form/Fieldset.astro";
+import Input from "@/components/Form/Input.astro";
+import Textarea from "@/components/Form/Textarea.astro";
+import Button from "@/components/Button.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import ContentNotice from "@/components/Site/ContentNotice.astro";
+import { FORM_ENDPOINT, SITE_CONTACT } from "@/consts.ts";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The heading above the form. */
+  heading?: string;
+  /** A short supporting line under the heading. */
+  text?: string;
+  /**
+   * What this enquiry is about — a service or project title. Used to word
+   * the details field and travels with the submission as a hidden field, so
+   * it isn't lost even though it isn't shown as its own input.
+   */
+  context?: string;
+  /**
+   * How the card is laid out.
+   *
+   * - `centered` — one narrow column, everything centred (default) — for a
+   *   modal or another already-narrow space
+   * - `split` — two columns: heading, text and direct contact details on
+   *   the left for anyone who would rather not fill in a form, the form
+   *   itself on the right
+   */
+  variant?: "centered" | "split";
+}
+
+const {
+  render = true,
+  heading = "Tell us about your project.",
+  text,
+  context,
+  variant = "centered",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const split = variant === "split";
+const hasContact = split && Object.values(SITE_CONTACT).some(Boolean);
+
+/**
+ * docs/DECISIONS.md: no form backend has been chosen, and the site deploys
+ * as static assets with no SSR. `Form` reports success when it has no
+ * action, so with no endpoint the fields are disabled behind a notice —
+ * the same pattern contact.astro uses — rather than silently telling
+ * someone their enquiry sent when nothing was transmitted.
+ */
+const formLive = FORM_ENDPOINT.length > 0;
+
+/**
+ * Kept generic even where `context` is set (e.g. the service or project
+ * being viewed) — someone enquiring from that page may still want to ask
+ * about something else entirely. `context` still travels as a hidden
+ * `reference` field either way, so it isn't lost.
+ */
+const detailsLabel = "Tell us about your project";
+---
+
+{
+  render && (
+    <div
+      class:list={[
+        "enquiry-form_wrap",
+        "theme-dark",
+        split ? "split" : "alignment-center",
+        className,
+      ]}
+      {...rest}
+    >
+      <div class="enquiry-form_intro">
+        <Heading tag="h2" variant="h3" maxWidth={24}>
+          {heading}
+        </Heading>
+        {text && (
+          <Paragraph variant="main" maxWidth={44}>
+            {text}
+          </Paragraph>
+        )}
+
+        {hasContact && (
+          <ul class="enquiry-form_contact">
+            {SITE_CONTACT.phone && (
+              <li>
+                <span class="text-style-small">Telephone</span>
+                <a
+                  class="text-style-h5"
+                  href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, "")}`}
+                >
+                  {SITE_CONTACT.phone}
+                </a>
+              </li>
+            )}
+            {SITE_CONTACT.mobile && (
+              <li>
+                <span class="text-style-small">Emergency</span>
+                <a
+                  class="text-style-h5"
+                  href={`tel:${SITE_CONTACT.mobile.replace(/[^+\d]/g, "")}`}
+                >
+                  {SITE_CONTACT.mobile}
+                </a>
+              </li>
+            )}
+            {SITE_CONTACT.email && (
+              <li>
+                <span class="text-style-small">Email</span>
+                <a class="text-style-h5" href={`mailto:${SITE_CONTACT.email}`}>
+                  {SITE_CONTACT.email}
+                </a>
+              </li>
+            )}
+            {SITE_CONTACT.address && (
+              <li>
+                <span class="text-style-small">Address</span>
+                <span class="text-style-h5">{SITE_CONTACT.address}</span>
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+
+      <div class="enquiry-form_action">
+        <ContentNotice
+          render={!formLive}
+          heading="Online enquiries are not available yet"
+          variant="pending"
+        >
+          <p>
+            This form is not connected yet, so it cannot accept enquiries. The
+            fields below show what will be asked for once it is switched on.
+          </p>
+        </ContentNotice>
+
+        <Form
+          name="enquiry"
+          action={formLive ? FORM_ENDPOINT : undefined}
+          render={formLive}
+          successMessage="Thanks — we have your enquiry and will be in touch."
+          errorMessage="That did not send. Please try again, or contact us directly."
+          class="enquiry-form_form"
+        >
+          {context && <input type="hidden" name="reference" value={context} />}
+          <Fieldset legend="About you" variant="columns" legendStyle="hidden">
+            <Input label="Name" variant="text" required />
+            <Input label="Email" variant="email" required />
+            <Input label="Phone" variant="phone" />
+          </Fieldset>
+          <Textarea
+            label={detailsLabel}
+            placeholder={detailsLabel}
+            minLines={4}
+            required
+          />
+          <ButtonWrapper>
+            <Button type="submit">Send Enquiry</Button>
+          </ButtonWrapper>
+        </Form>
+
+        {
+          !formLive && (
+            <div class="enquiry-form_preview" aria-hidden="true">
+              <Fieldset
+                legend="About you"
+                variant="columns"
+                legendStyle="hidden"
+                disabled
+              >
+                <Input label="Name" variant="text" disabled />
+                <Input label="Email" variant="email" disabled />
+                <Input label="Phone" variant="phone" disabled />
+              </Fieldset>
+              <Textarea
+                label={detailsLabel}
+                placeholder={detailsLabel}
+                minLines={4}
+                disabled
+              />
+            </div>
+          )
+        }
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .enquiry-form_wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-5);
+      width: 100%;
+      padding: var(--section-space-small) var(--space-8);
+      background-color: var(--background);
+      border-radius: var(--radius-large);
+
+      &.split {
+        align-items: stretch;
+        gap: var(--space-8) var(--section-space-small);
+
+        @media (width >= 48rem) {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+      }
+    }
+
+    .enquiry-form_intro {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      width: 100%;
+
+      .split & {
+        text-align: start;
+      }
+    }
+
+    .enquiry-form_action {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      width: 100%;
+    }
+
+    .enquiry-form_contact {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin-top: var(--space-2);
+    }
+
+    .enquiry-form_contact li {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .enquiry-form_contact span:first-child {
+      color: var(--text-2);
+    }
+
+    .enquiry-form_contact a {
+      color: var(--text);
+      text-underline-offset: 0.3em;
+    }
+
+    .enquiry-form_form,
+    .enquiry-form_preview {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      width: 100%;
+      max-width: 34rem;
+      margin-top: var(--space-2);
+      text-align: start;
+
+      .split & {
+        max-width: none;
+        margin-top: 0;
+      }
+    }
+
+    .enquiry-form_preview {
+      opacity: 0.55;
+    }
+  }
+</style>

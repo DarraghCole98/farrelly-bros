@@ -1,0 +1,281 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+
+type ImageSource = ImageMetadata | string;
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** A quieter opening line above the statement. Defaulted on the banner, and shown on the panel only when set. */
+  lead?: string;
+  /** The closing statement. */
+  heading?: string;
+  /** A short supporting line under the heading. */
+  text?: string;
+  /** Label of the primary button. */
+  buttonLabel?: string;
+  /** Where the primary button leads. */
+  buttonHref?: string;
+  /**
+   * Opens `<Modal id={modalId}>` instead of following `buttonHref` — for a
+   * quick enquiry in place, rather than leaving the page.
+   */
+  modalId?: string;
+  /**
+   * How the closing call to action sits on the page.
+   *
+   * - `banner` — a brand-green card, statement left and button right (default)
+   * - `panel` — a quiet surface card, centred, for a call mid-page
+   * - `centered` — a plain centred block, inheriting the section's theme
+   */
+  variant?: "banner" | "panel" | "centered";
+  /** Pull the banner down so it sits half inside the footer. Banner only. */
+  overlap?: boolean;
+  /**
+   * A photo behind the banner, tinted with the brand gradient so the
+   * statement stays readable. Banner only. An imported asset, a remote
+   * `http(s)` URL, or a path to a file in `public/`.
+   */
+  image?: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+}
+
+const {
+  render = true,
+  lead,
+  heading = "Let's plan it properly.",
+  text,
+  buttonLabel = "Discuss a Project",
+  buttonHref = "/contact/",
+  variant = "banner",
+  overlap = false,
+  image,
+  imageAlt,
+  modalId,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && variant === "centered" && overlap) {
+  console.warn(
+    "[farrelly] <ContentCtaMain> ignores overlap: it only applies to the banner variant.",
+  );
+}
+
+if (import.meta.env.DEV && variant !== "banner" && image) {
+  console.warn(
+    "[farrelly] <ContentCtaMain> ignores image outside the banner variant.",
+  );
+}
+
+const banner = variant === "banner";
+const panel = variant === "panel";
+
+/* The banner opens on a standing line; the panel stays quiet unless asked. */
+const opening = lead ?? (banner ? "Have a challenging project?" : undefined);
+---
+
+{
+  render && banner && (
+    <div
+      class:list={[
+        "cta-main_wrap",
+        "theme-brand",
+        overlap && "overlap",
+        image && "has-image",
+        className,
+      ]}
+      {...rest}
+    >
+      {image && (
+        <div class="cta-main_media">
+          <Img src={image} alt={imageAlt} />
+          <div class="cta-main_gradient" />
+        </div>
+      )}
+      <div class="cta-main_statement">
+        {opening && <p class="cta-main_lead text-style-h3">{opening}</p>}
+        <Heading tag="h2" variant="h3" maxWidth={22}>
+          {heading}
+        </Heading>
+        {text && (
+          <Paragraph variant="large" maxWidth={40}>
+            {text}
+          </Paragraph>
+        )}
+      </div>
+      <ButtonWrapper class="cta-main_action">
+        {
+          modalId ? (
+            <Button type="button" data-modal-open={modalId}>
+              {buttonLabel}
+            </Button>
+          ) : (
+            <Button element="link" href={buttonHref}>
+              {buttonLabel}
+            </Button>
+          )
+        }
+      </ButtonWrapper>
+    </div>
+  )
+}
+
+{
+  render && panel && (
+    <div class:list={["cta-main_panel", "alignment-center", className]} {...rest}>
+      {opening && <p class="cta-main_lead text-style-h3">{opening}</p>}
+      <Heading tag="h2" variant="h3" maxWidth={24}>
+        {heading}
+      </Heading>
+      {text && (
+        <Paragraph variant="main" maxWidth={44}>
+          {text}
+        </Paragraph>
+      )}
+      <ButtonWrapper>
+        {
+          modalId ? (
+            <Button type="button" data-modal-open={modalId}>
+              {buttonLabel}
+            </Button>
+          ) : (
+            <Button element="link" href={buttonHref}>
+              {buttonLabel}
+            </Button>
+          )
+        }
+      </ButtonWrapper>
+    </div>
+  )
+}
+
+{
+  render && !banner && !panel && (
+    <div class:list={["alignment-center", className]} {...rest}>
+      <Heading tag="h2" variant="h1" maxWidth={20}>
+        {heading}
+      </Heading>
+      {text && (
+        <Paragraph variant="large" maxWidth={40}>
+          {text}
+        </Paragraph>
+      )}
+      <ButtonWrapper>
+        {
+          modalId ? (
+            <Button type="button" data-modal-open={modalId}>
+              {buttonLabel}
+            </Button>
+          ) : (
+            <Button element="link" href={buttonHref}>
+              {buttonLabel}
+            </Button>
+          )
+        }
+      </ButtonWrapper>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .cta-main_wrap {
+      /* Overridable per-instance (e.g. from Stacki's style field on this
+         component) to swap in a different tint or direction. */
+      --_cta-gradient: linear-gradient(
+        100deg,
+        color-mix(in srgb, var(--brand-400) 96%, transparent) 20%,
+        color-mix(in srgb, var(--brand-400) 40%, transparent) 100%
+      );
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-6);
+      width: 100%;
+      padding: var(--section-space-small) var(--space-8);
+      border-radius: var(--radius-large);
+      overflow: clip;
+
+      @media (width >= 48rem) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-7);
+        padding-inline: var(--section-space-small);
+      }
+    }
+
+    .cta-main_media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+
+      & > .image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .cta-main_gradient {
+      position: absolute;
+      inset: 0;
+      background-image: var(--_cta-gradient);
+    }
+
+    .cta-main_statement,
+    .cta-main_action {
+      .has-image & {
+        position: relative;
+        z-index: 1;
+      }
+    }
+
+    .cta-main_statement {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* The quieter opening line, matched to the heading's size but not its weight. */
+    .cta-main_lead {
+      font-weight: var(--primary-regular);
+    }
+
+    .cta-main_action {
+      flex-shrink: 0;
+    }
+
+    /* A quieter card than the banner, for a call that sits mid-page. */
+    .cta-main_panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      width: 100%;
+      padding: var(--section-space-small) var(--space-8);
+      background-color: var(--background-2);
+      border-radius: var(--radius-large);
+    }
+
+    /* Overlapping the footer: the banner lifts itself over the seam, and the
+       footer opens up enough top padding to receive it. */
+    .cta-main_wrap.overlap {
+      position: relative;
+      z-index: 1;
+      margin-bottom: calc(var(--section-space-small) * -1);
+    }
+
+    body:has(.cta-main_wrap.overlap) .footer_wrap {
+      --_lift: var(--section-space-small);
+    }
+  }
+</style>

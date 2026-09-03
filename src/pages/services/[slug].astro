@@ -1,0 +1,423 @@
+---
+import { getCollection, getEntries, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import RichText from "@/components/Typography/RichText.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Accordion from "@/components/Interactive/Accordion.astro";
+import AccordionItem from "@/components/Interactive/AccordionItem.astro";
+import Slider from "@/components/Interactive/Slider.astro";
+import Tabs from "@/components/Interactive/Tabs.astro";
+import TabLink from "@/components/Interactive/TabLink.astro";
+import Card from "@/components/Item/Card.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import MediaPlaceholder from "@/components/Site/MediaPlaceholder.astro";
+import ContentIconGrid from "@/components/Site/ContentIconGrid.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import ContentChecklist from "@/components/Site/ContentChecklist.astro";
+import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import ContentEnquiryForm from "@/components/Site/ContentEnquiryForm.astro";
+import { SITE_NAME } from "@/consts.ts";
+
+export async function getStaticPaths() {
+  const services = await getCollection("services");
+  return services.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"services">;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+const hasBody = !!entry.body?.trim();
+
+const relatedServices = data.relatedServices?.length
+  ? await getEntries(data.relatedServices)
+  : [];
+const relatedProjects = data.relatedProjects?.length
+  ? await getEntries(data.relatedProjects)
+  : [];
+/* A single card stretched across the row reads as a mistake — three
+   columns keep it at a normal card width even when it's the only one. */
+const relatedProjectsColumns =
+  relatedProjects.length === 1 ? 3 : Math.min(relatedProjects.length, 3);
+const relatedEquipment = data.relatedEquipment?.length
+  ? await getEntries(data.relatedEquipment)
+  : [];
+
+const capabilityItems =
+  data.capabilities?.map((capability) => ({
+    title: capability.title,
+    text: capability.description,
+  })) ?? [];
+
+const whyUsPoints = data.whyUs?.points ?? [];
+const overviewPoints = data.overview?.points ?? [];
+const processSteps =
+  data.process?.steps?.map((step) => ({
+    title: step.title,
+    text: step.description,
+    image: step.image,
+    imageAlt: step.imageAlt,
+  })) ?? [];
+
+const hasWhyUs = whyUsPoints.length > 0 || !!data.whyUs?.heading;
+const hasOverview =
+  !!data.overview?.heading ||
+  !!data.overview?.body ||
+  overviewPoints.length > 0 ||
+  hasBody;
+const hasProcess = processSteps.length > 0 || !!data.process?.heading;
+
+/** The largest image the page can spare for the closing feature. */
+const featureImage = data.process?.image ?? data.hero?.image;
+
+/**
+ * Each entry is a plain label or a `{ label, text }` pair. Once any of them
+ * carries text, the section is worth a two-column tabbed layout instead of
+ * a plain grid of labels — matching the `Card` "tabs · side" pattern in
+ * example-components.astro, which needs a photo per panel. There's no
+ * per-application photo, so the service's own real images (never a
+ * fabricated one) are cycled across panels instead of repeating one.
+ */
+const applicationImages = [
+  data.overview?.image,
+  data.whyUs?.image,
+  data.process?.image,
+  data.hero?.image,
+].filter((image): image is NonNullable<typeof image> => !!image);
+
+const applications = (data.applications ?? []).map((item, i) => {
+  const entry = typeof item === "string" ? { label: item, text: undefined } : item;
+  return {
+    ...entry,
+    image: applicationImages[i % applicationImages.length],
+  };
+});
+const hasApplicationDetail = applications.some((item) => item.text);
+
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: data.title,
+  description: data.seo?.description ?? data.summary,
+  provider: { "@type": "LocalBusiness", name: SITE_NAME },
+  url: new URL(`/services/${entry.id}/`, Astro.site).toString(),
+};
+---
+
+<Layout
+  title={data.seo?.title ?? data.title}
+  description={data.seo?.description ?? data.summary}
+  noindex={data.seo?.noindex}
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Fragment slot="background">
+      {data.hero?.image && (
+        <Img
+          src={data.hero.image}
+          alt=""
+          loading="eager"
+          fetchPriority="high"
+        />
+      )}
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>{data.eyebrow ?? "Service"}</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={18}>
+      {data.hero?.heading ?? data.title}
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      {data.hero?.intro ?? data.summary}
+    </Paragraph>
+    <ButtonWrapper>
+      <Button element="link" href="/contact/">Discuss a Project</Button>
+    </ButtonWrapper>
+  </Section>
+
+  {
+    capabilityItems.length > 0 && (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentFeatureRow items={capabilityItems} />
+      </Section>
+    )
+  }
+
+  {
+    hasWhyUs && (
+      <Section paddingTop="large" paddingBottom="large" class="background-2">
+        <ContentWrapper variant="columns" reverse>
+          <Heading tag="h2" variant="h3" maxWidth={22}>
+            {data.whyUs?.heading ?? "Why give this work to Farrelly Bros."}
+          </Heading>
+          {data.whyUs?.intro && (
+            <Paragraph maxWidth={44}>{data.whyUs.intro}</Paragraph>
+          )}
+          <ContentChecklist items={whyUsPoints} />
+          <Img
+            slot="column2"
+            render={!!data.whyUs?.image}
+            src={data.whyUs?.image!}
+            alt={data.whyUs?.imageAlt}
+            variant="constrained"
+            sizes="(width >= 64rem) 45vw, 100vw"
+            class="ratio-5-4 radius-large"
+          />
+        </ContentWrapper>
+      </Section>
+    )
+  }
+
+  {
+    hasOverview && (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentWrapper variant="columns">
+          <Heading tag="h2" variant="h3" maxWidth={22}>
+            {data.overview?.heading ?? "What this work involves."}
+          </Heading>
+          {data.overview?.body && (
+            <Paragraph maxWidth={44}>{data.overview.body}</Paragraph>
+          )}
+          {hasBody && (
+            <RichText maxWidth={44}>
+              <Content />
+            </RichText>
+          )}
+          <ContentChecklist items={overviewPoints} />
+          <Img
+            slot="column2"
+            render={!!data.overview?.image}
+            src={data.overview?.image!}
+            alt={data.overview?.imageAlt}
+            variant="constrained"
+            sizes="(width >= 64rem) 45vw, 100vw"
+            class="ratio-5-4 radius-large"
+          />
+        </ContentWrapper>
+      </Section>
+    )
+  }
+
+  {
+    applications.length > 0 && (
+      <Section theme="dark" paddingTop="large" paddingBottom="large" gap="6">
+        <Eyebrow>Where this applies</Eyebrow>
+        {hasApplicationDetail ? (
+          <Tabs variant="side" id={`applications-${entry.id}`}>
+            <Fragment slot="links">
+              {applications.map((item) => (
+                <TabLink>{item.label}</TabLink>
+              ))}
+            </Fragment>
+            {applications.map((item) => (
+              <Card
+                variant="cover"
+                theme="dark"
+                heading={item.label}
+                text={item.text}
+                image={item.image}
+                imageAlt=""
+                buttonHref="/contact/"
+                buttonLabel="Discuss a Project"
+              />
+            ))}
+          </Tabs>
+        ) : (
+          <ContentIconGrid
+            items={applications.map((item) => ({ label: item.label }))}
+          />
+        )}
+      </Section>
+    )
+  }
+
+  {
+    hasProcess && (
+      <Section paddingTop="large" paddingBottom="large" align="center" gap="8">
+        <Eyebrow>{data.process?.eyebrow ?? "How it runs"}</Eyebrow>
+        <Heading tag="h2" variant="h2" maxWidth={20}>
+          {data.process?.heading ?? "From first look to leaving site."}
+        </Heading>
+        {data.process?.intro && (
+          <Paragraph variant="large" maxWidth={46}>
+            {data.process.intro}
+          </Paragraph>
+        )}
+        <ButtonWrapper>
+          <Button element="link" href="/contact/">Request a Quote</Button>
+        </ButtonWrapper>
+        <Tabs playback="auto" id={`process-${entry.id}`}>
+          <Fragment slot="links">
+            {processSteps.map((step) => <TabLink>{step.title}</TabLink>)}
+          </Fragment>
+          {
+            processSteps.map((step) => {
+              const stepImage = step.image ?? featureImage;
+              return (
+                <div class="flex-vertical-nowrap gap-6 alignment-center">
+                  <Img
+                    render={!!stepImage}
+                    src={stepImage!}
+                    alt={step.imageAlt ??
+                      data.process?.imageAlt ??
+                      data.hero?.imageAlt}
+                    class="ratio-2-1 radius-large"
+                  />
+                  <Paragraph maxWidth={44}>{step.text}</Paragraph>
+                </div>
+              );
+            })
+          }
+        </Tabs>
+      </Section>
+    )
+  }
+
+  {
+    !hasProcess && (
+      <Section paddingTop="small" paddingBottom="small">
+        {data.hero?.image ? (
+          <Img
+            src={data.hero.image}
+            alt={data.hero.imageAlt}
+            class="ratio-2-1 radius-large"
+          />
+        ) : (
+          <MediaPlaceholder
+            class="ratio-2-1 radius-large"
+            label={`${data.title} — photography to follow`}
+          />
+        )}
+      </Section>
+    )
+  }
+
+  {
+    !!relatedEquipment.length && (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentSectionHeader
+          eyebrow="Plant &amp; Equipment"
+          heading="Equipment used for this work."
+          variant="h3"
+        />
+        <ContentCardGrid
+          medium={3}
+          items={relatedEquipment.map((item) => ({
+            image: item.data.image,
+            imageAlt: item.data.imageAlt,
+            eyebrow: item.data.category,
+            heading: item.data.name,
+            text: item.data.summary,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  {
+    !!relatedProjects.length && (
+      <Section paddingTop="large" paddingBottom="large" class="background-2">
+        <ContentSectionHeader
+          eyebrow="Related Project"
+          heading="This work in the field."
+          variant="h3"
+        />
+        <ContentCardGrid
+          medium={relatedProjectsColumns}
+          items={relatedProjects.map((project) => ({
+            image: project.data.heroImage,
+            imageAlt: project.data.heroImageAlt,
+            eyebrow: project.data.sector,
+            heading: project.data.title,
+            text: project.data.summary,
+            buttonLabel: "View Project",
+            buttonHref: `/projects/${project.id}/`,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentEnquiryForm
+      variant="split"
+      heading={data.cta?.heading ?? "Have a site that needs looking at?"}
+      text={data.cta?.text ??
+        "Tell us what is there and how it is accessed, and we will come back with how it would be approached and what it would cost."}
+      context={data.title}
+    />
+  </Section>
+
+  {
+    !!data.faq?.length && (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentWrapper variant="columns">
+          <Heading tag="h2" variant="h2" maxWidth={14}>
+            Frequently Asked Questions
+          </Heading>
+          <Fragment slot="column2">
+            <Accordion>
+              {data.faq.map((item) => (
+                <AccordionItem heading={item.question}>
+                  <Paragraph>{item.answer}</Paragraph>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </Fragment>
+        </ContentWrapper>
+      </Section>
+    )
+  }
+
+  {
+    !!relatedServices.length && (
+      <Section paddingTop="large" paddingBottom="large" class="background-2">
+        <ContentSectionHeader
+          eyebrow="Land and vegetation services"
+          heading="Often delivered alongside."
+          text="Most sites need more than one of these. Each is planned and resourced by the same team."
+          variant="h3"
+        />
+        <Slider
+          variant="crop-start"
+          label="Related services"
+          xsmall={1.15}
+          small={1.7}
+          medium={2.4}
+          large={3.4}
+        >
+          {relatedServices.map((service) => (
+            <Card
+              variant="stacked"
+              image={service.data.hero?.image}
+              imageAlt={service.data.hero?.imageAlt}
+              heading={service.data.title}
+              text={service.data.summary}
+              buttonLabel="View Service"
+              buttonHref={`/services/${service.id}/`}
+            />
+          ))}
+        </Slider>
+      </Section>
+    )
+  }
+
+  <Section theme="dark" paddingTop="large" paddingBottom="none">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

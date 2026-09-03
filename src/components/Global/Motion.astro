@@ -1,0 +1,195 @@
+---
+// Site-wide motion: Lenis smooth scroll, split-text heading reveals,
+// directional fades on whole content blocks, and one masked image reveal
+// reserved for the page hero. Everything here is progressive enhancement —
+// with JS disabled or reduced motion requested, headings, blocks and images
+// render in their normal, fully visible state (nothing is hidden by CSS up
+// front).
+---
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { SplitText } from "gsap/SplitText";
+  import Lenis from "lenis";
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  function initLenis() {
+    // Lenis respects prefers-reduced-motion itself (smoothing disables,
+    // programmatic scrolls go instant) — no need to skip it here.
+    const lenis = new Lenis();
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  // Big editorial statements only (h1/h2) — card and list headings stay
+  // plain so a grid of services doesn't fire a dozen staggered splits at
+  // once. See docs/DESIGN.md's "restrained motion" guidance.
+  function initHeadingReveal() {
+    if (prefersReducedMotion) return;
+
+    document
+      .querySelectorAll<HTMLElement>("main h1.heading, main h2.heading")
+      .forEach((heading) => {
+        const split = SplitText.create(heading, {
+          type: "lines",
+          mask: "lines",
+          linesClass: "split-line",
+        });
+
+        gsap.set(split.lines, { yPercent: 110 });
+
+        ScrollTrigger.create({
+          trigger: heading,
+          start: "top 85%",
+          once: true,
+          onEnter: () =>
+            gsap.to(split.lines, {
+              yPercent: 0,
+              duration: 0.9,
+              ease: "power4.out",
+              stagger: 0.08,
+            }),
+        });
+      });
+  }
+
+  // Masked reveal, reserved for the one image that earns it: the page
+  // hero (`ContentHeroSplit`'s `.hero-split_image`). Applying a clip-path
+  // wipe to every photo on the page reads as noise, not craft — see
+  // docs/DESIGN.md's "restrained motion" guidance — so this stays scoped
+  // to a single, high-impact spot rather than every `<Img>`.
+  function initHeroImageReveal() {
+    if (prefersReducedMotion) return;
+
+    document
+      .querySelectorAll<HTMLElement>("main .hero-split_image")
+      .forEach((image) => {
+        gsap.set(image, {
+          clipPath: "inset(0% 0% 100% 0%)",
+          scale: 1.1,
+        });
+
+        ScrollTrigger.create({
+          trigger: image,
+          start: "top 85%",
+          once: true,
+          onEnter: () =>
+            gsap.to(image, {
+              clipPath: "inset(0% 0% 0% 0%)",
+              scale: 1,
+              duration: 1.1,
+              ease: "power4.out",
+            }),
+        });
+      });
+  }
+
+  function fadeIn(
+    el: Element,
+    offset: { x?: number; y?: number },
+    opts: { duration?: number; delay?: number } = {},
+  ) {
+    gsap.set(el, { autoAlpha: 0, x: offset.x ?? 0, y: offset.y ?? 0 });
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 85%",
+      once: true,
+      onEnter: () =>
+        gsap.to(el, {
+          autoAlpha: 1,
+          x: 0,
+          y: 0,
+          duration: opts.duration ?? 1,
+          delay: opts.delay ?? 0,
+          ease: "power3.out",
+        }),
+    });
+  }
+
+  // Break up the page by animating whole content blocks rather than every
+  // element inside them. A two-column block (ContentWrapper's `columns`,
+  // `breakout`, `contain`, `sticky-content` / `sticky-visual` variants)
+  // splits its two sides apart — text from the left, visual from the
+  // right, swapped when `reverse` is set. Anything else (a single-column
+  // `stack`, a lone column, a promo card) rises as one fade-up block.
+  const TWO_COL_VARIANTS =
+    ".layout.columns, .layout.breakout, .layout.contain, .layout.sticky-content, .layout.sticky-visual";
+  const SIDE_OFFSET = 56;
+  const RISE_OFFSET = 40;
+
+  function initContainerReveal() {
+    if (prefersReducedMotion) return;
+
+    document.querySelectorAll<HTMLElement>("main .layout").forEach((layout) => {
+      const children = Array.from(layout.children) as HTMLElement[];
+      const isTwoColumn =
+        children.length === 2 && layout.matches(TWO_COL_VARIANTS);
+
+      if (isTwoColumn) {
+        const reversed = layout.classList.contains("reversed");
+        const [start, end] = children;
+        fadeIn(start, { x: reversed ? SIDE_OFFSET : -SIDE_OFFSET });
+        fadeIn(end, { x: reversed ? -SIDE_OFFSET : SIDE_OFFSET });
+      } else {
+        fadeIn(layout, { y: RISE_OFFSET });
+      }
+    });
+  }
+
+  // Card grids (services, projects, plant & machinery) rise together with
+  // a light stagger, instead of each card's image masking independently.
+  function initGridReveal() {
+    if (prefersReducedMotion) return;
+
+    document.querySelectorAll<HTMLElement>("main .grid").forEach((grid) => {
+      const items = Array.from(grid.children) as HTMLElement[];
+      if (!items.length) return;
+
+      gsap.set(items, { autoAlpha: 0, y: 32 });
+      ScrollTrigger.create({
+        trigger: grid,
+        start: "top 85%",
+        once: true,
+        onEnter: () =>
+          gsap.to(items, {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            stagger: 0.1,
+          }),
+      });
+    });
+  }
+
+  function init() {
+    initLenis();
+    initHeadingReveal();
+    initHeroImageReveal();
+    initContainerReveal();
+    initGridReveal();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    /* SplitText's `mask` option wraps each line in a clipping element but
+       leaves its own overflow up to us. */
+    .split-line {
+      overflow: clip;
+    }
+  }
+</style>

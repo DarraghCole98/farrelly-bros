@@ -1,0 +1,86 @@
+---
+import { SITE_CONTACT } from "@/consts.ts";
+import { UTILITY_NAV } from "@/components/Global/navigation.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+
+const phone = SITE_CONTACT.phone;
+---
+
+{
+  render && (
+    <div class="nav-utility_wrap">
+      <div class="nav-utility_inner">
+        <ul class="nav-utility_links">
+          {UTILITY_NAV.map((item) => (
+            <li>
+              <a class="nav-utility_link" href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        {phone && (
+          <a class="nav-utility_phone" href={`tel:${phone.replace(/[^+\d]/g, "")}`}>
+            {phone}
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .nav-utility_wrap {
+      display: none;
+      justify-content: center;
+      padding-inline: var(--site-margin);
+      color: var(--text);
+
+      @media (width >= 48rem) {
+        display: flex;
+      }
+    }
+
+    .nav-utility_inner {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--space-6);
+      width: 100%;
+      max-width: var(--max-width-main);
+      min-height: var(--nav-utility-height);
+      font-size: var(--text-small);
+    }
+
+    .nav-utility_links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+    }
+
+    .nav-utility_link,
+    .nav-utility_phone {
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color var(--hover-duration) var(--hover-ease);
+
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
+    }
+
+    .nav-utility_phone {
+      color: var(--text);
+      font-weight: var(--primary-semibold);
+    }
+  }
+</style>

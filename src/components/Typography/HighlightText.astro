@@ -1,0 +1,177 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/utils/slots.ts";
+
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p";
+type HeadingStyle =
+  | "inherit"
+  | "display"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+  | "large"
+  | "main"
+  | "small";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The element the text is written as. Defaults to `h2`. */
+  tag?: HeadingTag;
+  /**
+   * Type style, chosen apart from `tag` so it can change level without
+   * changing size. Defaults to matching `tag`.
+   *
+   * - `display`, `h1`–`h6` — the heading sizes
+   * - `large`, `main`, `small` — the body sizes
+   * - `inherit` — take the style from its surroundings
+   */
+  variant?: HeadingStyle;
+  /**
+   * Longest line, in characters, before the text wraps. Unset, it fills
+   * its column.
+   *
+   * @min 1
+   * @int
+   */
+  maxWidth?: number;
+  /** Where each word starts brightening, as a `ScrollTrigger` position. Defaults to `top 90%`. */
+  scrollStart?: string;
+  /** Where the last word finishes brightening, as a `ScrollTrigger` position. Defaults to `center 40%`. */
+  scrollEnd?: string;
+  /**
+   * Opacity of a word before it is reached. Defaults to `0.2`.
+   *
+   * @min 0
+   * @max 1
+   */
+  fade?: number;
+  /**
+   * Spacing between each character's tween along the scroll, from `0`
+   * (all at once) to `1` (fully one after another). Defaults to `0.1`.
+   *
+   * @min 0
+   * @max 1
+   */
+  stagger?: number;
+}
+
+const {
+  render = true,
+  tag = "h2",
+  variant = tag === "p" ? "inherit" : tag,
+  maxWidth,
+  scrollStart = "top 90%",
+  scrollEnd = "center 40%",
+  fade = 0.2,
+  stagger = 0.1,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = tag;
+
+const content = await slotContent(Astro.slots);
+---
+
+{
+  render && content && (
+    <Tag
+      class:list={[
+        tag === "p" && "text",
+        "highlight-text",
+        variant !== "inherit" && `text-style-${variant}`,
+        className,
+      ]}
+      style={maxWidth ? `--_mw: ${maxWidth}ch;` : undefined}
+      data-scroll-start={scrollStart}
+      data-scroll-end={scrollEnd}
+      data-fade={fade}
+      data-stagger={stagger}
+      {...rest}
+    >
+      <Fragment set:html={content} />
+    </Tag>
+  )
+}
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { SplitText } from "gsap/SplitText";
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  function init() {
+    const targets = document.querySelectorAll<HTMLElement>(".highlight-text");
+    if (!targets.length) return;
+
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    targets.forEach((heading) => {
+      const scrollStart = heading.dataset.scrollStart || "top 90%";
+      const scrollEnd = heading.dataset.scrollEnd || "center 40%";
+      const fadedValue = Number(heading.dataset.fade ?? 0.2);
+      const staggerValue = Number(heading.dataset.stagger ?? 0.1);
+
+      /* No `autoSplit`: unlike a line split, which has to redo itself when
+         the container's width changes which words land on which line, a
+         char lets the browser reflow it in place — nothing about the fade
+         depends on where the line breaks fall. Resplitting anyway tore the
+         tween down and rebuilt it, which re-rendered the pre-scroll faded
+         state and then didn't sync back to the current scroll position
+         until the next scroll event: a reader already past the heading
+         would find it faded again until they scrolled some more. */
+      const split = SplitText.create(heading, { type: "words, chars" });
+
+      gsap.timeline({
+        scrollTrigger: {
+          scrub: true,
+          trigger: heading,
+          start: scrollStart,
+          end: scrollEnd,
+        },
+      }).from(split.chars, {
+        autoAlpha: fadedValue,
+        stagger: staggerValue,
+        ease: "linear",
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    /* Not `.heading`: Motion.astro's site-wide reveal targets
+       `main h1.heading, main h2.heading` and would run its own SplitText
+       pass over the same words, fighting this one. The margin and
+       max-width rules are repeated from that pattern instead. */
+    .highlight-text {
+      margin-top: var(--_margin-top);
+      max-width: var(--_mw, none);
+      /* `balance`/`pretty` (the heading and body text-wrap values)
+         re-measure line breaks assuming plain text runs. SplitText wraps
+         each word and character in its own inline-block, which that
+         measurement doesn't expect, and the two fight over layout on every
+         resplit. */
+      text-wrap: initial;
+    }
+
+    .highlight-text:has(+ .text) {
+      margin-bottom: var(--_margin-bottom);
+    }
+
+    .highlight-text + .text {
+      margin-top: 0;
+    }
+  }
+</style>

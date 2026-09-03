@@ -59,3 +59,18 @@ Task-specific procedures live in `.claude/skills/`, one folder each, with a
 In Claude Code these load on their own, or with `/lumos-import-figma`. Any other
 assistant can read the `SKILL.md` directly and follow it — the steps are plain
 markdown and the scripts are plain Node.
+
+## Farrelly Bros Project Context
+
+Before making project-level architecture, design, content or
+implementation decisions, also read:
+
+- docs/PROJECT.md
+- docs/DESIGN.md
+- docs/CONTENT.md
+- docs/DECISIONS.md
+
+LUMOS.md remains authoritative for Lumos framework conventions.
+
+docs/DECISIONS.md records project decisions that should not be silently
+reversed.

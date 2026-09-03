@@ -1,8 +1,12 @@
 ---
-import Icon from "@/components/Media/Icon.astro";
 import NavLink from "@/components/Global/NavLink.astro";
-import logo from "@/assets/logo/logo.svg";
+import NavUtility from "@/components/Global/NavUtility.astro";
+import Icon from "@/components/Media/Icon.astro";
+import Button from "@/components/Button.astro";
+import logo from "@/assets/Images/farrelly-brothers-logo.svg";
+import arrow from "@/assets/icons/arrow.svg";
 import { SITE_NAME } from "@/consts.ts";
+import { PRIMARY_NAV, SERVICE_LINKS } from "@/components/Global/navigation.ts";
 
 interface Props {
   /** Set to `false` to skip rendering this component and its children. */
@@ -16,14 +20,27 @@ interface Props {
 }
 
 const { render = true, overlap = false } = Astro.props;
+
+const onServicesPage = Astro.url.pathname.startsWith("/services");
+const [homeLink, ...restLinks] = PRIMARY_NAV;
+const beforeServices = [homeLink];
+const afterServices = restLinks;
 ---
 
 {
   render && (
     <header class:list={["nav_wrap", overlap && "overlap"]}>
-      <div class="nav_inner">
+      <NavUtility />
+      <div class="nav_bar">
+       <div class="nav_inner">
         <a class="nav_logo" href="/" aria-label={SITE_NAME}>
-          <Icon src={logo} variant="full-width" />
+          <img
+            class="nav_logo_mark"
+            src={logo.src}
+            width={logo.width}
+            height={logo.height}
+            alt=""
+          />
         </a>
         <button
           class="nav_toggle"
@@ -37,11 +54,52 @@ const { render = true, overlap = false } = Astro.props;
         <nav class="nav_menu" id="nav-menu" aria-label="Main">
           <div class="nav_menu_inner">
             <ul class="nav_links">
-              <NavLink href="/">Home</NavLink>
-              <NavLink href="/example-components">Example Components</NavLink>
+              {beforeServices.map((item) => (
+                <NavLink href={item.href}>{item.label}</NavLink>
+              ))}
+              <li>
+                <div
+                  class:list={["dropdown_wrap", onServicesPage && "current"]}
+                  data-nav-dropdown
+                >
+                  <div class="dropdown_control">
+                    <a class="dropdown_toggle" href="/services/">
+                      <span class="dropdown_label text-style-trim">
+                        Services
+                      </span>
+                    </a>
+                    <button
+                      type="button"
+                      class="dropdown_expand"
+                      aria-expanded="false"
+                      aria-controls="nav-services-menu"
+                      aria-label="Show services menu"
+                    >
+                      <Icon class="dropdown_icon" src={arrow} variant="small" />
+                    </button>
+                  </div>
+                  <div class="dropdown_content" id="nav-services-menu">
+                    <div class="dropdown_body margin-trim">
+                      <ul class="nav_dropdown_links">
+                        <NavLink href="/services/">All Services</NavLink>
+                        {SERVICE_LINKS.map((service) => (
+                          <NavLink href={service.href}>{service.label}</NavLink>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {afterServices.map((item) => (
+                <NavLink href={item.href}>{item.label}</NavLink>
+              ))}
             </ul>
+            <Button element="link" href="/contact/" class="nav_cta">
+              Discuss a Project
+            </Button>
           </div>
         </nav>
+       </div>
       </div>
     </header>
   )
@@ -100,6 +158,47 @@ const { render = true, overlap = false } = Astro.props;
         if (event.matches) setOpen(false);
       });
   }
+
+  const servicesDropdown = nav?.querySelector<HTMLElement>(
+    "[data-nav-dropdown]",
+  );
+  const servicesExpand =
+    servicesDropdown?.querySelector<HTMLButtonElement>(".dropdown_expand");
+
+  if (servicesDropdown && servicesExpand) {
+    const setServicesOpen = (open: boolean) => {
+      servicesDropdown.classList.toggle("open", open);
+      servicesExpand.setAttribute("aria-expanded", String(open));
+    };
+
+    servicesExpand.addEventListener("click", () => {
+      setServicesOpen(!servicesDropdown.classList.contains("open"));
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        servicesDropdown.classList.contains("open")
+      ) {
+        setServicesOpen(false);
+        servicesExpand.focus();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (
+        !servicesDropdown.classList.contains("open") ||
+        !(target instanceof Node)
+      )
+        return;
+      if (!servicesDropdown.contains(target)) setServicesOpen(false);
+    });
+
+    window
+      .matchMedia("(width >= 48rem)")
+      .addEventListener("change", () => setServicesOpen(false));
+  }
 </script>
 
 <style is:global>
@@ -108,17 +207,21 @@ const { render = true, overlap = false } = Astro.props;
       position: sticky;
       top: 0;
       z-index: 100;
-      display: flex;
-      justify-content: center;
-      padding-inline: var(--site-margin);
-      background-color: var(--background);
+      background-color: var(--background-2);
       color: var(--text);
-      border-bottom: var(--border-width) solid var(--border);
 
       &.overlap {
         position: fixed;
         inset-inline: 0;
       }
+    }
+
+    .nav_bar {
+      display: flex;
+      justify-content: center;
+      padding-inline: var(--site-margin);
+      padding-block: var(--space-3);
+      border-bottom: var(--border-width) solid var(--border);
     }
 
     .nav_inner {
@@ -139,7 +242,14 @@ const { render = true, overlap = false } = Astro.props;
     .nav_logo {
       display: flex;
       align-items: center;
-      width: 6.5rem;
+      width: auto;
+
+      /* A round badge, not a wordmark — height is what has to be held. */
+      & .nav_logo_mark {
+        display: block;
+        width: auto;
+        height: 6rem;
+      }
       transition: opacity var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
         &:hover {
@@ -208,7 +318,7 @@ const { render = true, overlap = false } = Astro.props;
       overflow-x: clip;
       overflow-y: auto;
       overscroll-behavior: contain;
-      background-color: var(--background);
+      background-color: var(--background-2);
       border-bottom: var(--border-width) solid var(--border);
       transition:
         grid-template-rows var(--open-duration) var(--open-ease),
@@ -236,7 +346,7 @@ const { render = true, overlap = false } = Astro.props;
       flex-direction: column;
       padding: var(--space-2) var(--site-margin) var(--space-4);
       font-size: var(--text-main);
-      font-weight: var(--primary-medium);
+      font-weight: var(--primary-semibold);
       & > li + li {
         border-top: var(--border-width) solid var(--border);
       }
@@ -260,6 +370,100 @@ const { render = true, overlap = false } = Astro.props;
       }
     }
 
+    /* Services dropdown, matched to sit inside .nav_links like a NavLink.
+       Built from plain markup rather than <Dropdown> so the label can be a
+       real link (click navigates to /services/) while a separate control
+       opens the flyout on hover, focus or tap. */
+    .nav_menu .dropdown_wrap {
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav_menu .dropdown_control {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .nav_menu .dropdown_toggle {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding-block: var(--space-3);
+      color: color-mix(in lab, currentcolor 60%, transparent);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
+    }
+
+    .nav_menu .dropdown_wrap.current .dropdown_toggle {
+      color: var(--text);
+    }
+
+    .nav_menu .dropdown_expand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2);
+      margin: calc(var(--space-2) * -1);
+      color: inherit;
+      border-radius: var(--radius-small);
+      cursor: pointer;
+      transition: opacity var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          opacity: 0.6;
+        }
+      }
+    }
+
+    .nav_menu .dropdown_icon {
+      --_size: 0.875em;
+      flex: none;
+      rotate: 90deg;
+      transition: rotate var(--open-duration) var(--open-ease);
+    }
+
+    .nav_menu .dropdown_wrap:is(:hover, :focus-within, .open) .dropdown_icon {
+      rotate: -90deg;
+    }
+
+    /* Mobile: expands in place rather than floating over the menu */
+    .nav_menu .dropdown_content {
+      display: none;
+      position: static;
+      width: auto;
+      min-width: 0;
+      max-width: none;
+      background-color: transparent;
+    }
+
+    .nav_menu .dropdown_wrap.open .dropdown_content {
+      display: block;
+    }
+
+    .nav_menu .dropdown_body {
+      padding: 0 0 var(--space-2) var(--space-4);
+    }
+
+    .nav_dropdown_links {
+      display: flex;
+      flex-direction: column;
+      & > li + li {
+        border-top: var(--border-width) solid var(--border);
+      }
+    }
+
+    .nav_cta {
+      margin-top: var(--space-4);
+      align-self: flex-start;
+    }
+
     @media (width >= 48rem) {
       .nav_toggle {
         display: none;
@@ -269,6 +473,8 @@ const { render = true, overlap = false } = Astro.props;
         position: static;
         display: block;
         visibility: visible;
+        max-height: none;
+        overflow: visible;
         background-color: transparent;
         border-bottom: 0;
       }
@@ -276,6 +482,9 @@ const { render = true, overlap = false } = Astro.props;
       .nav_menu_inner {
         overflow: visible;
         opacity: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--space-6);
       }
 
       .nav_links {
@@ -283,8 +492,8 @@ const { render = true, overlap = false } = Astro.props;
         flex-wrap: wrap;
         align-items: center;
         padding: 0;
-        gap: var(--space-4);
-        font-size: var(--text-small);
+        gap: var(--space-5);
+        font-size: var(--text-main);
         & > li + li {
           border-top: 0;
         }
@@ -295,6 +504,57 @@ const { render = true, overlap = false } = Astro.props;
         &[aria-current="page"] {
           text-decoration: underline;
         }
+      }
+
+      .nav_menu .dropdown_toggle {
+        padding-block: var(--_control-pad, 0.75em);
+      }
+
+      .nav_dropdown_links .nav_link {
+        padding-block: var(--space-2);
+      }
+
+      /* Restore the floating flyout for the desktop dropdown — opens on
+         hover, keyboard focus, or the expand control's tap-toggle. */
+      .nav_menu .dropdown_content {
+        display: block;
+        position: absolute;
+        top: calc(100% + var(--space-2));
+        inset-inline-start: 0;
+        opacity: 0;
+        pointer-events: none;
+        translate: 0 -0.5rem;
+        scale: 0.98;
+        width: max-content;
+        min-width: 100%;
+        max-width: min(22rem, calc(100vw - var(--site-margin) * 2));
+        background-color: var(--background-2);
+        border: var(--border-width) solid var(--border);
+        border-radius: var(--radius-main);
+        box-shadow: 0 1rem 2.5rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
+        transition:
+          opacity var(--hover-duration) var(--hover-ease),
+          translate var(--hover-duration) var(--hover-ease),
+          scale var(--hover-duration) var(--hover-ease);
+      }
+
+      .nav_menu .dropdown_wrap:is(:hover, :focus-within, .open) .dropdown_content {
+        opacity: 1;
+        pointer-events: auto;
+        translate: 0 0;
+        scale: 1;
+        transition:
+          opacity var(--open-duration) var(--open-ease),
+          translate var(--open-duration) var(--open-ease),
+          scale var(--open-duration) var(--open-ease);
+      }
+
+      .nav_menu .dropdown_body {
+        padding: var(--space-5);
+      }
+
+      .nav_cta {
+        margin-top: 0;
       }
     }
   }

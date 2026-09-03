@@ -1,0 +1,98 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import heroImage from "@/assets/Images/farrelly-brothers-herro6.webp";
+
+/**
+ * The projects collection is empty. docs/CONTENT.md is explicit that a
+ * project must not be fabricated to populate the section, so the page
+ * carries an empty state and fills itself in as entries are added.
+ */
+const projects = await getCollection("projects");
+
+const sorted = [...projects].sort((a, b) => {
+  const at = a.data.date?.getTime() ?? 0;
+  const bt = b.data.date?.getTime() ?? 0;
+  return bt - at;
+});
+---
+
+<Layout
+  title="Projects"
+  description="Specialist arboriculture, vegetation management, site clearance and land contracting projects delivered by Farrelly Bros."
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Fragment slot="background">
+      <Img src={heroImage} alt="" loading="eager" fetchPriority="high" />
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>Projects</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={18}>
+      Work on the ground.
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      Specialist work is easiest to judge by the sites it has been done on
+      — what the access was, what the ground was like, and what it took to
+      finish.
+    </Paragraph>
+  </Section>
+
+  {
+    sorted.length > 0 && (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentSectionHeader
+          eyebrow="Selected work"
+          heading="Projects."
+          variant="h3"
+        />
+        <ContentCardGrid
+          items={sorted.map((project) => ({
+            image: project.data.heroImage,
+            imageAlt: project.data.heroImageAlt,
+            eyebrow: project.data.sector,
+            heading: project.data.title,
+            text: project.data.summary,
+            buttonLabel: "View Project",
+            buttonHref: `/projects/${project.id}/`,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  {
+    sorted.length === 0 && (
+      <Section paddingTop="large" paddingBottom="large">
+        <Heading tag="h2" variant="h3" maxWidth={22}>
+          Project write-ups are in preparation.
+        </Heading>
+        <Paragraph variant="large" maxWidth={42}>
+          Case studies are being put together from recent work. Until they
+          are published, the service pages set out what each type of job
+          involves, the sites it suits and the equipment it uses.
+        </Paragraph>
+        <ButtonWrapper>
+          <Button element="link" href="/services/">Explore Our Services</Button>
+          <Button element="link" href="/contact/" emphasis="secondary">
+            Discuss a Project
+          </Button>
+        </ButtonWrapper>
+      </Section>
+    )
+  }
+
+  <Section paddingTop="none" paddingBottom="none" theme="light">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

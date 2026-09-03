@@ -1,0 +1,532 @@
+---
+import { getCollection, getEntries, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import type { SvgComponent } from "astro/types";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import RichText from "@/components/Typography/RichText.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import GalleryDragRail from "@/components/Interactive/GalleryDragRail.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import ContentTestimonial from "@/components/Site/ContentTestimonial.astro";
+import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import ContentEnquiryForm from "@/components/Site/ContentEnquiryForm.astro";
+import Modal from "@/components/Interactive/Modal.astro";
+import Icon from "@/components/Media/Icon.astro";
+import arrowFull from "@/assets/icons/arrow-full.svg";
+import clientIcon from "@/assets/icons/client.svg";
+import pinIcon from "@/assets/icons/pin.svg";
+import calendarIcon from "@/assets/icons/calendar.svg";
+import sectorIcon from "@/assets/icons/sector.svg";
+import agriculture from "@/assets/icons/agriculture.svg";
+import arboriculture from "@/assets/icons/arboriculture.svg";
+import commercialLand from "@/assets/icons/commercial-land.svg";
+import construction from "@/assets/icons/construction.svg";
+import infrastructure from "@/assets/icons/infrastructure.svg";
+import landManagement from "@/assets/icons/land-management.svg";
+import renewableEnergy from "@/assets/icons/renewable-energy.svg";
+import specialistPlant from "@/assets/icons/specialist-plant.svg";
+import telecommunications from "@/assets/icons/telecommunications.svg";
+import utilities from "@/assets/icons/utilities.svg";
+import vegetationManagement from "@/assets/icons/vegetation-management.svg";
+
+/** Falls back to a generic tag mark when the sector text doesn't match one of these. */
+const sectorIcons: Record<string, SvgComponent> = {
+  agriculture: agriculture,
+  arboriculture: arboriculture,
+  "commercial land": commercialLand,
+  construction: construction,
+  infrastructure: infrastructure,
+  "land management": landManagement,
+  "renewable energy": renewableEnergy,
+  "specialist plant": specialistPlant,
+  telecommunications: telecommunications,
+  utilities: utilities,
+  "vegetation management": vegetationManagement,
+};
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+
+  /** Newest first, matching /projects/ — so "next" reads as "older". */
+  const sorted = [...projects].sort((a, b) => {
+    const at = a.data.date?.getTime() ?? 0;
+    const bt = b.data.date?.getTime() ?? 0;
+    return bt - at;
+  });
+
+  return sorted.map((entry, index) => {
+    const total = sorted.length;
+    return {
+      params: { slug: entry.id },
+      props: {
+        entry,
+        /* Wraps around, so every project has somewhere to go next. */
+        previousEntry: total > 1 ? sorted[(index - 1 + total) % total] : undefined,
+        nextEntry: total > 1 ? sorted[(index + 1) % total] : undefined,
+      },
+    };
+  });
+}
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+  previousEntry?: CollectionEntry<"projects">;
+  nextEntry?: CollectionEntry<"projects">;
+}
+
+const { entry, previousEntry, nextEntry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+const hasBody = !!entry.body?.trim();
+
+const relatedServices = data.relatedServices?.length
+  ? await getEntries(data.relatedServices)
+  : [];
+/* A single card stretched across the row reads as a mistake — three
+   columns keep it at a normal card width even when it's the only one. */
+const relatedServicesColumns =
+  relatedServices.length === 1 ? 3 : Math.min(relatedServices.length, 3);
+const relatedEquipment = data.relatedEquipment?.length
+  ? await getEntries(data.relatedEquipment)
+  : [];
+
+/** The facts worth stating plainly, and only the ones actually supplied. */
+const facts = [
+  data.client && { title: "Client", text: data.client, icon: clientIcon },
+  data.location && { title: "Location", text: data.location, icon: pinIcon },
+  data.sector && {
+    title: "Sector",
+    text: data.sector,
+    icon: sectorIcons[data.sector.toLowerCase()] ?? sectorIcon,
+  },
+  data.date && {
+    title: "Completed",
+    text: data.date.getFullYear().toString(),
+    icon: calendarIcon,
+  },
+].filter(Boolean) as { title: string; text: string; icon: SvgComponent }[];
+
+/** Challenge, scope, solution and result, in the order they read. */
+const narrative = [
+  data.challenge && {
+    id: "challenge",
+    heading: "The challenge",
+    body: data.challenge,
+  },
+  data.scopeOfWorks && {
+    id: "scope",
+    heading: "Scope of works",
+    body: data.scopeOfWorks,
+  },
+  data.solution && {
+    id: "solution",
+    heading: "How it was done",
+    body: data.solution,
+  },
+  data.result && { id: "result", heading: "The result", body: data.result },
+].filter(Boolean) as { id: string; heading: string; body: string }[];
+
+const hasNarrative = hasBody || narrative.length > 0;
+const enquiryModalId = `project-enquiry-${entry.id}`;
+
+const testimonial = data.testimonial
+  ? {
+      quote: data.testimonial.quote,
+      attribution: [data.testimonial.author, data.testimonial.role]
+        .filter(Boolean)
+        .join(", "),
+      rating: data.testimonial.rating,
+    }
+  : undefined;
+
+/** Jump links for whichever sections this particular project actually has. */
+const quickLinks = [
+  hasBody && { label: "Overview", href: "#overview" },
+  ...narrative.map((part) => ({ label: part.heading, href: `#${part.id}` })),
+  !!data.gallery?.length && { label: "Gallery", href: "#gallery" },
+  testimonial && { label: "Testimonial", href: "#testimonial" },
+  !!relatedEquipment.length && {
+    label: "Plant & Equipment",
+    href: "#equipment",
+  },
+  !!relatedServices.length && {
+    label: "Services Delivered",
+    href: "#services",
+  },
+].filter(Boolean) as { label: string; href: string }[];
+---
+
+<Layout
+  title={data.seo?.title ?? data.title}
+  description={data.seo?.description ?? data.summary}
+  noindex={data.seo?.noindex}
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Fragment slot="background">
+      {data.heroImage && (
+        <Img
+          src={data.heroImage}
+          alt=""
+          loading="eager"
+          fetchPriority="high"
+        />
+      )}
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>{data.sector ?? "Project"}</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={20}>
+      {data.title}
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      {data.summary}
+    </Paragraph>
+  </Section>
+
+  {
+    hasNarrative ? (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentWrapper variant="sticky-visual">
+          <div class="project-narrative">
+            {hasBody && (
+              <div id="overview" class="project-narrative_part">
+                <Heading tag="h2" variant="h2" maxWidth={16}>
+                  Overview
+                </Heading>
+                <RichText maxWidth={40}>
+                  <Content />
+                </RichText>
+              </div>
+            )}
+            {narrative.map((part) => (
+              <div id={part.id} class="project-narrative_part">
+                <Heading tag="h2" variant="h2" maxWidth={16}>
+                  {part.heading}
+                </Heading>
+                <Paragraph variant="large" maxWidth={40}>
+                  {part.body}
+                </Paragraph>
+              </div>
+            ))}
+          </div>
+          <Fragment slot="column2">
+            <div class="project-sidebar">
+              {facts.length > 0 && (
+                <div class="project-sidebar_panel">
+                  <Eyebrow tag="h2">Project Facts</Eyebrow>
+                  <div class="project-sidebar_facts">
+                    {facts.map((fact) => (
+                      <div class="project-sidebar_fact">
+                        <Icon src={fact.icon} variant="medium" />
+                        <div class="project-sidebar_fact-text">
+                          <p class="text-style-small">{fact.title}</p>
+                          <p class="text-style-h6">{fact.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {quickLinks.length > 1 && (
+                <div class="project-sidebar_panel">
+                  <Eyebrow tag="h2">On This Project</Eyebrow>
+                  <ul class="project-sidebar_links">
+                    {quickLinks.map((link) => (
+                      <li>
+                        <a href={link.href}>{link.label}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <ContentCtaMain
+                class="project-sidebar_panel"
+                variant="panel"
+                heading="Have a project like this?"
+                text="Tell us about the site and what needs doing."
+                buttonLabel="Discuss a Project"
+                modalId={enquiryModalId}
+              />
+            </div>
+          </Fragment>
+        </ContentWrapper>
+      </Section>
+    ) : (
+      facts.length > 0 && (
+        <Section paddingTop="large" paddingBottom="large">
+          <ContentFeatureRow items={facts} />
+        </Section>
+      )
+    )
+  }
+
+  {
+    !!data.gallery?.length && (
+      <Section id="gallery" paddingTop="small" paddingBottom="small">
+        <GalleryDragRail label={`${data.title} gallery`}>
+          {data.gallery.map((image) => (
+            <Img src={image} alt="" />
+          ))}
+        </GalleryDragRail>
+      </Section>
+    )
+  }
+
+  {
+    testimonial && (
+      <Section id="testimonial" theme="dark" paddingTop="large" paddingBottom="large">
+        <ContentTestimonial testimonials={[testimonial]} />
+      </Section>
+    )
+  }
+
+  {
+    !!relatedEquipment.length && (
+      <Section id="equipment" paddingTop="large" paddingBottom="large">
+        <ContentSectionHeader
+          eyebrow="Plant &amp; Equipment"
+          heading="What the job ran on."
+          variant="h3"
+        />
+        <ContentCardGrid
+          medium={3}
+          items={relatedEquipment.map((item) => ({
+            image: item.data.image,
+            imageAlt: item.data.imageAlt,
+            eyebrow: item.data.category,
+            heading: item.data.name,
+            text: item.data.summary,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  {
+    !!relatedServices.length && (
+      <Section id="services" paddingTop="large" paddingBottom="large" class="background-2">
+        <ContentSectionHeader
+          eyebrow="Services delivered"
+          heading="The work this drew on."
+          variant="h3"
+        />
+        <ContentCardGrid
+          medium={relatedServicesColumns}
+          items={relatedServices.map((service) => ({
+            image: service.data.hero?.image,
+            imageAlt: service.data.hero?.imageAlt,
+            heading: service.data.title,
+            text: service.data.summary,
+            buttonLabel: "View Service",
+            buttonHref: `/services/${service.id}/`,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  {
+    (previousEntry || nextEntry) && (
+      <Section paddingTop="large" paddingBottom="medium">
+        <ContentSectionHeader
+          eyebrow="Keep exploring"
+          heading="More projects."
+          variant="h3"
+        />
+        <div class="project-pager">
+          {previousEntry ? (
+            <a
+              href={`/projects/${previousEntry.id}/`}
+              class="project-pager_link previous"
+            >
+              <Icon
+                src={arrowFull}
+                variant="medium"
+                class="project-pager_arrow"
+              />
+              <span class="project-pager_text">
+                <span class="text-style-small project-pager_label">
+                  Previous Project
+                </span>
+                <span class="text-style-h5">{previousEntry.data.title}</span>
+              </span>
+            </a>
+          ) : (
+            <span />
+          )}
+          {nextEntry && (
+            <a href={`/projects/${nextEntry.id}/`} class="project-pager_link next">
+              <span class="project-pager_text">
+                <span class="text-style-small project-pager_label">
+                  Next Project
+                </span>
+                <span class="text-style-h5">{nextEntry.data.title}</span>
+              </span>
+              <Icon
+                src={arrowFull}
+                variant="medium"
+                class="project-pager_arrow"
+              />
+            </a>
+          )}
+        </div>
+        <ButtonWrapper marginTop="6">
+          <Button element="link" href="/projects/" variant="link">
+            All Projects
+          </Button>
+        </ButtonWrapper>
+      </Section>
+    )
+  }
+
+  <Section theme="dark" paddingTop="medium" paddingBottom="none">
+    <ContentCtaMain overlap />
+  </Section>
+
+  <Modal id={enquiryModalId} label={`Enquiry — ${data.title}`}>
+    <ContentEnquiryForm
+      heading="Tell us about your project."
+      text="We'll come back with how it would be approached and what it would cost."
+      context={data.title}
+    />
+  </Modal>
+</Layout>
+
+<style>
+  .project-narrative {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    scroll-margin-top: calc(var(--nav-height) + var(--space-6));
+  }
+
+  .project-narrative_part {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    scroll-margin-top: calc(var(--nav-height) + var(--space-6));
+  }
+
+  .project-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    width: 100%;
+  }
+
+  .project-sidebar_panel {
+    width: 100%;
+    padding: var(--space-6);
+    background-color: var(--background-2);
+    border-radius: var(--radius-main);
+  }
+
+  .project-sidebar_facts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  .project-sidebar_fact {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .project-sidebar_fact .icon {
+    color: var(--heading-accent);
+    margin-top: var(--space-1);
+  }
+
+  .project-sidebar_fact-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .project-sidebar_fact-text p:first-child {
+    color: var(--text-2);
+  }
+
+  .project-sidebar_links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    list-style: none;
+  }
+
+  .project-sidebar_links a {
+    color: var(--link-text);
+    text-decoration: none;
+    transition: color var(--hover-duration) var(--hover-ease);
+
+    &:hover {
+      color: var(--link-text-hover);
+    }
+  }
+
+  .project-pager {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-6);
+    width: 100%;
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: var(--border-width) solid var(--border);
+  }
+
+  .project-pager_link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    max-width: 24rem;
+    color: var(--text);
+    text-decoration: none;
+
+    &.next {
+      margin-left: auto;
+      text-align: right;
+    }
+  }
+
+  .project-pager_arrow {
+    flex: none;
+    color: var(--heading-accent);
+    transition: translate var(--hover-duration) var(--hover-ease);
+
+    .previous & {
+      rotate: 180deg;
+    }
+
+    @media (hover: hover) {
+      .project-pager_link.previous:hover & {
+        translate: -0.25em 0;
+      }
+      .project-pager_link.next:hover & {
+        translate: 0.25em 0;
+      }
+    }
+  }
+
+  .project-pager_text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .project-pager_label {
+    color: var(--text-2);
+  }
+</style>

@@ -1,0 +1,157 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import ContentSectors from "@/components/Site/ContentSectors.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import heroImage from "@/assets/Images/farrelly-brothers-herro4.webp";
+import plantImage from "@/assets/Images/farrelly-brothers-herro7.webp";
+import whatWeDoImage from "@/assets/Images/farrely-bros-chainsaw-closeup.webp";
+import iconArboriculture from "@/assets/Icons/arboriculture.svg";
+import iconVegetationManagement from "@/assets/Icons/vegetation-management.svg";
+import iconSpecialistPlant from "@/assets/Icons/specialist-plant.svg";
+import Woodgrain_texture from '@/assets/Images/Woodgrain texture.svg';
+
+/**
+ * docs/CONTENT.md lists a "company background/history" section here, and
+ * docs/PROJECT.md forbids inventing years of operation, team size or
+ * geographic coverage. None of that has been confirmed, so the section is
+ * deliberately absent rather than filled with plausible copy.
+ */
+
+const WHAT_WE_DO = [
+  {
+    title: "Arboriculture and tree work.",
+    text: "From a single tree to access-restricted removals, including hazardous and storm-damaged work, crown reduction and routine maintenance.",
+    icon: iconArboriculture,
+  },
+  {
+    title: "Vegetation and land management.",
+    text: "Scrub and vegetation clearance, site preparation, reinstatement after works, and ongoing management of land and boundaries.",
+    icon: iconVegetationManagement,
+  },
+  {
+    title: "Machinery-led contracting.",
+    text: "Plant hire, agricultural contracting and the specialist equipment that constrained or large-scale sites depend on.",
+    icon: iconSpecialistPlant,
+  },
+];
+---
+
+<Layout
+  title="About"
+  description="Farrelly Bros work across arboriculture, vegetation management, site clearance and land contracting — one contractor covering specialist land and vegetation work end to end."
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Fragment slot="background">
+      <Img src={heroImage} alt="" loading="eager" fetchPriority="high" />
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>About Farrelly Bros</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={20}>
+      Built around what specialist sites actually need.
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      Farrelly Bros work across arboriculture, vegetation management, site
+      clearance and land contracting. The common thread is specialist work on
+      sites that need planning, access and the right machinery — not a single
+      trade applied to every job.
+    </Paragraph>
+    <ButtonWrapper>
+      <Button element="link" href="/services/">Explore Our Services</Button>
+    </ButtonWrapper>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentStatement
+      statement="<strong>More than a tree surgeon.</strong> The business covers specialist land and vegetation work end to end, with the plant and the people that kind of work actually takes."
+      maxWidth={36}
+    />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large" class="background-2">
+    <ContentWrapper variant="columns" reverse>
+      <ContentSectionHeader
+        eyebrow="What we do"
+        heading="Three kinds of work, one contractor."
+        variant="h3"
+      />
+    </ContentWrapper>
+    <ContentWrapper variant="columns" reverse>
+      <ContentFeatureRow items={WHAT_WE_DO} />
+      <Img
+        slot="column2"
+        src={whatWeDoImage}
+        alt="Arborist climbing into position to begin cutting."
+        class="ratio-5-4 radius-large"
+      />
+    </ContentWrapper>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentWrapper variant="columns">
+      <Heading tag="h2" variant="h2" maxWidth={16}>
+        How a job gets planned.
+      </Heading>
+      <Fragment slot="column2">
+        <Paragraph variant="large" maxWidth={40}>
+          Before anything starts, a job is worked through as it will actually be
+          carried out — the access a site allows, the equipment that will fit
+          and reach, the order the work has to follow, and the people who can
+          run it.
+        </Paragraph>
+        <Paragraph maxWidth={40}>
+          On specialist sites that planning is most of the difference between
+          work that holds its schedule and work that stalls. It is also why the
+          services sit in one business rather than several: a clearance job that
+          turns out to need tree removal first, or reinstatement that needs
+          plant alongside it, does not have to stop while another contractor is
+          found.
+        </Paragraph>
+      </Fragment>
+    </ContentWrapper>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentWrapper variant="sticky-content">
+      <Eyebrow>Plant &amp; Machinery</Eyebrow>
+      <Heading tag="h2" variant="h2" maxWidth={19}>
+        The equipment is the capability.
+      </Heading>
+      <Paragraph variant="large" maxWidth={38}>
+        Specialist plant is what turns a difficult site into a manageable one —
+        reaching what cannot be reached by hand, moving what cannot be moved by
+        hand, and keeping a project on schedule.
+      </Paragraph>
+      <ButtonWrapper>
+        <Button element="link" href="/plant-machinery/" emphasis="secondary">
+          View Plant &amp; Machinery
+        </Button>
+      </ButtonWrapper>
+      <Img
+        slot="column2"
+        src={plantImage}
+        alt="Close-up of tractor cab and grille in the field."
+        class="radius-large"
+      />
+    </ContentWrapper>
+  </Section>
+
+  <Section theme="dark" paddingTop="large" paddingBottom="large" gap="8" image={Woodgrain_texture} overlayStrength={90}>
+    <ContentSectors />
+  </Section>
+
+  <Section paddingBottom="none" theme="light">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

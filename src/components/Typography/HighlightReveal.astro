@@ -1,0 +1,269 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/utils/slots.ts";
+
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p";
+type HeadingStyle =
+  | "inherit"
+  | "display"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+  | "large"
+  | "main"
+  | "small";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The element the text is written as. Defaults to `h2`. */
+  tag?: HeadingTag;
+  /**
+   * Type style, chosen apart from `tag` so it can change level without
+   * changing size. Defaults to matching `tag`.
+   *
+   * - `display`, `h1`–`h6` — the heading sizes
+   * - `large`, `main`, `small` — the body sizes
+   * - `inherit` — take the style from its surroundings
+   */
+  variant?: HeadingStyle;
+  /**
+   * Longest line, in characters, before the text wraps. Unset, it fills
+   * its column.
+   *
+   * @min 1
+   * @int
+   */
+  maxWidth?: number;
+  /** Which edge the marker scales away toward, uncovering the line. Defaults to `right`. */
+  direction?: "left" | "right" | "up" | "down";
+  /** Marker color, as any valid CSS color. Defaults to `var(--heading-accent)`. */
+  color?: string;
+  /** When a line's marker starts sliding away, as a `ScrollTrigger` position. Defaults to `top 90%`. */
+  scrollStart?: string;
+  /**
+   * Delay between each line's marker, in milliseconds. Defaults to `100`.
+   *
+   * @min 0
+   * @int
+   */
+  stagger?: number;
+  /** Which line's marker moves first. Defaults to `start`. */
+  staggerFrom?: "start" | "end";
+}
+
+const {
+  render = true,
+  tag = "h2",
+  variant = tag === "p" ? "inherit" : tag,
+  maxWidth,
+  direction = "right",
+  color = "var(--heading-accent)",
+  scrollStart = "top 90%",
+  stagger = 100,
+  staggerFrom = "start",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = tag;
+
+const content = await slotContent(Astro.slots);
+
+const locals = [
+  maxWidth ? `--_mw: ${maxWidth}ch;` : "",
+  `--_highlight-reveal-color: ${color};`,
+].join(" ");
+---
+
+{
+  render && content && (
+    <Tag
+      class:list={[
+        tag === "p" && "text",
+        "highlight-reveal_wrap",
+        variant !== "inherit" && `text-style-${variant}`,
+        className,
+      ]}
+      style={locals}
+      data-direction={direction}
+      data-scroll-start={scrollStart}
+      data-stagger={stagger}
+      data-stagger-from={staggerFrom}
+      {...rest}
+    >
+      <Fragment set:html={content} />
+    </Tag>
+  )
+}
+
+{}
+<noscript>
+  <style>
+    .highlight-reveal_wrap {
+      visibility: visible;
+    }
+  </style>
+</noscript>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { SplitText } from "gsap/SplitText";
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  const DIRECTIONS = {
+    right: { prop: "scaleX", origin: "right center" },
+    left: { prop: "scaleX", origin: "left center" },
+    up: { prop: "scaleY", origin: "center top" },
+    down: { prop: "scaleY", origin: "center bottom" },
+  } as const;
+
+  type Instance = {
+    timeline?: gsap.core.Timeline;
+    scrollTrigger?: ScrollTrigger;
+    split?: SplitText;
+  };
+
+  const instances = new WeakMap<HTMLElement, Instance>();
+
+  function cleanup(el: HTMLElement) {
+    const instance = instances.get(el);
+    if (!instance) return;
+    instance.timeline?.kill();
+    instance.scrollTrigger?.kill();
+    instance.split?.revert();
+    el.querySelectorAll(".highlight-reveal_bar").forEach((bar) => bar.remove());
+    instances.delete(el);
+  }
+
+  function init() {
+    const targets = document.querySelectorAll<HTMLElement>(
+      ".highlight-reveal_wrap",
+    );
+    if (!targets.length) return;
+
+    const reducedMotion = matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    targets.forEach((el) => {
+      cleanup(el);
+
+      if (reducedMotion) {
+        gsap.set(el, { autoAlpha: 1 });
+        return;
+      }
+
+      const direction =
+        DIRECTIONS[el.dataset.direction as keyof typeof DIRECTIONS] ??
+        DIRECTIONS.right;
+      const scrollStart = el.dataset.scrollStart || "top 90%";
+      const staggerFrom = el.dataset.staggerFrom === "end" ? "end" : "start";
+      const staggerOffset = (Number(el.dataset.stagger) || 100) / 1000;
+
+      const instance: Instance = {};
+      instances.set(el, instance);
+
+      instance.split = SplitText.create(el, {
+        type: "lines",
+        linesClass: "highlight-reveal_line",
+        autoSplit: true,
+        onSplit(self) {
+          instance.timeline?.kill();
+          instance.scrollTrigger?.kill();
+          el.querySelectorAll(".highlight-reveal_bar").forEach((bar) =>
+            bar.remove(),
+          );
+
+          const lines = self.lines;
+          const tl = gsap.timeline({ paused: true });
+
+          lines.forEach((line, i) => {
+            gsap.set(line, { position: "relative", overflow: "hidden" });
+
+            const bar = document.createElement("div");
+            bar.className = "highlight-reveal_bar";
+            gsap.set(bar, { transformOrigin: direction.origin });
+            line.appendChild(bar);
+
+            const index = staggerFrom === "end" ? lines.length - 1 - i : i;
+
+            tl.to(
+              bar,
+              {
+                [direction.prop]: 0,
+                duration: 0.6,
+                ease: "power3.inOut",
+              },
+              index * staggerOffset,
+            );
+          });
+
+          gsap.set(el, { autoAlpha: 1 });
+
+          instance.scrollTrigger = ScrollTrigger.create({
+            trigger: el,
+            start: scrollStart,
+            once: true,
+            onEnter: () => tl.play(),
+          });
+
+          instance.timeline = tl;
+        },
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    /* Not `.heading`: Motion.astro's site-wide reveal targets
+       `main h1.heading, main h2.heading` and would run its own SplitText
+       pass over the same lines, fighting this one. The margin and max-width
+       rules are repeated from that pattern instead. */
+    .highlight-reveal_wrap {
+      --_highlight-reveal-color: var(--heading-accent);
+      margin-top: var(--_margin-top);
+      max-width: var(--_mw, none);
+      /* `balance`/`pretty` (the heading and body text-wrap values) re-measure
+         line breaks assuming plain text runs. SplitText wraps each line in
+         its own inline-block, which that measurement doesn't expect, and the
+         two fight over layout on every resplit. */
+      text-wrap: initial;
+      visibility: hidden;
+    }
+
+    .highlight-reveal_wrap:has(+ .text) {
+      margin-bottom: var(--_margin-bottom);
+    }
+
+    .highlight-reveal_wrap + .text {
+      margin-top: 0;
+    }
+
+    .highlight-reveal_wrap .highlight-reveal_line {
+      display: inline-block !important;
+      width: auto;
+      margin-block: -0.055em;
+    }
+
+    .highlight-reveal_bar {
+      position: absolute;
+      inset: -0.055em 0;
+      z-index: 1;
+      background-color: var(--_highlight-reveal-color);
+      pointer-events: none;
+    }
+  }
+</style>

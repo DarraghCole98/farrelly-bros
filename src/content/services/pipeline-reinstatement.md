@@ -1,0 +1,82 @@
+---
+title: "Pipeline Reinstatement"
+summary: "Landscape and land reinstatement following pipeline works."
+seo:
+  title: "Pipeline Reinstatement"
+  description: "Landscape and land reinstatement following pipeline works."
+hero:
+  intro: "Reinstating land along a pipeline corridor once the pipe is in — topsoil, ground condition and boundaries returned to the state landowners agreed to."
+  image: "../../assets/Images/farrelly-brothers-services-8.webp"
+  imageAlt: "Pipeline sections being laid across open ground."
+capabilities:
+  - title: "Corridor reinstatement"
+    description: "Working strips returned to a usable, agreed condition once pipe-laying is complete."
+  - title: "Topsoil and subsoil handling"
+    description: "Soil kept separate and replaced in sequence to protect land quality."
+  - title: "Ground restoration and reseeding"
+    description: "Decompaction and reseeding to match surrounding land."
+  - title: "Multi-landholding coordination"
+    description: "Reinstatement carried out consistently across boundaries and ownerships."
+whyUs:
+  heading: "Reinstatement that satisfies the landowner, not just the spec."
+  intro: "A pipeline corridor crosses land the contractor doesn't own. Reinstatement is judged by the people who farm or manage that land afterwards, so it has to hold up to their standard, not just sign off the works."
+  image: "../../assets/Images/farrelly-brothers-herro7.webp"
+  imageAlt: "Close-up of tractor cab and grille in the field."
+  points:
+    - "Topsoil handled and tracked separately from subsoil at every point along the corridor."
+    - "Agricultural machinery and land contracting experience already in the business."
+    - "Work sequenced to match how different landholdings along the same corridor were agreed."
+    - "Ground condition checked against the original agreement before the job is signed off."
+overview:
+  heading: "Land handed back the way it was found."
+  body: "Pipeline reinstatement covers the corridor of land disturbed by pipe-laying works — subsoil decompaction, topsoil replacement and reseeding to bring it back in line with the surrounding land. Because the same business runs agricultural contracting and plant hire, reinstatement is carried out with the same equipment and understanding of land that farms it day to day."
+  image: "../../assets/Images/farrelly-brothers-services-7.webp"
+  imageAlt: "Agricultural machinery working across open farmland."
+  points:
+    - "Corridors of any length, across single or multiple landholdings."
+    - "Topsoil and subsoil kept separate and replaced in the correct sequence."
+    - "Ground decompacted and reseeded to match the land it borders."
+applications:
+  - "Gas and utility pipeline corridors"
+  - "Agricultural land"
+  - "Infrastructure projects"
+  - "Multi-landholding corridors"
+process:
+  eyebrow: "How it runs"
+  heading: "From working strip to reinstated land."
+  intro: "Reinstatement is agreed against the original condition of the land, landholding by landholding, so what each owner signed up to is what gets delivered."
+  image: "../../assets/Images/farrelly-brothers-herro4.webp"
+  imageAlt: "Tractor working across open ground."
+  steps:
+    - title: "We review the corridor"
+      description: "Soil type, landholding boundaries and the condition the land needs to be returned to are reviewed together."
+      image: "../../assets/Images/farrelly-brothers-services-6.webp"
+      imageAlt: "Excavator operator at the controls."
+    - title: "You get a scoped quote"
+      description: "Priced against the length and condition of the corridor, with the reinstatement standard agreed up front."
+    - title: "The work is sequenced"
+      description: "Topsoil stripping, decompaction and replacement are planned landholding by landholding."
+      image: "../../assets/Images/farrelly-brothers-herro3.webp"
+      imageAlt: "Cleared land with machinery working in the background."
+    - title: "The land is signed off"
+      description: "Ground is checked against the agreed condition before the job is closed out."
+faq:
+  - question: "How do you keep topsoil and subsoil separate?"
+    answer: "Topsoil is stripped and stockpiled separately along the corridor before pipe-laying, then replaced in the same sequence once backfilling is complete, so the soil profile matches what was there originally."
+  - question: "Can you work across a corridor that crosses several landholdings?"
+    answer: "Yes. Each landholding can have its own agreement on condition and reinstatement standard, and the work is sequenced to respect those differences along the same corridor."
+  - question: "Does reinstated land need reseeding?"
+    answer: "Usually, yes, to match the surrounding pasture or land use. Reseeding is priced as part of the reinstatement rather than left as a separate job."
+  - question: "Who do you work for on pipeline projects — the utility or the landowner?"
+    answer: "Reinstatement work is typically contracted through the utility or main works contractor, but the standard it's delivered to is set by the landowner agreement — both sides get looked after."
+relatedServices:
+  - collection: "services"
+    id: "agricultural-contracting"
+  - collection: "services"
+    id: "site-clearance"
+  - collection: "services"
+    id: "plant-hire"
+relatedProjects:
+  - collection: "projects"
+    id: "offaly-pipeline-reinstatement"
+---

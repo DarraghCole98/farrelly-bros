@@ -1,6 +1,10 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { slotContent } from "@/utils/slots.ts";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+
+type ImageSource = ImageMetadata | string;
 
 type SectionSpace =
   "none" | "even" | "small" | "medium" | "large" | "navoverlap";
@@ -46,6 +50,25 @@ interface Props extends HTMLAttributes<"section"> {
   containerClass?: string;
   /** Attributes for that same container. */
   containerAttrs?: HTMLAttributes<"div">;
+  /**
+   * A photo behind the section, tinted so the content on top stays
+   * readable. An imported asset, a remote `http(s)` URL, or a path to a
+   * file in `public/`. For anything more custom — a second layer, a
+   * gradient instead of a tint, eager loading on a hero — use the
+   * `background` slot instead, which this defers to when both are given.
+   */
+  image?: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+  /**
+   * How dark the tint over `image` is, from 0 to 100. Defaults to 55,
+   * matching every other photo section on the site.
+   *
+   * @min 0
+   * @max 100
+   * @int
+   */
+  overlayStrength?: number;
 }
 
 const {
@@ -58,6 +81,9 @@ const {
   fullHeight = false,
   containerClass,
   containerAttrs = {},
+  image,
+  imageAlt,
+  overlayStrength = 55,
   class: className,
   ...rest
 } = Astro.props;
@@ -76,10 +102,16 @@ const padClass = (side: "top" | "bottom", value: SectionSpace) =>
 
 const content = await slotContent(Astro.slots);
 const background = await slotContent(Astro.slots, "background");
+
+if (import.meta.env.DEV && render && background && image) {
+  console.warn(
+    "[lumos] <Section> ignores `image` when a `background` slot is also given.",
+  );
+}
 ---
 
 {
-  render && (content || background) && (
+  render && (content || background || image) && (
     <section
       class:list={[
         "section",
@@ -92,7 +124,16 @@ const background = await slotContent(Astro.slots, "background");
       ]}
       {...rest}
     >
-      <Fragment set:html={background} />
+      {background ? (
+        <Fragment set:html={background} />
+      ) : (
+        image && (
+          <>
+            <Img src={image} alt={imageAlt} />
+            <Overlay variant="solid" strength={overlayStrength} />
+          </>
+        )
+      )}
       {content && (
         <div
           class:list={[

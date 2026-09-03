@@ -1,0 +1,37 @@
+---
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentIconGrid from "@/components/Site/ContentIconGrid.astro";
+import { SECTORS } from "@/data/sectors.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  eyebrow?: string;
+  heading?: string;
+  text?: string;
+  /** Heading size. Matches `ContentSectionHeader`'s scale. */
+  variant?: "h1" | "h2" | "h3";
+}
+
+const {
+  render = true,
+  eyebrow = "Sectors",
+  heading = "Where the work takes us.",
+  text,
+  variant = "h3",
+} = Astro.props;
+---
+
+{
+  render && (
+    <Fragment>
+      <ContentSectionHeader
+        eyebrow={eyebrow}
+        heading={heading}
+        text={text}
+        variant={variant}
+      />
+      <ContentIconGrid items={SECTORS} />
+    </Fragment>
+  )
+}

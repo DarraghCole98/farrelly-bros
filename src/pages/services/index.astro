@@ -1,0 +1,104 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import { sortByServiceOrder } from "@/components/Global/navigation.ts";
+import heroImage from "@/assets/Images/farrelly-brothers-herro1.webp";
+
+const services = sortByServiceOrder(await getCollection("services"));
+
+const SERVICE_CARDS = services.map((service, index) => ({
+  image: service.data.hero?.image,
+  imageAlt: service.data.hero?.imageAlt,
+  eyebrow: String(index + 1).padStart(2, "0"),
+  heading: service.data.title,
+  text: service.data.summary,
+  buttonLabel: "View Service",
+  buttonHref: `/services/${service.id}/`,
+}));
+
+const PROMISES = [
+  {
+    title: "Every service, one contractor.",
+    text: "Most projects draw on more than one of these — a clearance that needs tree removal first, or a reinstatement that needs plant alongside it. Running them from one business means the coordination doesn't fall to the client.",
+  },
+  {
+    title: "Specialist plant, arranged with the work.",
+    text: "Plant hire sits inside the same business as the services that use it, so the machinery a job calls for is planned in from the start rather than sourced separately.",
+  },
+  {
+    title: "Scoped before it's priced.",
+    text: "Access, ground conditions and the equipment a site will take are worked out first, so what's quoted is what the job actually needs.",
+  },
+];
+---
+
+<Layout
+  title="Services"
+  description="The complete range of specialist services Farrelly Bros deliver — arboriculture, vegetation management, site clearance, plant hire and land contracting."
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Img
+      slot="background"
+      src={heroImage}
+      alt=""
+      loading="eager"
+      fetchPriority="high"
+    />
+    <Overlay slot="background" variant="solid" strength={55} />
+    <Eyebrow>Services</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={20}>
+      Every service, under one contractor.
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      Farrelly Bros brings arboriculture, vegetation management, site clearance,
+      plant hire and land contracting together in one business — so a project
+      can draw on whichever combination it actually needs, without being split
+      across separate suppliers.
+    </Paragraph>
+    <ButtonWrapper>
+      <Button element="link" href="/contact/">Discuss a Project</Button>
+    </ButtonWrapper>
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentFeatureRow items={PROMISES} />
+  </Section>
+
+  <Section
+    paddingTop="large"
+    paddingBottom="large"
+    class="background-2"
+    gap="8"
+  >
+    <ContentSectionHeader
+      eyebrow="The full range"
+      heading="Eight specialist services."
+      text="Each one stands on its own, and each one is planned and resourced by the same team."
+    />
+    <ContentCardGrid items={SERVICE_CARDS} />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="none">
+    <ContentStatement
+      statement="<strong>One contractor, every stage.</strong> Running these services from a single business means a project doesn't stall at the seams between suppliers."
+      maxWidth={36}
+    />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="none" theme="light">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

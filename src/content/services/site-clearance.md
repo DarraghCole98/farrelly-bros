@@ -1,0 +1,82 @@
+---
+title: "Site Clearance"
+summary: "Vegetation and scrub clearance to prepare sites for development or other works."
+seo:
+  title: "Site Clearance"
+  description: "Vegetation and scrub clearance to prepare sites for development or other works."
+hero:
+  intro: "Scrub, hedgerow and tree clearance to open up a site before the next contractor moves in — sized to the job, from a single plot to a multi-acre development."
+  image: "../../assets/Images/farrelly-brothers-hedge-cutting.webp"
+  imageAlt: "Farrelly Bros hedge-cutting arm clearing roadside growth, with the crew truck alongside."
+capabilities:
+  - title: "Scrub and vegetation clearance"
+    description: "Flail and mulching work across overgrown or neglected ground."
+  - title: "Tree and hedgerow clearance"
+    description: "Removal of trees, hedgerows and boundary growth standing in the way of works."
+  - title: "Stump removal and grinding"
+    description: "Ground taken back to a workable surface once the growth is down."
+  - title: "Ground preparation"
+    description: "Cleared land left level and ready for the next stage of a project."
+whyUs:
+  heading: "One contractor, from scrub to shovel-ready."
+  intro: "Clearance is rarely a standalone job — it is the first step in something bigger. Handling it alongside plant hire and groundworks means the site is ready for what comes next without a second contractor being brought in to bridge the gap."
+  image: "../../assets/Images/farrelly-brothers-herro3.webp"
+  imageAlt: "Cleared land with machinery working in the background."
+  points:
+    - "Flail, mulching and excavator capability already in the business for whatever the ground needs."
+    - "Sites handed back level and ready for the next contractor, not just cut back."
+    - "Clearance planned around what the site is being prepared for, not treated as a generic cut."
+    - "Development, infrastructure and estate clearance handled at the same standard."
+overview:
+  heading: "Clearance that sets the site up properly."
+  body: "Site clearance covers everything from a single overgrown plot to a multi-acre development site — scrub, hedgerow, trees and rough ground taken back to a state the next stage of work can start from. Because the same business runs plant hire and agricultural contracting, a clearance job that turns up wet ground or unexpected tree cover does not need to stop and wait on another contractor."
+  image: "../../assets/Images/farrelly-brothers-services-4.webp"
+  imageAlt: "Excavator working on a cleared site."
+  points:
+    - "Small plots through to large-scale development and infrastructure sites."
+    - "Material chipped, removed or left on site, agreed before work starts."
+    - "Ground left level and accessible, not just cut back and abandoned."
+applications:
+  - "Development and construction sites"
+  - "Infrastructure and utility sites"
+  - "Renewable energy sites"
+  - "Agricultural and estate land"
+process:
+  eyebrow: "How it runs"
+  heading: "From overgrown to ready."
+  intro: "What a site is being cleared for changes how the clearance is done — a footprint being built on needs a different finish to ground going back to grazing. That gets agreed before machinery arrives."
+  image: "../../assets/Images/farrelly-brothers-services-10.webp"
+  imageAlt: "Cleared land ready for the next stage of work."
+  steps:
+    - title: "We assess the site"
+      description: "What is growing, what the ground will carry and what the site is being prepared for are all looked at together."
+      image: "../../assets/Images/farrelly-brothers-herro1.webp"
+      imageAlt: "A mature tree standing in open parkland."
+    - title: "You get a scoped quote"
+      description: "Priced against what the clearance actually needs, with material handling agreed up front."
+    - title: "The work is planned"
+      description: "Equipment and sequence are set around access and ground conditions before the team arrives."
+      image: "../../assets/Images/farrelly-brothers-herro4.webp"
+      imageAlt: "Tractor working across open ground."
+    - title: "The site is handed back"
+      description: "Cleared, levelled and ready for whatever comes next, to the standard agreed at quote stage."
+faq:
+  - question: "What size of site can you clear?"
+    answer: "From a single overgrown plot to multi-acre development and infrastructure sites. The approach and machinery scale with the job — get in touch with what you have and we will advise on how it would run."
+  - question: "What happens to the material that comes off site?"
+    answer: "That is agreed at quote stage. Chipping, removal or leaving material on site are all options depending on the job and what suits you."
+  - question: "Do you handle stump removal as well as clearance?"
+    answer: "Yes. Stump grinding and removal are part of the service where the ground needs to be left level rather than just cut back."
+  - question: "Can clearance be timed around a planning or construction start date?"
+    answer: "Yes — clearance is often the first item on a fixed project timeline, and it is scoped and sequenced with that date in mind."
+relatedServices:
+  - collection: "services"
+    id: "tree-care"
+  - collection: "services"
+    id: "wood-chipping"
+  - collection: "services"
+    id: "plant-hire"
+relatedProjects:
+  - collection: "projects"
+    id: "meath-solar-farm-site-clearance"
+---

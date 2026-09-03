@@ -1,0 +1,333 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Button from "@/components/Button.astro";
+import { slotContent } from "@/utils/slots.ts";
+
+type Props = HTMLAttributes<"div"> & {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** What the images hold, for anyone who cannot see them. Defaults to `Gallery`. */
+  label?: string;
+};
+
+const {
+  render = true,
+  label = "Gallery",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const images = await slotContent(Astro.slots);
+---
+
+{
+  render && images && (
+    <div class:list={["gallery-drag-rail_wrap", className]} {...rest}>
+      <div class="gallery-drag-rail_controls">
+        <Button
+          variant="arrow"
+          emphasis="secondary"
+          direction="back"
+          label="Previous image"
+          data-step="-1"
+        />
+        <Button
+          variant="arrow"
+          emphasis="secondary"
+          label="Next image"
+          data-step="1"
+        />
+      </div>
+
+      <div
+        class="gallery-drag-rail_list"
+        role="group"
+        aria-label={label}
+        tabindex="0"
+      >
+        <Fragment set:html={images} />
+      </div>
+
+      <div class="gallery-drag-rail_progress">
+        <div class="gallery-drag-rail_track">
+          <div class="gallery-drag-rail_bar" />
+        </div>
+        <span class="gallery-drag-rail_hint text-style-small">
+          Drag to explore
+        </span>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  const THRESHOLD = 4;
+
+  for (const rail of document.querySelectorAll<HTMLElement>(
+    ".gallery-drag-rail_wrap",
+  )) {
+    const list = rail.querySelector<HTMLElement>(".gallery-drag-rail_list");
+    const track = rail.querySelector<HTMLElement>(".gallery-drag-rail_track");
+    const bar = rail.querySelector<HTMLElement>(".gallery-drag-rail_bar");
+    const steps = [...rail.querySelectorAll<HTMLButtonElement>("[data-step]")];
+    if (!list) continue;
+
+    const slides = [...list.children] as HTMLElement[];
+    if (slides.length === 0) continue;
+
+    slides.forEach((slide, i) => {
+      slide.setAttribute("role", "group");
+      slide.setAttribute("aria-label", `${i + 1} of ${slides.length}`);
+    });
+
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const behavior = () => (reduced.matches ? "auto" : "smooth");
+
+    const stride = () => {
+      const first = slides[0].getBoundingClientRect();
+      if (slides.length < 2) return first.width;
+      return slides[1].getBoundingClientRect().left - first.left;
+    };
+
+    const sync = () => {
+      const end = list.scrollWidth - list.clientWidth;
+      const atStart = list.scrollLeft <= 1;
+      const atEnd = list.scrollLeft >= end - 1;
+
+      for (const step of steps) {
+        step.disabled = Number(step.dataset.step) < 0 ? atStart : atEnd;
+      }
+
+      rail.classList.toggle("is-empty", end <= 1);
+
+      if (bar) {
+        const width = Math.min(1, list.clientWidth / list.scrollWidth);
+        const room = end > 0 ? list.scrollLeft / end : 0;
+        bar.style.width = `${width * 100}%`;
+        bar.style.transform = `translateX(${room * (1 / width - 1) * 100}%)`;
+      }
+    };
+
+    for (const step of steps) {
+      step.addEventListener("click", () =>
+        list.scrollBy({
+          left: Number(step.dataset.step) * stride(),
+          behavior: behavior(),
+        }),
+      );
+    }
+
+    const jump = (event: PointerEvent) => {
+      if (!track) return;
+      const end = list.scrollWidth - list.clientWidth;
+      const box = track.getBoundingClientRect();
+      const ratio = Math.min(
+        1,
+        Math.max(0, (event.clientX - box.left) / box.width),
+      );
+      list.scrollTo({ left: ratio * end, behavior: behavior() });
+    };
+
+    track?.addEventListener("pointerdown", jump);
+
+    let origin = 0;
+    let from = 0;
+    let pressed = false;
+    let dragged = false;
+
+    const restore = () => {
+      if (!pressed) list.classList.remove("is-dragging");
+    };
+
+    list.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "mouse" || event.button !== 0) return;
+      if (list.scrollWidth <= list.clientWidth) return;
+      pressed = true;
+      dragged = false;
+      origin = event.clientX;
+      from = list.scrollLeft;
+    });
+
+    list.addEventListener("pointermove", (event) => {
+      if (!pressed) return;
+      const shift = event.clientX - origin;
+      if (!dragged) {
+        if (Math.abs(shift) < THRESHOLD) return;
+        dragged = true;
+        list.setPointerCapture(event.pointerId);
+        list.classList.add("is-dragging");
+      }
+      list.scrollLeft = from - shift;
+    });
+
+    const release = () => {
+      if (!pressed) return;
+      pressed = false;
+      list.addEventListener("scrollend", restore, { once: true });
+      setTimeout(restore, 400);
+    };
+
+    list.addEventListener("pointerup", release);
+    list.addEventListener("pointercancel", release);
+    list.addEventListener("dragstart", (event) => event.preventDefault());
+
+    list.addEventListener(
+      "click",
+      (event) => {
+        if (!dragged) return;
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      true,
+    );
+
+    let frame = 0;
+    list.addEventListener(
+      "scroll",
+      () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(sync);
+      },
+      { passive: true },
+    );
+
+    rail.classList.add("is-ready");
+
+    const resize = new ResizeObserver(sync);
+    resize.observe(list);
+
+    addEventListener("load", sync);
+    sync();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .gallery-drag-rail_wrap {
+      --_edge: max(var(--site-margin), (100vw - var(--max-width-main)) / 2);
+      display: grid;
+      gap: var(--space-4);
+      width: 100%;
+    }
+
+    .gallery-drag-rail_controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-2);
+
+      .gallery-drag-rail_wrap:not(.is-ready) &,
+      .gallery-drag-rail_wrap.is-empty & {
+        display: none;
+      }
+    }
+
+    .gallery-drag-rail_list {
+      display: flex;
+      gap: var(--space-5);
+      min-width: 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      cursor: grab;
+      counter-reset: gallery-drag-rail;
+      margin-inline: calc(-1 * var(--_edge));
+      padding-inline: var(--_edge);
+      scroll-padding-inline: var(--_edge);
+      margin-block-start: -0.75rem;
+      padding-block-start: 0.75rem;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      &.is-dragging {
+        scroll-snap-type: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .gallery-drag-rail_wrap:not(.is-ready) & {
+        cursor: auto;
+      }
+
+      & > * {
+        position: relative;
+        flex: 0 0 min(28rem, 80%);
+        min-width: 0;
+        aspect-ratio: 4 / 5;
+        scroll-snap-align: start;
+        counter-increment: gallery-drag-rail;
+        overflow: hidden;
+        border-radius: var(--radius-main);
+        transition: transform 400ms var(--hover-ease);
+      }
+
+      & > *::after {
+        content: counter(gallery-drag-rail, decimal-leading-zero);
+        position: absolute;
+        inset-block-end: var(--space-3);
+        inset-inline-start: var(--space-3);
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-small);
+        background: color-mix(in lab, var(--ink-900) 45%, transparent);
+        color: var(--light-100);
+        font-size: var(--text-small);
+        line-height: var(--line-height-small);
+        pointer-events: none;
+      }
+
+      & img,
+      & .image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      @media (hover: hover) {
+        &:not(.is-dragging) > *:hover {
+          transform: translateY(-0.5rem);
+        }
+      }
+    }
+
+    .gallery-drag-rail_progress {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+
+      .gallery-drag-rail_wrap:not(.is-ready) &,
+      .gallery-drag-rail_wrap.is-empty & {
+        display: none;
+      }
+    }
+
+    .gallery-drag-rail_track {
+      flex: 1;
+      height: var(--border-width);
+      background: var(--border);
+      cursor: pointer;
+    }
+
+    .gallery-drag-rail_bar {
+      height: 100%;
+      width: 0%;
+      background: var(--text);
+      transform-origin: left center;
+      will-change: transform;
+    }
+
+    .gallery-drag-rail_hint {
+      flex: 0 0 auto;
+      color: var(--text-2);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+  }
+</style>

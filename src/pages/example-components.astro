@@ -28,9 +28,12 @@ import Slider from "@/components/Interactive/Slider.astro";
 import Accordion from "@/components/Interactive/Accordion.astro";
 import Marquee from "@/components/Interactive/Marquee.astro";
 import AccordionItem from "@/components/Interactive/AccordionItem.astro";
+import GalleryDragRail from "@/components/Interactive/GalleryDragRail.astro";
 import Video from "@/components/Media/Video.astro";
 import Icon from "@/components/Media/Icon.astro";
 import RichText from "@/components/Typography/RichText.astro";
+import HighlightReveal from "@/components/Typography/HighlightReveal.astro";
+import HighlightText from "@/components/Typography/HighlightText.astro";
 import arrow from "@/assets/icons/arrow.svg";
 import play from "@/assets/icons/play.svg";
 import close from "@/assets/icons/close.svg";
@@ -604,6 +607,22 @@ const lorem =
       />
     </Slider>
   </Section>
+  <!-- gallery drag rail -->
+  <Section paddingTop="small" paddingBottom="small">
+    <ContentWrapper>
+      <Eyebrow>gallery · drag rail</Eyebrow>
+      <Heading tag="h2" variant="h3" maxWidth={17}>{heading}</Heading>
+      <Paragraph maxWidth={36}>{text}</Paragraph>
+    </ContentWrapper>
+    <GalleryDragRail label="Project gallery">
+      <Img src={lumos_background} alt="" width={1400} height={1750} />
+      <Img src={lumos_background} alt="" width={1400} height={1750} />
+      <Img src={lumos_background} alt="" width={1400} height={1750} />
+      <Img src={lumos_background} alt="" width={1400} height={1750} />
+      <Img src={lumos_background} alt="" width={1400} height={1750} />
+      <Img src={lumos_background} alt="" width={1400} height={1750} />
+    </GalleryDragRail>
+  </Section>
   <!-- marquee -->
   <Section>
     <ContentWrapper>
@@ -683,6 +702,24 @@ const lorem =
         <blockquote>A pull quote, styled from the parent.</blockquote>
         <p>A closing paragraph with <a href="/about">a link</a> inside it.</p>
       </RichText>
+    </ContentWrapper>
+  </Section>
+  <!-- highlight · reveal -->
+  <Section paddingTop="small" paddingBottom="small">
+    <ContentWrapper centered={true}>
+      <Eyebrow>highlight · reveal</Eyebrow>
+      <HighlightReveal tag="h2" maxWidth={17}>
+        Here's a text reveal that looks like a highlight marker
+      </HighlightReveal>
+      <Paragraph maxWidth={36}>{text}</Paragraph>
+    </ContentWrapper>
+  </Section>
+  <!-- highlight · text -->
+  <Section paddingTop="small" paddingBottom="small">
+    <ContentWrapper centered={true}>
+      <Eyebrow>highlight · text</Eyebrow>
+      <HighlightText tag="h2" maxWidth={24}>{heading}</HighlightText>
+      <Paragraph maxWidth={36}>{text}</Paragraph>
     </ContentWrapper>
   </Section>
   <!-- icon -->

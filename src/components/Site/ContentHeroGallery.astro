@@ -1,0 +1,216 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Img from "@/components/Media/Img.astro";
+
+type ImageSource = ImageMetadata | string;
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The first photo. An imported asset, a remote `http(s)` URL, or a path to a file in `public/`. */
+  image1: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  image1Alt?: string;
+  /** The second photo. Leave unset to show only `image1`. */
+  image2?: ImageSource;
+  image2Alt?: string;
+  /** The third photo. */
+  image3?: ImageSource;
+  image3Alt?: string;
+  /** The fourth photo. */
+  image4?: ImageSource;
+  image4Alt?: string;
+  /** The fifth photo. */
+  image5?: ImageSource;
+  image5Alt?: string;
+  /**
+   * How long each photo holds before the next fades in, in seconds.
+   * Defaults to 3.5.
+   *
+   * @min 1
+   */
+  interval?: number;
+}
+
+const {
+  render = true,
+  image1,
+  image1Alt,
+  image2,
+  image2Alt,
+  image3,
+  image3Alt,
+  image4,
+  image4Alt,
+  image5,
+  image5Alt,
+  interval = 3.5,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const images = [
+  { src: image1, alt: image1Alt },
+  image2 && { src: image2, alt: image2Alt },
+  image3 && { src: image3, alt: image3Alt },
+  image4 && { src: image4, alt: image4Alt },
+  image5 && { src: image5, alt: image5Alt },
+].filter(Boolean) as { src: ImageSource; alt?: string }[];
+
+const multiple = images.length > 1;
+---
+
+{
+  render && images.length > 0 && (
+    <div
+      class:list={["hero-gallery_wrap", multiple && "hero-gallery_wrap-multi", className]}
+      style={`--_interval: ${interval}s`}
+      {...rest}
+    >
+      {images.map((item, i) => (
+        <Img
+          src={item.src}
+          alt={item.alt}
+          loading={i === 0 ? "eager" : "lazy"}
+          fetchPriority={i === 0 ? "high" : "auto"}
+          variant="constrained"
+          sizes="(width >= 64rem) 50vw, 100vw"
+          class:list={["hero-gallery_image", i === 0 && "is-active"]}
+        />
+      ))}
+
+      {multiple && (
+        <div class="hero-gallery_progress" role="presentation">
+          {images.map((_, i) => (
+            <span
+              class:list={["hero-gallery_segment", i === 0 && "is-active"]}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+<script>
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  for (const wrap of document.querySelectorAll<HTMLElement>(
+    ".hero-gallery_wrap-multi",
+  )) {
+    const images = [
+      ...wrap.querySelectorAll<HTMLElement>(".hero-gallery_image"),
+    ];
+    const segments = [
+      ...wrap.querySelectorAll<HTMLElement>(".hero-gallery_segment"),
+    ];
+    if (images.length < 2 || motion.matches) continue;
+
+    const intervalMs =
+      parseFloat(getComputedStyle(wrap).getPropertyValue("--_interval")) *
+      1000;
+
+    let current = 0;
+    window.setInterval(() => {
+      images[current].classList.remove("is-active");
+      segments[current].classList.remove("is-active");
+      segments[current].classList.add("is-done");
+
+      current = (current + 1) % images.length;
+      if (current === 0) {
+        for (const segment of segments) segment.classList.remove("is-done");
+      }
+
+      images[current].classList.add("is-active");
+      segments[current].classList.add("is-active");
+    }, intervalMs);
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .hero-gallery_wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: var(--radius-large);
+      aspect-ratio: 3 / 2;
+
+      @media (width >= 64rem) {
+        aspect-ratio: 1 / 1;
+      }
+    }
+
+    /* Absolutely positioned rather than sized with `height: 100%`: a
+       percentage height doesn't reliably resolve against a box whose own
+       height comes from `aspect-ratio` (see Card.astro's `.card_visual`
+       for the fuller version of this note), so each photo would fall back
+       to its own natural ratio instead of the gallery box's. */
+    .hero-gallery_image {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+
+      .hero-gallery_wrap-multi & {
+        opacity: 0;
+        transition: opacity 1.2s var(--open-ease);
+
+        &.is-active {
+          opacity: 1;
+        }
+      }
+    }
+
+    /* One segment per photo, so the set reads as "3 of 5" at a glance. The
+       active one fills over the same interval the photo holds for; a
+       finished one stays filled until the loop restarts. */
+    .hero-gallery_progress {
+      position: absolute;
+      z-index: 1;
+      inset-inline: var(--space-5);
+      top: var(--space-5);
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .hero-gallery_segment {
+      position: relative;
+      flex: 1;
+      height: 0.1875rem;
+      border-radius: var(--radius-round);
+      background-color: color-mix(in srgb, white 35%, transparent);
+      overflow: clip;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        transform-origin: left;
+        scale: 0 1;
+      }
+
+      &.is-done::after {
+        scale: 1 1;
+      }
+
+      &.is-active::after {
+        animation: hero-gallery-progress var(--_interval) linear forwards;
+      }
+    }
+
+    @keyframes hero-gallery-progress {
+      from {
+        scale: 0 1;
+      }
+      to {
+        scale: 1 1;
+      }
+    }
+  }
+</style>

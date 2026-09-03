@@ -1,0 +1,311 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import Form from "@/components/Form/Form.astro";
+import Fieldset from "@/components/Form/Fieldset.astro";
+import Input from "@/components/Form/Input.astro";
+import Select from "@/components/Form/Select.astro";
+import Textarea from "@/components/Form/Textarea.astro";
+import Button from "@/components/Button.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import ContentNotice from "@/components/Site/ContentNotice.astro";
+import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import { SITE_CONTACT, FORM_ENDPOINT } from "@/consts.ts";
+import { SERVICE_LINKS } from "@/components/Global/navigation.ts";
+import heroImage from "@/assets/Images/farrelly-brothers-herro5.webp";
+
+const hasContact = Object.values(SITE_CONTACT).some(Boolean);
+
+/**
+ * docs/DECISIONS.md: no form backend has been chosen, and the site deploys
+ * as static assets with no SSR. `Form` reports success when it has no
+ * action, so with no endpoint the fields are disabled behind a notice —
+ * an enquiry someone typed out must not silently disappear.
+ */
+const formLive = FORM_ENDPOINT.length > 0;
+
+const SERVICE_OPTIONS = [
+  ...SERVICE_LINKS.map((service) => service.label),
+  "Not sure yet",
+];
+
+const WHAT_HAPPENS = [
+  {
+    title: "Tell us about the site.",
+    text: "Access, ground conditions and what is actually growing there shape the answer more than anything else.",
+  },
+  {
+    title: "We work out the approach.",
+    text: "What equipment the site will take, what order the work has to follow, and what it needs to be done safely.",
+  },
+  {
+    title: "You get a scoped quote.",
+    text: "Priced against the work the site actually needs, not a standard rate applied to every job.",
+  },
+];
+---
+
+<Layout
+  title="Contact"
+  description="Discuss a project with Farrelly Bros — specialist arboriculture, vegetation management, site clearance and land contracting."
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large">
+    <Fragment slot="background">
+      <Img src={heroImage} alt="" loading="eager" fetchPriority="high" />
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>Contact</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={18}>
+      Discuss a project.
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      Tell us what the site needs and we will come back with how it would
+      be approached, what equipment it calls for, and what it would cost.
+    </Paragraph>
+  </Section>
+
+  <Section paddingTop="none" paddingBottom="large">
+    <div class="contact-form_card theme-dark">
+      <ContentWrapper variant="columns" column1Class="align-self-start">
+        <Heading tag="h2" variant="h3" maxWidth={16}>
+          Send an enquiry.
+        </Heading>
+
+        {
+          hasContact && (
+            <ul class="contact-details_list">
+              {SITE_CONTACT.phone && (
+                <li class="contact-details_item">
+                  <span class="contact-details_label text-style-small">
+                    Telephone
+                  </span>
+                  <a
+                    class="contact-details_link text-style-h5"
+                    href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, "")}`}
+                  >
+                    {SITE_CONTACT.phone}
+                  </a>
+                </li>
+              )}
+              {SITE_CONTACT.mobile && (
+                <li class="contact-details_item">
+                  <span class="contact-details_label text-style-small">
+                    Emergency
+                  </span>
+                  <a
+                    class="contact-details_link text-style-h5"
+                    href={`tel:${SITE_CONTACT.mobile.replace(/[^+\d]/g, "")}`}
+                  >
+                    {SITE_CONTACT.mobile}
+                  </a>
+                </li>
+              )}
+              {SITE_CONTACT.email && (
+                <li class="contact-details_item">
+                  <span class="contact-details_label text-style-small">
+                    Email
+                  </span>
+                  <a
+                    class="contact-details_link text-style-h5"
+                    href={`mailto:${SITE_CONTACT.email}`}
+                  >
+                    {SITE_CONTACT.email}
+                  </a>
+                </li>
+              )}
+              {SITE_CONTACT.address && (
+                <li class="contact-details_item">
+                  <span class="contact-details_label text-style-small">
+                    Address
+                  </span>
+                  <span class="text-style-h5">{SITE_CONTACT.address}</span>
+                </li>
+              )}
+            </ul>
+          )
+        }
+
+        <Fragment slot="column2">
+          <ContentNotice
+            render={!formLive}
+            heading="Online enquiries are not available yet"
+            variant="pending"
+          >
+            <p>
+              This form is not connected yet, so it cannot accept enquiries.
+              The fields below show what will be asked for once it is
+              switched on.
+            </p>
+          </ContentNotice>
+
+          <Form
+            name="enquiry"
+            action={formLive ? FORM_ENDPOINT : undefined}
+            render={formLive}
+            successMessage="Thanks — we have your enquiry and will be in touch."
+            errorMessage="That did not send. Please try again, or contact us directly."
+          >
+            <Fieldset legend="About you" variant="columns" legendStyle="label">
+              <Input label="Name" variant="text" required />
+              <Input label="Company" variant="text" />
+              <Input label="Email" variant="email" required />
+              <Input label="Telephone" variant="phone" />
+            </Fieldset>
+
+            <Fieldset legend="About the project" legendStyle="label">
+              <Select
+                label="Service required"
+                variant="list"
+                options={SERVICE_OPTIONS}
+              />
+              <Input
+                label="Project location"
+                variant="text"
+                placeholder="Town or county"
+              />
+              <Textarea
+                label="Project details"
+                placeholder="What is on the site, how it is accessed, and what you need done."
+                minLines={5}
+                required
+              />
+            </Fieldset>
+
+            <ButtonWrapper>
+              <Button type="submit">Send Enquiry</Button>
+            </ButtonWrapper>
+          </Form>
+
+          {
+            !formLive && (
+              <div class="contact-form_preview" aria-hidden="true">
+                <Fieldset
+                  legend="About you"
+                  variant="columns"
+                  legendStyle="label"
+                  disabled
+                >
+                  <Input label="Name" variant="text" disabled />
+                  <Input label="Company" variant="text" disabled />
+                  <Input label="Email" variant="email" disabled />
+                  <Input label="Telephone" variant="phone" disabled />
+                </Fieldset>
+
+                <Fieldset
+                  legend="About the project"
+                  legendStyle="label"
+                  disabled
+                >
+                  <Select
+                    label="Service required"
+                    variant="list"
+                    options={SERVICE_OPTIONS}
+                    disabled
+                  />
+                  <Input label="Project location" variant="text" disabled />
+                  <Textarea
+                    label="Project details"
+                    minLines={5}
+                    disabled
+                  />
+                </Fieldset>
+              </div>
+            )
+          }
+        </Fragment>
+      </ContentWrapper>
+    </div>
+  </Section>
+
+  {
+    SITE_CONTACT.address && (
+      <Section paddingTop="none" paddingBottom="large">
+        <div class="contact-map">
+          <iframe
+            src={`https://www.google.com/maps?q=${encodeURIComponent(SITE_CONTACT.address)}&output=embed`}
+            title={`Map showing Farrelly Bros at ${SITE_CONTACT.address}`}
+            loading="lazy"
+          />
+        </div>
+      </Section>
+    )
+  }
+
+  <Section paddingTop="large" paddingBottom="large" class="background-2">
+    <Eyebrow>What happens next</Eyebrow>
+    <Heading tag="h2" variant="h3" maxWidth={20}>
+      How an enquiry gets answered.
+    </Heading>
+    <ContentFeatureRow items={WHAT_HAPPENS} />
+  </Section>
+</Layout>
+
+<style is:global>
+  @layer components {
+    .contact-details_list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      margin-top: var(--space-6);
+    }
+
+    .contact-details_item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .contact-details_label {
+      color: var(--text-2);
+    }
+
+    .contact-details_link {
+      color: var(--text);
+      text-underline-offset: 0.3em;
+    }
+
+    /* The dark card the enquiry form sits on, pulled up over the seam with
+       the hero above it so it reads as one floating surface, and standing
+       apart from the light section it sits in below. */
+    .contact-form_card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      margin-top: calc(var(--section-space-large) * -0.6);
+      padding: var(--section-space-small) var(--space-8);
+      background-color: var(--background);
+      border-radius: var(--radius-large);
+      box-shadow: 0 1rem 3rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
+    }
+
+    .contact-map {
+      width: 100%;
+      aspect-ratio: 21 / 9;
+      overflow: clip;
+      border-radius: var(--radius-large);
+
+      & > iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+    }
+
+    /* The disabled stand-in shown while no endpoint is set. */
+    .contact-form_preview {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      width: 100%;
+      margin-top: var(--space-6);
+      opacity: 0.55;
+    }
+  }
+</style>

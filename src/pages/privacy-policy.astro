@@ -1,0 +1,158 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import RichText from "@/components/Typography/RichText.astro";
+import ContentNotice from "@/components/Site/ContentNotice.astro";
+import { SITE_CONTACT, FORM_ENDPOINT } from "@/consts.ts";
+
+/**
+ * A privacy policy is a legal document, and docs/PROJECT.md forbids
+ * inventing business facts. Everything below that describes the site is
+ * verifiable from this repository; everything that depends on Farrelly
+ * Bros — legal entity, registered address, data-protection contact,
+ * retention periods, governing jurisdiction — is left as a marked gap
+ * rather than filled with plausible wording.
+ *
+ * The route is listed in NOINDEX_ROUTES so it is not indexed or added to
+ * the sitemap while it is still a draft. Remove it from that list once a
+ * reviewed policy is in place.
+ */
+
+const formLive = FORM_ENDPOINT.length > 0;
+const contactPoint = SITE_CONTACT.email ?? SITE_CONTACT.phone;
+
+/** Each gap a person has to fill in before this can be published. */
+const OUTSTANDING = [
+  "The registered legal entity and company registration number",
+  "The registered business address",
+  "A data-protection contact address for privacy requests",
+  "The governing jurisdiction, and whether UK GDPR, EU GDPR or both apply",
+  "How long enquiry data is kept once a job is closed or declined",
+  "Any third parties enquiry data is shared with, such as a CRM or email provider",
+];
+---
+
+<Layout
+  title="Privacy Policy"
+  description="How Farrelly Bros handles personal data collected through this website."
+>
+  <Section paddingTop="large" paddingBottom="medium">
+    <Eyebrow>Legal</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={18}>
+      Privacy Policy
+    </Heading>
+  </Section>
+
+  <Section paddingTop="none" paddingBottom="large">
+    <ContentNotice heading="This policy is a draft" variant="pending">
+      <p>
+        It records what this website currently does, which can be checked
+        against the code. It is not yet a complete or legally reviewed
+        privacy policy, and it should be read by someone qualified before
+        the site goes live.
+      </p>
+      <p>
+        The page is set to <code>noindex</code> and kept out of the sitemap
+        while that is true. See the list of outstanding items at the end.
+      </p>
+    </ContentNotice>
+
+    <RichText maxWidth={72}>
+      <h2>What this website collects</h2>
+
+      <p>
+        This is a static website. It does not use cookies, local storage or
+        any other means of storing information on your device, and it does
+        not build a profile of you as you move between pages.
+      </p>
+
+      <p>
+        There are no analytics, advertising or tracking scripts on this
+        site. Nothing you do here is recorded or reported to a third party
+        for measurement or marketing.
+      </p>
+
+      <p>
+        Fonts are served from this website rather than from a third-party
+        font service, so loading a page does not disclose your visit or IP
+        address to a font provider.
+      </p>
+
+      <h2>The enquiry form</h2>
+
+      {
+        formLive ? (
+          <p>
+            If you send an enquiry, the details you type into the form —
+            such as your name, company, email address, telephone number,
+            project location and project description — are transmitted so
+            that we can respond to you. They are used only to answer your
+            enquiry and to carry out any work that follows from it.
+          </p>
+        ) : (
+          <p>
+            The enquiry form on the contact page is not currently connected
+            to any submission route. It cannot be sent, and it does not
+            collect, transmit or store anything you type into it.
+          </p>
+        )
+      }
+
+      <h2>Server logs</h2>
+
+      <p>
+        This website is served as static files by a hosting provider. Like
+        most hosting, that provider may keep short-term technical logs of
+        requests, which can include IP addresses, for security and
+        reliability purposes. Those logs are held by the hosting provider
+        under its own terms, not by this website.
+      </p>
+
+      <h2>Your rights</h2>
+
+      <p>
+        Where we hold personal data about you, data-protection law gives
+        you rights over it — including the right to ask what is held, to
+        have it corrected, to have it erased, and to object to how it is
+        used. You also have the right to complain to the relevant
+        supervisory authority.
+      </p>
+
+      {
+        contactPoint ? (
+          <p>
+            To make a request, contact us at <strong>{contactPoint}</strong>.
+          </p>
+        ) : (
+          <p>
+            <em>
+              A contact route for privacy requests has not yet been
+              confirmed and must be added before this policy is published.
+            </em>
+          </p>
+        )
+      }
+
+      <h2>Changes to this policy</h2>
+
+      <p>
+        If this policy changes, the revised version will be published on
+        this page.
+      </p>
+
+      <h2>Still to be confirmed</h2>
+
+      <p>
+        The following need to be supplied by Farrelly Bros, and reviewed
+        by someone qualified, before this page can stand as a published
+        privacy policy:
+      </p>
+
+      <ul>
+        {OUTSTANDING.map((item) => <li>{item}</li>)}
+      </ul>
+    </RichText>
+  </Section>
+</Layout>

@@ -1,0 +1,79 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import HighlightReveal from "@/components/Typography/HighlightReveal.astro";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /**
+   * The statement. Inline markup is rendered, and anything wrapped in
+   * `<strong>` reads at full strength while the rest recedes.
+   */
+  statement: string;
+  /**
+   * Type size of the statement.
+   *
+   * - `h2` — the usual size for a standalone statement (default)
+   * - `h1` — for a statement carrying a whole page
+   * - `h3` — for a quieter one inside a busier page
+   */
+  variant?: "h1" | "h2" | "h3";
+  /** How wide the statement runs, in characters. Defaults to 34.
+   *
+   * @min 1
+   * @max 120
+   * @int */
+  maxWidth?: number;
+}
+
+const {
+  render = true,
+  statement,
+  variant = "h2",
+  maxWidth = 34,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && (
+    <div class:list={["statement_wrap", className]} {...rest}>
+      <HighlightReveal
+        tag="p"
+        variant={variant}
+        maxWidth={maxWidth}
+        class="statement_text"
+      >
+        <Fragment set:html={statement} />
+      </HighlightReveal>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .statement_wrap {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      z-index: 1;
+    }
+
+    /* The whole statement recedes, and the emphasised opening carries it —
+       the inverse of `.heading-accent`, which lifts the accent out instead.
+       Two classes, so this beats `HighlightReveal`'s own margin-top
+       regardless of which component's stylesheet lands first in the
+       bundle: `.statement_wrap` centers it with flex, not heading spacing. */
+    .statement_text.highlight-reveal_wrap {
+      margin-top: 0;
+      color: var(--text-2);
+      text-align: center;
+
+      & strong {
+        color: var(--text);
+        font-weight: inherit;
+      }
+    }
+  }
+</style>

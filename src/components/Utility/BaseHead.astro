@@ -1,6 +1,6 @@
 ---
 import { Font } from "astro:assets";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/consts.ts";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_CONTACT } from "@/consts.ts";
 import { isNoindexRoute } from "@/utils/seo.ts";
 import type { SeoProps } from "@/types.ts";
 
@@ -19,6 +19,24 @@ const isNoindex = noindex ?? isNoindexRoute(Astro.url.pathname);
 const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = new URL(image, Astro.site);
+
+/**
+ * LocalBusiness structured data, emitted site-wide. SITE_CONTACT.email and
+ * SITE_URL (astro.config.mjs `site`) are both still flagged as unverified
+ * placeholders in consts.ts — confirm both before this is relied on for SEO,
+ * since it makes them machine-readable and publicly indexed.
+ */
+const businessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: SITE_NAME,
+  url: Astro.site ? new URL("/", Astro.site).toString() : undefined,
+  telephone: SITE_CONTACT.phone,
+  email: SITE_CONTACT.email,
+  address: SITE_CONTACT.address
+    ? { "@type": "PostalAddress", streetAddress: SITE_CONTACT.address }
+    : undefined,
+};
 ---
 
 <meta charset="utf-8" />
@@ -26,7 +44,7 @@ const socialImage = new URL(image, Astro.site);
   @layer base, patterns, components, utilities;
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<Font cssVariable="--font-inter" preload />
+<Font cssVariable="--font-figtree" preload />
 <title>{pageTitle}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
@@ -47,3 +65,4 @@ const socialImage = new URL(image, Astro.site);
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" />
 <meta name="generator" content={Astro.generator} />
+<script is:inline type="application/ld+json" set:html={JSON.stringify(businessSchema)} />

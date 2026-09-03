@@ -1,0 +1,82 @@
+---
+title: "Solar Farm Landscaping"
+summary: "Vegetation and landscaping/land-management services associated with solar farms."
+seo:
+  title: "Solar Farm Landscaping"
+  description: "Vegetation and landscaping/land-management services associated with solar farms."
+hero:
+  intro: "Site clearance, ground preparation and ongoing vegetation management for solar farms, from pre-construction through to the land the panels sit on afterwards."
+  image: "../../assets/Images/solar-panels-drone-view-2023-11-27-05-10-40-utc-copy-scaled.webp"
+  imageAlt: "Aerial view of a solar farm across open land."
+capabilities:
+  - title: "Pre-construction clearance"
+    description: "Scrub, hedgerow and tree clearance across the panel footprint and cable routes."
+  - title: "Ground preparation"
+    description: "Site levelled and access tracks prepared for the construction contractor."
+  - title: "Ongoing vegetation and grass management"
+    description: "ongoing management to keep growth under panels and along boundaries in check."
+  - title: "Site access and boundary maintenance"
+    description: "Access routes and boundary lines kept clear once the site is operational."
+whyUs:
+  heading: "One contractor for clearance through to ongoing management."
+  intro: "A solar farm's vegetation needs don't stop once construction is finished — the land still has to be managed for the life of the site. Handling clearance and ongoing management under one contractor keeps that continuity."
+  image: "../../assets/Images/farrelly-brothers-services-4.webp"
+  imageAlt: "Excavator working on a cleared site."
+  points:
+    - "Clearance sequenced field by field so grazing or land use can continue until each section is needed."
+    - "Flail and excavator work timed around ground conditions to avoid rutting access routes."
+    - "Same contractor available for construction-phase clearance and post-construction management."
+    - "Work planned against fixed, planning-conditioned construction start dates."
+overview:
+  heading: "From cleared footprint to managed site."
+  body: "Solar farm landscaping covers the vegetation and land-management work a site needs before, during and after construction — clearing the panel footprint and cable routes, preparing access tracks, and managing grass and scrub growth once the panels are in place. Because the same business runs site clearance and agricultural contracting, the site can be handled by one team from first clearance through to ongoing upkeep."
+  image: "../../assets/Images/farrelly-brothers-herro3.webp"
+  imageAlt: "Cleared land with machinery working in the background."
+  points:
+    - "Panel array footprint and cable route clearance ahead of construction."
+    - "Topsoil handling and access track levelling for the construction contractor."
+    - "Ongoing grass and scrub management once the site is operational."
+applications:
+  - "Solar farm construction"
+  - "Panel array vegetation management"
+  - "Site boundaries and access tracks"
+  - "Post-construction land management"
+process:
+  eyebrow: "How it runs"
+  heading: "From clearance to ongoing management."
+  intro: "Solar sites are usually worked to a planning-conditioned construction date, and cleared in stages so land use can continue on the parts not yet needed."
+  image: "../../assets/Images/farrelly-brothers-services-10.webp"
+  imageAlt: "Cleared land ready for the next stage of work."
+  steps:
+    - title: "We review the site"
+      description: "The footprint, cable routes, ground conditions and construction timeline are reviewed together."
+      image: "../../assets/Images/farrelly-brothers-herro1.webp"
+      imageAlt: "A mature tree standing in open parkland."
+    - title: "You get a scoped quote"
+      description: "Priced against the site area, phasing and what's needed both for construction and afterwards."
+    - title: "Clearance is phased"
+      description: "Work is sequenced field by field, so land not yet needed for construction stays in use for longer."
+      image: "../../assets/Images/farrelly-brothers-herro4.webp"
+      imageAlt: "Tractor working across open ground."
+    - title: "Ongoing management continues"
+      description: "Once operational, grass and scrub growth is managed on a scheduled basis to keep the site in order."
+faq:
+  - question: "Can clearance be phased around a construction timeline?"
+    answer: "Yes — clearance is typically sequenced field by field, so grazing or land use can continue on sections not yet needed until construction reaches them."
+  - question: "Do you handle vegetation management after the site is built, or just clearance?"
+    answer: "Both. Pre-construction clearance and ongoing post-construction grass and scrub management are both part of the service, which keeps continuity across the life of the site."
+  - question: "Can you work to a fixed, planning-conditioned start date?"
+    answer: "Yes — solar projects are usually tied to a specific planning or construction start date, and clearance is planned and phased against it."
+  - question: "Do you handle topsoil stripping and access track preparation as well as clearance?"
+    answer: "Yes, topsoil handling and access track levelling for the construction contractor are part of the pre-construction work."
+relatedServices:
+  - collection: "services"
+    id: "site-clearance"
+  - collection: "services"
+    id: "agricultural-contracting"
+  - collection: "services"
+    id: "plant-hire"
+relatedProjects:
+  - collection: "projects"
+    id: "meath-solar-farm-site-clearance"
+---

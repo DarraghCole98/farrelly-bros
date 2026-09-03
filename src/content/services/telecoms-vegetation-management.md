@@ -1,0 +1,82 @@
+---
+title: "Telecoms Vegetation Management"
+summary: "Vegetation management around telecoms infrastructure."
+seo:
+  title: "Telecoms Vegetation Management"
+  description: "Vegetation management around telecoms infrastructure."
+hero:
+  intro: "Clearing and maintaining vegetation around masts, compounds and access routes, so infrastructure stays reachable and works can go ahead on schedule."
+  image: "../../assets/Images/farrelly-brothers-herro5.webp"
+  imageAlt: "Verge-side vegetation management alongside a road."
+capabilities:
+  - title: "Access route clearance"
+    description: "Reopening and maintaining tracks that reach masts and compounds."
+  - title: "Mast compound maintenance"
+    description: "Vegetation kept back from compound boundaries, fencing and cabling."
+  - title: "Ongoing vegetation management"
+    description: "Scheduled maintenance to stop growth closing routes back in again."
+  - title: "Restricted and rural site access"
+    description: "Work carried out on remote or difficult-to-reach infrastructure sites."
+whyUs:
+  heading: "Access sorted before the crew arrives."
+  intro: "Telecoms works are usually booked against a fixed date — a crane slot, an upgrade window, a scheduled visit. Vegetation blocking access is a problem that has to be solved before that date, not on it."
+  image: "../../assets/Images/farrelly-brothers-services-9.webp"
+  imageAlt: "Flail attachment clearing scrub and trees at the edge of a site."
+  points:
+    - "Clearance planned around fixed delivery or crew dates, not treated as routine cutting."
+    - "Hand-cutting close to compound fencing and cabling where machinery can't safely reach."
+    - "Access tracks left passable for future maintenance visits, not just cleared once."
+    - "Rural and remote sites reached as readily as accessible ones."
+overview:
+  heading: "Keeping infrastructure reachable, not just visible."
+  body: "Telecoms vegetation management covers the access routes and compound areas that grow in around masts and infrastructure over time — cleared and, where needed, kept clear on a scheduled basis. Work close to compound fencing and cabling is handled carefully, with machinery used where it's safe and hand-cutting where it isn't."
+  image: "../../assets/Images/farrelly-brothers-herro3.webp"
+  imageAlt: "Cleared land with machinery working in the background."
+  points:
+    - "Access tracks cleared and widened for vehicle and crane access."
+    - "Compound apron and boundary vegetation kept back from fencing and cabling."
+    - "Scheduled maintenance available to prevent routes closing back in."
+applications:
+  - "Mast and compound sites"
+  - "Access tracks and routes"
+  - "Rural and remote infrastructure"
+  - "Scheduled maintenance contracts"
+process:
+  eyebrow: "How it runs"
+  heading: "From closed-in access to a clear route."
+  intro: "Telecoms access work is planned around the date it needs to be ready for, with hand-cutting used wherever machinery would risk fencing or cabling."
+  image: "../../assets/Images/farrelly-brothers-services-10.webp"
+  imageAlt: "Cleared land ready for the next stage of work."
+  steps:
+    - title: "We assess the access"
+      description: "The route, the compound and what's grown in around them are assessed against the date the site needs to be ready."
+      image: "../../assets/Images/farrelly-brothers-herro1.webp"
+      imageAlt: "A mature tree standing in open parkland."
+    - title: "You get a scoped quote"
+      description: "Priced against the length of the route and how close work needs to come to fencing and cabling."
+    - title: "Work is planned around the deadline"
+      description: "Machinery, hand-cutting and sequence are set to have the site ready ahead of the fixed date."
+      image: "../../assets/Images/farrelly-brothers-herro7.webp"
+      imageAlt: "Close-up of tractor cab and grille in the field."
+    - title: "Access is handed back clear"
+      description: "The route and compound are left passable, with an ongoing maintenance schedule available if needed."
+faq:
+  - question: "Can you work around live cabling and compound fencing?"
+    answer: "Yes — work close to cabling and fencing is done by hand where machinery would risk damage, with flail or excavator work kept to the wider route."
+  - question: "Do you offer ongoing maintenance, or only one-off clearance?"
+    answer: "Both. A route can be cleared once, or put on a scheduled maintenance visit so it doesn't close back in with regrowth."
+  - question: "Can clearance be timed against a fixed crew or delivery date?"
+    answer: "Yes — telecoms access work is usually planned against exactly that kind of fixed date, and sequenced to have the route ready in advance."
+  - question: "Do you cover remote or difficult-access sites?"
+    answer: "Yes, rural and restricted-access mast sites are a regular part of this work."
+relatedServices:
+  - collection: "services"
+    id: "site-clearance"
+  - collection: "services"
+    id: "tree-care"
+  - collection: "services"
+    id: "wood-chipping"
+relatedProjects:
+  - collection: "projects"
+    id: "kildare-telecoms-mast-access"
+---

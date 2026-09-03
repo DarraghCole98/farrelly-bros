@@ -1,0 +1,103 @@
+---
+import type { HTMLAttributes, SvgComponent } from "astro/types";
+import Icon from "@/components/Media/Icon.astro";
+
+export interface FeatureItem {
+  /** The point being made, in a few words. */
+  title: string;
+  /** A sentence or two supporting it. */
+  text?: string;
+  /** An SVG imported from `src/assets`. Replaces the rule/hairline marker when set. */
+  icon?: SvgComponent;
+}
+
+interface Props extends HTMLAttributes<"ul"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The points to make. Renders nothing when empty. */
+  items: FeatureItem[];
+  /**
+   * How each item is marked.
+   *
+   * - `rule` — a short brand rule above it, for a few strong points (default)
+   * - `hairline` — a thin line above it, for a longer run of steps
+   */
+  variant?: "rule" | "hairline";
+}
+
+const {
+  render = true,
+  items,
+  variant = "rule",
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <ul
+      class:list={[
+        "feature-row_wrap",
+        variant !== "rule" && variant,
+        className,
+      ]}
+      {...rest}
+    >
+      {items.map((item) => (
+        <li class:list={["feature-row_item", item.icon && "has-icon"]}>
+          {item.icon && <Icon src={item.icon} variant="large" />}
+          <h3 class="feature-row_title text-style-h5">{item.title}</h3>
+          {item.text && <p class="feature-row_text">{item.text}</p>}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .feature-row_wrap {
+      display: grid;
+      gap: var(--space-7) var(--site-gutter);
+      width: 100%;
+
+      @media (width >= 48rem) {
+        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      }
+
+      &.hairline {
+        gap: var(--space-6) var(--site-gutter);
+
+        @media (width >= 48rem) {
+          grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+        }
+      }
+    }
+
+    /* A short brand rule stands in for an icon — it marks the item without
+       adding another set of glyphs to the page. */
+    .feature-row_item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding-top: var(--space-4);
+      border-top: 0.1875rem solid var(--heading-accent);
+
+      .feature-row_wrap.hairline & {
+        gap: var(--space-2);
+        border-top-width: var(--border-width);
+        border-top-color: var(--border);
+      }
+
+      &.has-icon {
+        padding-top: 0;
+        border-top: none;
+      }
+    }
+
+    .feature-row_text {
+      color: var(--text-2);
+    }
+  }
+</style>
