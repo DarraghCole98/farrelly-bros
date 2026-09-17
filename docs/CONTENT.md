@@ -21,6 +21,12 @@
 /services/telecoms-vegetation-management/
 /services/solar-farm-landscaping/
 
+### Sectors
+/sectors/
+
+### Individual Sector
+/sectors/[slug]/
+
 ### Projects
 /projects/
 
@@ -29,6 +35,9 @@
 
 ### Plant & Machinery
 /plant-machinery/
+
+### FAQ
+/faq/
 
 ### Contact
 /contact/
@@ -352,6 +361,42 @@ Potential subject areas:
 Exact scope must be confirmed.
 
 --------------------------------------------------
+SECTORS
+--------------------------------------------------
+
+Purpose:
+
+Show how the work applies to a given sector, and route each sector to the
+services actually relevant to it.
+
+Sectors index:
+
+01. Hero/introduction
+02. Full sector grid (image, icon and label per sector)
+03. Capability statement
+04. CTA
+
+Sector detail:
+
+01. Hero (sector image, sector summary)
+02. Relevant services (curated per sector, drawn from the services
+    collection — no sector-specific copy is written per service)
+03. Enquiry form, pre-filled with the sector as context
+04. Other sectors
+05. CTA
+
+Sector data lives in `src/data/sectors.ts`, not a content collection — the
+set is small and fixed (see the confirmed list under Home, 07. Sectors /
+Applications, above), so it is plain structured data rather than markdown
+entries. Each sector carries a `services` array of service ids, curating
+which of the eight services are relevant to it; this is an editorial
+grouping of already-published service content, not a new factual claim.
+
+Do not add a client-logo strip to either page. No Farrelly Bros client has
+been confirmed for public display — see Content Integrity in
+docs/DECISIONS.md.
+
+--------------------------------------------------
 PROJECTS
 --------------------------------------------------
 
@@ -443,6 +488,24 @@ relevant services
 related projects
 
 Exact manufacturer/model/specification details must not be invented.
+
+--------------------------------------------------
+FAQ
+--------------------------------------------------
+
+Purpose:
+
+Aggregate every service's FAQ in one place, grouped by service, so a
+general question has somewhere to go besides the enquiry form.
+
+Content is pulled directly from each service's own `faq` entries — nothing
+is written independently on this page, so it can't drift from the answers
+already reviewed on the service pages.
+
+01. Hero
+02. Jump navigation to each service's questions
+03. One section per service with FAQ content, its own accordion
+04. CTA
 
 --------------------------------------------------
 CONTACT

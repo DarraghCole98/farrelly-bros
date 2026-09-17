@@ -16,4 +16,19 @@
   "observability": {
     "enabled": true,
   },
+
+  // functions/api/enquiry.ts and functions/api/files.ts run as Pages
+  // Functions alongside these static assets — no separate deploy step.
+  // They work today via the Web3Forms fallback with none of the bindings
+  // below configured. Uncomment and fill in once the real resources exist
+  // (see .env.example and README-ENQUIRY.md); Cloudflare Pages env vars
+  // (TURNSTILE_SECRET_KEY, RESEND_API_KEY, etc.) are set in the dashboard,
+  // not here.
+  //
+  // "r2_buckets": [
+  //   { "binding": "ENQUIRY_UPLOADS", "bucket_name": "farrelly-bros-enquiries" }
+  // ],
+  // "d1_databases": [
+  //   { "binding": "DB", "database_name": "farrelly-bros", "database_id": "<from `wrangler d1 create`>" }
+  // ],
 }

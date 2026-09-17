@@ -1,0 +1,53 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import OptionTile from "@/components/Enquiry/OptionTile.astro";
+import { SERVICE_OPTIONS } from "@/lib/enquiry/config.ts";
+---
+
+<fieldset class="enquiry-step" data-enquiry-step="1">
+  <legend class="sr-only">The Work</legend>
+  <Heading tag="h2" variant="h3" maxWidth={22} data-step-heading tabindex="-1">
+    Tell us about the work.
+  </Heading>
+  <Paragraph maxWidth={40}>
+    Choose the closest match. If you're not sure, that's fine too.
+  </Paragraph>
+
+  <div class="enquiry-screen" data-screen-stage="1" data-screen-id="service">
+    <div class="enquiry-step_options" data-service-options>
+      {
+        SERVICE_OPTIONS.map((option) => (
+          <OptionTile
+            type="radio"
+            name="service"
+            value={option.value}
+            label={option.label}
+            description={option.description}
+            required
+          />
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="enquiry-step_error" data-step-error hidden role="alert">
+    <span class="enquiry-step_error-icon" aria-hidden="true">!</span>
+    <span class="enquiry-step_error-text text-style-small" data-step-error-text></span>
+  </div>
+</fieldset>
+
+<style is:global>
+  @layer components {
+    .enquiry-step_options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3);
+      width: 100%;
+
+      @media (width < 36rem) {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  }
+</style>

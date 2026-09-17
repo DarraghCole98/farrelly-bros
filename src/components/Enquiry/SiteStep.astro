@@ -1,0 +1,102 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import Input from "@/components/Form/Input.astro";
+import OptionTile from "@/components/Enquiry/OptionTile.astro";
+import { SITE_TYPE_OPTIONS } from "@/lib/enquiry/config.ts";
+---
+
+<fieldset class="enquiry-step" data-enquiry-step="2" hidden>
+  <legend class="sr-only">The Site</legend>
+  <Heading tag="h2" variant="h3" maxWidth={22} data-step-heading tabindex="-1">
+    Tell us about the site.
+  </Heading>
+
+  <div class="enquiry-screen" data-screen-stage="2" data-screen-id="siteType">
+    <p class="text-style-h6 enquiry-step_question">What type of site is it?</p>
+    <div class="enquiry-step_options compact-grid">
+      {
+        SITE_TYPE_OPTIONS.map((option) => (
+          <OptionTile
+            type="radio"
+            name="siteType"
+            value={option.value}
+            label={option.label}
+            required
+            compact
+          />
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="enquiry-screen" data-screen-stage="2" data-screen-id="location">
+    <Input
+      label="Where is the project?"
+      name="location"
+      variant="text"
+      placeholder="Town, county or Eircode"
+      required
+    />
+    <p class="text-style-small enquiry-step_hint">
+      A full postal address isn't needed — a town, county or Eircode is enough for now.
+    </p>
+  </div>
+
+  {/*
+    Nothing for any service is rendered here up front — only the selected
+    service's question(s) get built into this slot by the script below, each
+    wrapped as its own `.enquiry-screen` so it's sequenced in like every
+    other question rather than piling up under one scroll.
+  */}
+  <div data-service-questions-slot></div>
+
+  <div class="enquiry-step_error" data-step-error hidden role="alert">
+    <span class="enquiry-step_error-icon" aria-hidden="true">!</span>
+    <span class="enquiry-step_error-text text-style-small" data-step-error-text></span>
+  </div>
+</fieldset>
+
+<style is:global>
+  @layer components {
+    .enquiry-screen {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      width: 100%;
+
+      /* Same reasoning as `.enquiry-step` — an unqualified `display: flex`
+         would otherwise beat the browser's own `[hidden] { display: none }`
+         and every question would render stacked instead of one at a time. */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .enquiry-step_question {
+      margin: 0;
+    }
+
+    .enquiry-step_optional {
+      color: var(--text-2);
+      font-weight: var(--primary-regular);
+    }
+
+    .enquiry-step_hint {
+      color: var(--text-2);
+    }
+
+    /* Grid, not flex-wrap — a flex row only ever takes each tile's own
+       basis width, so a question with just two or three options (e.g.
+       "Best way to reach you") left a big empty gap on the right instead
+       of filling the row. `1fr` tracks stretch every tile to share the
+       full row width evenly, whatever the option count. */
+    .enquiry-step_options.compact-grid {
+      display: grid;
+      /* Wide enough that longer labels ("Farm / Agricultural Land",
+         "Utility / Infrastructure") wrap onto a clean second line instead
+         of being squeezed into three cramped ones. */
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+      gap: var(--space-3);
+    }
+  }
+</style>

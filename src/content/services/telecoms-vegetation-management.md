@@ -80,7 +80,4 @@ relatedServices:
     id: "tree-care"
   - collection: "services"
     id: "wood-chipping"
-relatedProjects:
-  - collection: "projects"
-    id: "kildare-telecoms-mast-access"
 ---

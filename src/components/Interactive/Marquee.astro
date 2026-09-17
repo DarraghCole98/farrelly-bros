@@ -1,6 +1,5 @@
 ---
 import type { HTMLAttributes } from "astro/types";
-import Button from "@/components/Button.astro";
 import { slotContent } from "@/utils/slots.ts";
 
 type Props = HTMLAttributes<"div"> & {
@@ -94,14 +93,6 @@ const locals = `--_count: ${count}`;
           </div>
         </div>
       </div>
-
-      <Button
-        variant="play"
-        emphasis="secondary"
-        pressed={true}
-        class="marquee_toggle"
-        data-marquee-toggle
-      />
     </div>
   )
 }
@@ -110,26 +101,15 @@ const locals = `--_count: ${count}`;
   for (const marquee of document.querySelectorAll<HTMLElement>(
     ".marquee_wrap",
   )) {
-    const toggle = marquee.querySelector<HTMLButtonElement>(
-      "[data-marquee-toggle]",
-    );
-    if (!toggle) continue;
-
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 
     const setPlaying = (playing: boolean) => {
       marquee.dataset.state = playing ? "playing" : "paused";
-      toggle.setAttribute("aria-pressed", String(playing));
-      toggle.setAttribute("aria-label", playing ? "Pause" : "Play");
     };
 
-    /* Anyone who asked for less motion gets it still, and can start it. */
+    /* Anyone who asked for less motion gets it still. */
     setPlaying(!reduced.matches);
     reduced.addEventListener("change", () => setPlaying(!reduced.matches));
-
-    toggle.addEventListener("click", () => {
-      setPlaying(marquee.dataset.state !== "playing");
-    });
   }
 </script>
 
@@ -149,8 +129,7 @@ const locals = `--_count: ${count}`;
       width: 100%;
     }
 
-    /* Clips the strip without swallowing the toggle beside it, and fades what
-       is arriving and leaving rather than cutting it off. */
+    /* Fades what is arriving and leaving rather than cutting it off. */
     .marquee_viewport {
       flex: 1 1 auto;
       min-width: 0;
@@ -217,10 +196,6 @@ const locals = `--_count: ${count}`;
         width: auto;
         height: var(--_item-height);
       }
-    }
-
-    .marquee_toggle {
-      flex: none;
     }
 
     @keyframes marquee {

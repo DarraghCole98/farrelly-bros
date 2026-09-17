@@ -1,6 +1,8 @@
 ---
 import { getCollection, getEntries, render } from "astro:content";
 import Layout from "@/layouts/BaseLayout.astro";
+import SectionHeroMedia from "@/components/Site/SectionHeroMedia.astro";
+import treeRings from "@/assets/Images/pngs/desktop-tree-rings.png";
 import Section from "@/components/Wrapper/Section.astro";
 import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
 import Eyebrow from "@/components/Typography/Eyebrow.astro";
@@ -16,80 +18,19 @@ import Tabs from "@/components/Interactive/Tabs.astro";
 import TabLink from "@/components/Interactive/TabLink.astro";
 import Card from "@/components/Item/Card.astro";
 import Img from "@/components/Media/Img.astro";
-import Overlay from "@/components/Media/Overlay.astro";
 import MediaPlaceholder from "@/components/Site/MediaPlaceholder.astro";
 import ContentIconGrid from "@/components/Site/ContentIconGrid.astro";
 import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
-import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
+import ContentCapabilitySplit from "@/components/Site/ContentCapabilitySplit.astro";
 import ContentChecklist from "@/components/Site/ContentChecklist.astro";
+import ContentMediaSplit from "@/components/Site/ContentMediaSplit.astro";
 import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
 import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
 import ContentEnquiryForm from "@/components/Site/ContentEnquiryForm.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
 import { SITE_NAME } from "@/consts.ts";
 import type { CollectionEntry } from "astro:content";
-import type { SvgComponent } from "astro/types";
-import iconSprout from "@/assets/icons/sprout.svg";
-import iconLayers from "@/assets/icons/layers.svg";
-import iconMap from "@/assets/icons/map.svg";
-import iconWrench from "@/assets/icons/wrench.svg";
-import iconCircleUser from "@/assets/icons/circle-user.svg";
-import iconScissors from "@/assets/icons/scissors.svg";
-import iconAxe from "@/assets/icons/axe.svg";
-import iconTriangleAlert from "@/assets/icons/triangle-alert.svg";
-import iconCloudLightning from "@/assets/icons/cloud-lightning.svg";
-import iconRecycle from "@/assets/icons/recycle.svg";
-import iconTruck from "@/assets/icons/truck.svg";
-import iconRoute from "@/assets/icons/route.svg";
-import iconFence from "@/assets/icons/fence.svg";
-import iconShovel from "@/assets/icons/shovel.svg";
-import iconArboriculture from "@/assets/icons/arboriculture.svg";
-import iconVegetationManagement from "@/assets/icons/vegetation-management.svg";
-import iconLandManagement from "@/assets/icons/land-management.svg";
-import iconSpecialistPlant from "@/assets/icons/specialist-plant.svg";
-import iconAgriculture from "@/assets/icons/agriculture.svg";
-import iconConstruction from "@/assets/icons/construction.svg";
-import iconTelecommunications from "@/assets/icons/telecommunications.svg";
-
-/**
- * Keyed by the capability's own title (lowercased) — the same lookup
- * pattern projects/[slug].astro uses for sector icons. Falls back to a
- * generic mark for any capability title not covered here, so a new one
- * added later never renders with no icon at all.
- */
-const capabilityIcons: Record<string, SvgComponent> = {
-  "ground cultivation and preparation": iconSprout,
-  "forage and silage work": iconAgriculture,
-  "hedge cutting and topping": iconScissors,
-  "land and drainage maintenance": iconLandManagement,
-  "corridor reinstatement": iconRoute,
-  "topsoil and subsoil handling": iconLayers,
-  "ground restoration and reseeding": iconSprout,
-  "multi-landholding coordination": iconMap,
-  "excavators and wheeled plant": iconTruck,
-  "flail and mulching attachments": iconWrench,
-  "agricultural and forestry machinery": iconSpecialistPlant,
-  "operated or self-drive hire": iconCircleUser,
-  "scrub and vegetation clearance": iconVegetationManagement,
-  "tree and hedgerow clearance": iconArboriculture,
-  "stump removal and grinding": iconShovel,
-  "ground preparation": iconSprout,
-  "pre-construction clearance": iconConstruction,
-  "ongoing vegetation and grass management": iconVegetationManagement,
-  "site access and boundary maintenance": iconFence,
-  "access route clearance": iconRoute,
-  "mast compound maintenance": iconTelecommunications,
-  "ongoing vegetation management": iconVegetationManagement,
-  "restricted and rural site access": iconRoute,
-  "tree removal": iconArboriculture,
-  "crown reduction and pruning": iconScissors,
-  "hazardous and storm-damage work": iconTriangleAlert,
-  "site and access-restricted felling": iconAxe,
-  "timber and brash chipping": iconRecycle,
-  "bulk material clearance": iconTruck,
-  "storm and emergency clean-up support": iconCloudLightning,
-  "chip removal or reuse": iconRecycle,
-};
-const fallbackCapabilityIcon = iconSpecialistPlant;
+import Woodgrain_log_dark from '@/assets/Images/Woodgrain log dark.webp';
 
 export async function getStaticPaths() {
   const services = await getCollection("services");
@@ -122,14 +63,11 @@ const relatedEquipment = data.relatedEquipment?.length
   ? await getEntries(data.relatedEquipment)
   : [];
 
-const capabilityItems =
-  data.capabilities?.map((capability) => ({
-    title: capability.title,
-    text: capability.description,
-    icon:
-      capabilityIcons[capability.title.toLowerCase()] ??
-      fallbackCapabilityIcon,
-  })) ?? [];
+const capabilityItems = data.capabilities?.map((capability) => capability.title) ?? [];
+/* Reuses whichever of the page's own photos is already set for the whyUs
+   section further down — never a fabricated image — so this doesn't need
+   capability-specific photography that doesn't exist. */
+const capabilityImage = data.whyUs?.image ?? data.hero?.image;
 
 const whyUsPoints = data.whyUs?.points ?? [];
 const overviewPoints = data.overview?.points ?? [];
@@ -192,64 +130,60 @@ const serviceSchema = {
   noindex={data.seo?.noindex}
 >
   <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
-  <Section theme="dark" paddingTop="large" paddingBottom="large">
-    <Fragment slot="background">
-      {data.hero?.image && (
-        <Img
-          src={data.hero.image}
-          alt=""
-          loading="eager"
-          fetchPriority="high"
-        />
-      )}
-      <Overlay variant="solid" strength={55} />
-    </Fragment>
-    <Eyebrow>{data.eyebrow ?? "Service"}</Eyebrow>
-    <Heading tag="h1" variant="h1" maxWidth={18}>
-      {data.hero?.heading ?? data.title}
-    </Heading>
-    <Paragraph variant="large" maxWidth={44}>
-      {data.hero?.intro ?? data.summary}
-    </Paragraph>
-    <ButtonWrapper>
-      <Button element="link" href="/contact/">Discuss a Project</Button>
-    </ButtonWrapper>
-  </Section>
+  <SectionHeroMedia
+    eyebrow={data.eyebrow ?? "Service"}
+    heading={data.hero?.heading ?? data.title}
+    text={data.hero?.intro ?? data.summary}
+    image={data.hero?.image}
+    texture={treeRings}
+    textureStyle="as-supplied"
+  >
+    <Button element="link" href={`/contact/?service=${entry.id}`}>
+      Discuss a Project
+    </Button>
+  </SectionHeroMedia>
+
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Services", href: "/services/" },
+      { label: data.title },
+    ]}
+  />
 
   {
     capabilityItems.length > 0 && (
       <Section paddingTop="large" paddingBottom="large">
-        <ContentSectionHeader
+        <ContentCapabilitySplit
           eyebrow="Capabilities"
           heading="What this covers."
-          variant="h3"
+          text={data.summary}
+          items={capabilityItems}
+          image={capabilityImage}
+          imageAlt={data.whyUs?.imageAlt ?? data.hero?.imageAlt}
+          buttonLabel="Discuss a Project"
+          buttonHref={`/contact/?service=${entry.id}`}
         />
-        <ContentFeatureRow items={capabilityItems} />
       </Section>
     )
   }
 
   {
     hasWhyUs && (
-      <Section paddingTop="large" paddingBottom="large" class="background-2">
-        <ContentWrapper variant="columns" reverse>
-          <Heading tag="h2" variant="h3" maxWidth={22}>
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentMediaSplit
+          variant="panel"
+          image={data.whyUs?.image}
+          imageAlt={data.whyUs?.imageAlt}
+        >
+          <Heading tag="h2" variant="h2" maxWidth={22}>
             {data.whyUs?.heading ?? "Why give this work to Farrelly Bros."}
           </Heading>
           {data.whyUs?.intro && (
             <Paragraph maxWidth={44}>{data.whyUs.intro}</Paragraph>
           )}
           <ContentChecklist items={whyUsPoints} />
-          <Img
-            slot="column2"
-            render={!!data.whyUs?.image}
-            src={data.whyUs?.image!}
-            alt={data.whyUs?.imageAlt}
-            variant="constrained"
-            sizes="(width >= 64rem) 45vw, 100vw"
-            class="ratio-5-4 radius-large"
-          />
-        </ContentWrapper>
+        </ContentMediaSplit>
       </Section>
     )
   }
@@ -257,8 +191,13 @@ const serviceSchema = {
   {
     hasOverview && (
       <Section paddingTop="large" paddingBottom="large">
-        <ContentWrapper variant="columns">
-          <Heading tag="h2" variant="h3" maxWidth={22}>
+        <ContentMediaSplit
+          variant="offset"
+          reverse
+          image={data.overview?.image}
+          imageAlt={data.overview?.imageAlt}
+        >
+          <Heading tag="h2" variant="h2" maxWidth={22}>
             {data.overview?.heading ?? "What this work involves."}
           </Heading>
           {data.overview?.body && (
@@ -270,23 +209,14 @@ const serviceSchema = {
             </RichText>
           )}
           <ContentChecklist items={overviewPoints} />
-          <Img
-            slot="column2"
-            render={!!data.overview?.image}
-            src={data.overview?.image!}
-            alt={data.overview?.imageAlt}
-            variant="constrained"
-            sizes="(width >= 64rem) 45vw, 100vw"
-            class="ratio-5-4 radius-large"
-          />
-        </ContentWrapper>
+        </ContentMediaSplit>
       </Section>
     )
   }
 
   {
     applications.length > 0 && (
-      <Section theme="dark" paddingTop="large" paddingBottom="large" gap="6">
+      <Section theme="dark" paddingTop="large" paddingBottom="large" gap="6" overlayStrength={95} image={Woodgrain_log_dark}>
         <Eyebrow>Where this applies</Eyebrow>
         {hasApplicationDetail ? (
           <Tabs variant="side" id={`applications-${entry.id}`}>
@@ -303,7 +233,7 @@ const serviceSchema = {
                 text={item.text}
                 image={item.image}
                 imageAlt=""
-                buttonHref="/contact/"
+                buttonHref={`/contact/?service=${entry.id}`}
                 buttonLabel="Discuss a Project"
               />
             ))}
@@ -330,7 +260,9 @@ const serviceSchema = {
           </Paragraph>
         )}
         <ButtonWrapper>
-          <Button element="link" href="/contact/">Request a Quote</Button>
+          <Button element="link" href={`/contact/?service=${entry.id}`}>
+            Request a Quote
+          </Button>
         </ButtonWrapper>
         <Tabs playback="auto" id={`process-${entry.id}`}>
           <Fragment slot="links">
@@ -384,7 +316,7 @@ const serviceSchema = {
         <ContentSectionHeader
           eyebrow="Plant &amp; Equipment"
           heading="Equipment used for this work."
-          variant="h3"
+          variant="h2"
         />
         <ContentCardGrid
           medium={3}
@@ -406,7 +338,7 @@ const serviceSchema = {
         <ContentSectionHeader
           eyebrow="Related Project"
           heading="This work in the field."
-          variant="h3"
+          variant="h2"
         />
         <ContentCardGrid
           medium={relatedProjectsColumns}
@@ -458,12 +390,7 @@ const serviceSchema = {
   {
     !!relatedServices.length && (
       <Section paddingTop="large" paddingBottom="large" class="background-2">
-        <ContentSectionHeader
-          eyebrow="Land and vegetation services"
-          heading="Often delivered alongside."
-          text="Most sites need more than one of these. Each is planned and resourced by the same team."
-          variant="h3"
-        />
+        <ContentSectionHeader eyebrow="Land and vegetation services" heading="Often delivered alongside." text="Most sites need more than one of these. Each is planned and resourced by the same team." />
         <Slider
           variant="crop-start"
           label="Related services"
@@ -488,7 +415,7 @@ const serviceSchema = {
     )
   }
 
-  <Section paddingBottom="none" theme="dark" paddingTop="small">
+  <Section paddingTop="none" paddingBottom="none" theme="dark">
     <ContentCtaMain overlap />
   </Section>
 </Layout>

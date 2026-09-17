@@ -80,7 +80,4 @@ relatedServices:
     id: "site-clearance"
   - collection: "services"
     id: "agricultural-contracting"
-relatedProjects:
-  - collection: "projects"
-    id: "wicklow-storm-damage-clearance"
 ---

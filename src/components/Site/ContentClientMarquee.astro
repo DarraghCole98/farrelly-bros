@@ -1,0 +1,85 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import Marquee from "@/components/Interactive/Marquee.astro";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** Small centred label above the strip. */
+  label?: string;
+  /**
+   * The marks to scroll. No real Farrelly Bros client has been confirmed
+   * for public display, so this defaults to generic placeholder marks —
+   * swap in real logos once client permission is confirmed (see
+   * docs/DECISIONS.md, Dedicated Sector Pages).
+   */
+  items?: string[];
+}
+
+const PLACEHOLDER_ITEMS = [
+  "Client Logo",
+  "Company Name",
+  "Brand Mark",
+  "Partner Logo",
+  "Client Name",
+  "Logo Placeholder",
+  "Client Logo",
+  "Brand Mark",
+];
+
+const {
+  render = true,
+  label = "Trusted by",
+  items = PLACEHOLDER_ITEMS,
+} = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <div class="client-marquee_wrap">
+      <Heading tag="h4" variant="h4" class="client-marquee_label">
+        {label}
+      </Heading>
+      <Marquee label={`${label} — placeholder logos, pending confirmed client marks`}>
+        {items.map((item) => (
+          <span class="client-marquee_item text-style-small">{item}</span>
+        ))}
+      </Marquee>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .client-marquee_wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-6);
+      width: 100%;
+      padding-top: var(--space-6);
+      border-top: var(--border-width) solid var(--border);
+    }
+
+    .client-marquee_label {
+      text-align: center;
+      color: var(--text-2);
+    }
+
+    /* Placeholder marks only — a plain outlined chip rather than anything
+       styled to resemble a real wordmark, so it can't be mistaken for a
+       confirmed client. */
+    .client-marquee_item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.5rem;
+      padding-inline: var(--space-4);
+      color: var(--text-2);
+      white-space: nowrap;
+      background-color: var(--background-2);
+      border: var(--border-width) dashed var(--border);
+      border-radius: var(--radius-small);
+    }
+  }
+</style>

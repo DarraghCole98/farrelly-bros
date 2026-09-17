@@ -6,6 +6,7 @@ import Nav from "@/components/Global/Nav.astro";
 import Footer from "@/components/Global/Footer.astro";
 import Motion from "@/components/Global/Motion.astro";
 import CookieConsent from "@/components/Global/CookieConsent.astro";
+import MobileCta from "@/components/Global/MobileCta.astro";
 import type { SeoProps } from "@/types.ts";
 
 type Props = SeoProps & {
@@ -35,6 +36,7 @@ const { theme = "inherit", overlap = false, ...seo } = Astro.props;
       <slot />
     </main>
     <Footer />
+    <MobileCta />
     <Motion />
     <CookieConsent />
   </body>

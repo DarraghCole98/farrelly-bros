@@ -1,0 +1,127 @@
+---
+import Section from "@/components/Wrapper/Section.astro";
+import Icon from "@/components/Media/Icon.astro";
+import homeIcon from "@/assets/icons/home.svg";
+
+export interface BreadcrumbItem {
+  label: string;
+  /** Left out on the current page — the last item renders as plain text. */
+  href?: string;
+}
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The trail, starting with Home. The last item is the current page. */
+  items: BreadcrumbItem[];
+}
+
+const { render = true, items } = Astro.props;
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: item.label,
+    ...(item.href
+      ? { item: new URL(item.href, Astro.site).toString() }
+      : {}),
+  })),
+};
+---
+
+{
+  render && items.length > 0 && (
+    <Fragment>
+      <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(schema)}
+      />
+      <Section
+        paddingTop="even"
+        paddingBottom="even"
+        class="breadcrumbs_section"
+      >
+        <nav class="breadcrumbs_wrap" aria-label="Breadcrumb">
+          <ol class="breadcrumbs_list text-style-small">
+            {items.map((item, i) => {
+              const isLast = i === items.length - 1;
+              return (
+                <li class="breadcrumbs_item">
+                  {isLast || !item.href ? (
+                    <span class="breadcrumbs_current" aria-current="page">
+                      {item.label}
+                    </span>
+                  ) : (
+                    <a href={item.href} class="breadcrumbs_link">
+                      {i === 0 && <Icon src={homeIcon} variant="small" />}
+                      <span>{item.label}</span>
+                    </a>
+                  )}
+                  {!isLast && (
+                    <span class="breadcrumbs_separator" aria-hidden="true">
+                      /
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+      </Section>
+    </Fragment>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .breadcrumbs_section {
+      border-bottom: var(--border-width) solid var(--border);
+    }
+
+    .breadcrumbs_list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      list-style: none;
+      width: 100%;
+    }
+
+    .breadcrumbs_item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    .breadcrumbs_link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--text-2);
+      transition: color var(--hover-duration) var(--hover-ease);
+
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
+    }
+
+    .breadcrumbs_current {
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 20rem;
+    }
+
+    .breadcrumbs_separator {
+      color: var(--border);
+    }
+  }
+</style>

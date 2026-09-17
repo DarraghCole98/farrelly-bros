@@ -1,0 +1,183 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentSectorGrid from "@/components/Site/ContentSectorGrid.astro";
+import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
+import ContentWhyUs from "@/components/Site/ContentWhyUs.astro";
+import ContentEnquiryForm from "@/components/Site/ContentEnquiryForm.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
+import { SITE_NAME } from "@/consts.ts";
+import { SECTORS, type Sector } from "@/data/sectors.ts";
+
+export async function getStaticPaths() {
+  return SECTORS.map((sector) => ({
+    params: { slug: sector.slug },
+    props: { sector },
+  }));
+}
+
+interface Props {
+  sector: Sector;
+}
+
+const { sector } = Astro.props;
+
+const allServices = await getCollection("services");
+const relevantServices = sector.services
+  .map((id) => allServices.find((service) => service.id === id))
+  .filter((service): service is NonNullable<typeof service> => !!service);
+
+const allProjects = await getCollection("projects");
+const caseStudies = (sector.caseStudies ?? [])
+  .map((id) => allProjects.find((project) => project.id === id))
+  .filter((project): project is NonNullable<typeof project> => !!project);
+
+const otherSectors = SECTORS.filter((item) => item.slug !== sector.slug).map(
+  (item) => ({
+    label: item.label,
+    image: item.image,
+    imageAlt: item.imageAlt,
+    icon: item.icon,
+    href: `/sectors/${item.slug}/`,
+  }),
+);
+
+const sectorSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: `${sector.label} — ${SITE_NAME}`,
+  description: sector.summary,
+  provider: { "@type": "LocalBusiness", name: SITE_NAME },
+  url: new URL(`/sectors/${sector.slug}/`, Astro.site).toString(),
+};
+---
+
+<Layout
+  title={sector.label}
+  description={`How Farrelly Bros' arboriculture, vegetation management, site clearance and land contracting work applies to ${sector.label.toLowerCase()} sites. ${sector.summary}`}
+>
+  <script
+    slot="head"
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(sectorSchema)}
+  />
+  <Section theme="dark" paddingTop="large" paddingBottom="large" gap="5">
+    <Fragment slot="background">
+      <Img
+        src={sector.image}
+        alt=""
+        loading="eager"
+        fetchPriority="high"
+      />
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>Sector</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={20}>
+      {sector.heading ?? `Working in ${sector.label.toLowerCase()}.`}
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      {sector.summary}
+    </Paragraph>
+    <ButtonWrapper>
+      <Button element="link" href="/contact/">Discuss a Project</Button>
+    </ButtonWrapper>
+  </Section>
+
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Sectors", href: "/sectors/" },
+      { label: sector.label },
+    ]}
+  />
+
+  {
+    relevantServices.length > 0 && (
+      <Section paddingTop="large" paddingBottom="large">
+        <ContentSectionHeader
+          eyebrow="What we offer"
+          heading={sector.offer?.heading ?? "What this covers."}
+          text={sector.offer?.intro}
+          variant="h2"
+        />
+        <ContentCardGrid
+          medium={relevantServices.length === 1 ? 3 : Math.min(relevantServices.length, 3)}
+          items={relevantServices.map((service) => ({
+            image: service.data.hero?.image,
+            imageAlt: service.data.hero?.imageAlt,
+            heading: service.data.shortTitle ?? service.data.title,
+            text: service.data.summary,
+            buttonLabel: "View Service",
+            buttonHref: `/services/${service.id}/`,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  <ContentWhyUs
+    eyebrow="Why Farrelly Bros"
+    heading={sector.whyUs.heading}
+    text={sector.whyUs.intro}
+    items={sector.whyUs.items}
+    image={sector.whyUs.image}
+    imageAlt={sector.whyUs.imageAlt}
+  />
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentEnquiryForm
+      variant="split"
+      heading="Have a site that needs looking at?"
+      text="Tell us what is there and how it is accessed, and we will come back with how it would be approached and what it would cost."
+      context={sector.label}
+    />
+  </Section>
+
+  {
+    caseStudies.length > 0 && (
+      <Section paddingTop="large" paddingBottom="large" class="background-2">
+        <ContentSectionHeader
+          eyebrow="See what we can do"
+          heading="This work in the field."
+          variant="h2"
+        />
+        <ContentCardGrid
+          medium={caseStudies.length === 1 ? 3 : Math.min(caseStudies.length, 3)}
+          items={caseStudies.map((project) => ({
+            image: project.data.heroImage,
+            imageAlt: project.data.heroImageAlt,
+            eyebrow: project.data.sector,
+            heading: project.data.title,
+            text: project.data.summary,
+            buttonLabel: "View Project",
+            buttonHref: `/projects/${project.id}/`,
+          }))}
+        />
+      </Section>
+    )
+  }
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentSectionHeader
+      eyebrow="Other sectors"
+      heading="Where else the work applies."
+      variant="h2"
+    />
+    <ContentSectorGrid items={otherSectors} />
+  </Section>
+
+  <Section paddingTop="none" paddingBottom="none" theme="dark">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

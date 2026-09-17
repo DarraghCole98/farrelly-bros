@@ -1,6 +1,4 @@
 ---
-import logo from "@/assets/Images/farrelly-brothers-logo.svg";
-import woodgrain from "@/assets/Images/Woodgrain log dark.webp";
 import {
   SITE_NAME,
   SITE_CONTACT,
@@ -27,55 +25,8 @@ const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
 {
   render && (
     <footer class="footer_wrap theme-dark">
-      <img
-        class="footer_bg_graphic"
-        src={woodgrain.src}
-        width={woodgrain.width}
-        height={woodgrain.height}
-        alt=""
-        loading="lazy"
-      />
       <div class="footer_inner">
         <div class="footer_top">
-          <div class="footer_brand">
-            <a class="footer_logo" href="/" aria-label={SITE_NAME}>
-              <img
-                class="footer_logo_mark"
-                src={logo.src}
-                width={logo.width}
-                height={logo.height}
-                alt=""
-              />
-            </a>
-            {hasContact && (
-              <ul class="footer_contact">
-                {SITE_CONTACT.phone && (
-                  <li>
-                    <a
-                      class="footer_contact_link"
-                      href={`tel:${SITE_CONTACT.phone}`}
-                    >
-                      {SITE_CONTACT.phone}
-                    </a>
-                  </li>
-                )}
-                {SITE_CONTACT.email && (
-                  <li>
-                    <a
-                      class="footer_contact_link"
-                      href={`mailto:${SITE_CONTACT.email}`}
-                    >
-                      {SITE_CONTACT.email}
-                    </a>
-                  </li>
-                )}
-                {SITE_CONTACT.address && (
-                  <li class="footer_contact_text">{SITE_CONTACT.address}</li>
-                )}
-              </ul>
-            )}
-          </div>
-
           <nav class="footer_nav" aria-label="Footer">
             <p class="footer_heading text-style-small">Navigation</p>
             <ul class="footer_links">
@@ -115,6 +66,47 @@ const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
                 ))}
               </ul>
             </nav>
+          )}
+
+          {hasContact && (
+            <div class="footer_nav">
+              <p class="footer_heading text-style-small">Contact</p>
+              <ul class="footer_contact">
+                {SITE_CONTACT.phone && (
+                  <li>
+                    <a
+                      class="footer_contact_link"
+                      href={`tel:${SITE_CONTACT.phone}`}
+                    >
+                      {SITE_CONTACT.phone}
+                    </a>
+                  </li>
+                )}
+                {SITE_CONTACT.mobile && (
+                  <li>
+                    <a
+                      class="footer_contact_link"
+                      href={`tel:${SITE_CONTACT.mobile}`}
+                    >
+                      {SITE_CONTACT.mobile} (Emergency)
+                    </a>
+                  </li>
+                )}
+                {SITE_CONTACT.email && (
+                  <li>
+                    <a
+                      class="footer_contact_link"
+                      href={`mailto:${SITE_CONTACT.email}`}
+                    >
+                      {SITE_CONTACT.email}
+                    </a>
+                  </li>
+                )}
+                {SITE_CONTACT.address && (
+                  <li class="footer_contact_text">{SITE_CONTACT.address}</li>
+                )}
+              </ul>
+            </div>
           )}
         </div>
 
@@ -169,27 +161,25 @@ const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
       padding-block: calc(var(--section-space-medium) + var(--_lift))
         var(--section-space-small);
       padding-inline: var(--site-margin);
-      background-color: var(--background);
+      /* Flat colour, no graphic — confirmed against the Figma source: the
+         footer frame is `bg-[#305036]` with no image layer at all. The
+         contour artwork lives in the CTA band above it instead (see
+         `.cta-main_graphic_band` in ContentCtaMain.astro), matched to this
+         same colour so the two meet with no seam. */
+      background-color: var(--forest-600);
       color: var(--text);
       overflow: hidden;
-    }
 
-    /* Wood-ring texture, tinted to the footer's forest background so it
-       reads as a subtle surface rather than a photo dropped on top. */
-    .footer_bg_graphic {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      opacity: 0.16;
-      mix-blend-mode: luminosity;
-      pointer-events: none;
+      /* Reserves room for BaseLayout's fixed MobileCta bar, so its content
+         isn't the last thing that bar covers. */
+      @media (width < 48rem) {
+        padding-bottom: calc(var(--section-space-small) + 4.5rem);
+      }
     }
 
     .footer_inner {
       position: relative;
+      z-index: 1;
       width: 100%;
       max-width: var(--max-width-main);
       display: flex;
@@ -198,42 +188,16 @@ const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
     }
 
     .footer_top {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       gap: var(--space-6) var(--site-gutter);
-      grid-template-columns: 1fr;
-      @media (width >= 48rem) {
-        grid-template-columns: minmax(12rem, 1.2fr) repeat(3, minmax(0, 1fr));
-        align-items: start;
-      }
     }
 
-    .footer_brand {
+    .footer_nav {
       display: flex;
       flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    /* The badge is full-colour and dark-outlined, so it needs a light
-       ground of its own to stay legible on the forest footer. */
-    .footer_logo {
-      display: inline-flex;
-      width: fit-content;
-      max-width: 100%;
-      padding: var(--space-3) var(--space-4);
-      background-color: var(--light-100);
-      border-radius: var(--radius-main);
-
-      & .footer_logo_mark {
-        display: block;
-        width: auto;
-        height: 5rem;
-      }
-      transition: opacity var(--hover-duration) var(--hover-ease);
-      @media (hover: hover) {
-        &:hover {
-          opacity: 0.6;
-        }
-      }
+      gap: var(--space-3);
+      flex: 1 1 10rem;
     }
 
     .footer_contact {
@@ -255,12 +219,6 @@ const hasAnalytics = GOOGLE_ANALYTICS_ID.length > 0;
           color: var(--text);
         }
       }
-    }
-
-    .footer_nav {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
     }
 
     .footer_heading {

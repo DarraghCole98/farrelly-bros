@@ -1,0 +1,104 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import SectionHeroMedia from "@/components/Site/SectionHeroMedia.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Accordion from "@/components/Interactive/Accordion.astro";
+import AccordionItem from "@/components/Interactive/AccordionItem.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
+import { sortByServiceOrder } from "@/components/Global/navigation.ts";
+import heroImage from "@/assets/Images/call-us-farrelly.webp";
+
+/**
+ * Pulled straight from each service's own `faq` entries rather than
+ * rewritten here, so this page can never drift from the answers already
+ * reviewed on the service pages themselves.
+ */
+const services = sortByServiceOrder(await getCollection("services")).filter(
+  (service) => !!service.data.faq?.length,
+);
+---
+
+<Layout
+  title="FAQ"
+  description="Answers to common questions about tree care, site clearance, plant hire and Farrelly Bros' other specialist land and vegetation services."
+>
+  <SectionHeroMedia
+    eyebrow="FAQ"
+    heading="Questions, answered."
+    text="Answers to what comes up most before a job is booked, grouped by service. If yours isn't here, send it to us directly."
+    image={heroImage}
+  >
+    <Button element="link" href="/contact/">Discuss a Project</Button>
+  </SectionHeroMedia>
+
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "FAQ" }]} />
+
+  <Section paddingTop="large" paddingBottom="none" align="center">
+    <nav class="faq-jump_wrap flex-horizontal-wrap gap-3" aria-label="Jump to a service">
+      {services.map((service) => (
+        <Button element="link" variant="link" href={`#${service.id}`}>
+          {service.data.shortTitle ?? service.data.title}
+        </Button>
+      ))}
+    </nav>
+  </Section>
+
+  {
+    services.map((service, index) => (
+      <Section
+        id={service.id}
+        paddingTop="large"
+        paddingBottom="large"
+        class:list={["faq-service_wrap", index % 2 === 1 && "background-2"]}
+      >
+        <ContentWrapper variant="columns">
+          <Heading tag="h2" variant="h2" maxWidth={18}>
+            {service.data.title}
+          </Heading>
+          <Paragraph maxWidth={40}>{service.data.summary}</Paragraph>
+          <ButtonWrapper>
+            <Button
+              element="link"
+              variant="link"
+              href={`/services/${service.id}/`}
+            >
+              View service
+            </Button>
+          </ButtonWrapper>
+          <Fragment slot="column2">
+            <Accordion>
+              {service.data.faq!.map((item) => (
+                <AccordionItem heading={item.question}>
+                  <Paragraph>{item.answer}</Paragraph>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </Fragment>
+        </ContentWrapper>
+      </Section>
+    ))
+  }
+
+  <Section paddingTop="none" paddingBottom="none" theme="light">
+    <ContentCtaMain
+      heading="Still not sure?"
+      text="Tell us what the site needs and we will come back with how it would be approached and what it would cost."
+      overlap
+    />
+  </Section>
+</Layout>
+
+<style is:global>
+  @layer components {
+    .faq-service_wrap {
+      scroll-margin-top: calc(var(--nav-height) + var(--space-6));
+    }
+  }
+</style>

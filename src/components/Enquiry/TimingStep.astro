@@ -1,0 +1,55 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import Input from "@/components/Form/Input.astro";
+import Textarea from "@/components/Form/Textarea.astro";
+import OptionTile from "@/components/Enquiry/OptionTile.astro";
+import EmergencyNotice from "@/components/Enquiry/EmergencyNotice.astro";
+import { TIMING_OPTIONS } from "@/lib/enquiry/config.ts";
+---
+
+<fieldset class="enquiry-step" data-enquiry-step="4" hidden>
+  <legend class="sr-only">Timing and Project Information</legend>
+  <Heading tag="h2" variant="h3" maxWidth={22} data-step-heading tabindex="-1">
+    Timing and project information.
+  </Heading>
+
+  <div class="enquiry-screen" data-screen-stage="4" data-screen-id="timing">
+    <p class="text-style-h6 enquiry-step_question">When do you need the work?</p>
+    <div class="enquiry-step_options compact-grid">
+      {
+        TIMING_OPTIONS.map((option) => (
+          <OptionTile
+            type="radio"
+            name="timing"
+            value={option.value}
+            label={option.label}
+            required
+            compact
+          />
+        ))
+      }
+    </div>
+
+    <EmergencyNotice />
+
+    <div class="enquiry-step_reveal" data-timing-reveal="scheduled" hidden>
+      <Input label="Target start date" name="targetDate" variant="date" />
+      <p class="text-style-small enquiry-step_hint">Optional — a rough date is fine.</p>
+    </div>
+  </div>
+
+  <div class="enquiry-screen" data-screen-stage="4" data-screen-id="notes">
+    <Textarea
+      label="Anything else we should know?"
+      name="notes"
+      minLines={4}
+      placeholder="Access arrangements, deadlines, site restrictions or anything that hasn't been covered above."
+    />
+    <p class="text-style-small enquiry-step_hint">Optional.</p>
+  </div>
+
+  <div class="enquiry-step_error" data-step-error hidden role="alert">
+    <span class="enquiry-step_error-icon" aria-hidden="true">!</span>
+    <span class="enquiry-step_error-text text-style-small" data-step-error-text></span>
+  </div>
+</fieldset>

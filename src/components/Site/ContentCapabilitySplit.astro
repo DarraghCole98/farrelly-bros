@@ -1,0 +1,167 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import ContentChecklist from "@/components/Site/ContentChecklist.astro";
+import threeLeaves from "@/assets/Images/pngs/3-leaves.png";
+
+type ImageSource = ImageMetadata | string;
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  eyebrow?: string;
+  heading: string;
+  text?: string;
+  /** The points to list. Renders nothing when empty. */
+  items: string[];
+  /** The photo. An imported asset, a remote `http(s)` URL, or a path to a file in `public/`. */
+  image?: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+  /** Label of the closing button. Nothing renders without one. */
+  buttonLabel?: string;
+  /** Where the button leads. Left out, it renders as a plain button. */
+  buttonHref?: string;
+  /** Put the photo first — on the left on wide screens, above the copy on narrow ones. */
+  reverse?: boolean;
+  /**
+   * Decorative leaf graphic faded behind the photo. An imported asset, a
+   * remote `http(s)` URL, or a path to a file in `public/`. Set to `false`
+   * to leave the visual plain.
+   */
+  leaf?: ImageSource | false;
+}
+
+const {
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  items,
+  image,
+  imageAlt,
+  buttonLabel,
+  buttonHref,
+  reverse = false,
+  leaf = threeLeaves,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && (
+    <div
+      class:list={["capability-split_wrap", reverse && "reverse", className]}
+      {...rest}
+    >
+      <div class="capability-split_content">
+        {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+        <Heading tag="h2" variant="h2" maxWidth={20}>
+          {heading}
+        </Heading>
+        {text && <Paragraph maxWidth={44}>{text}</Paragraph>}
+        <ContentChecklist items={items} columns={2} />
+        {buttonLabel && (
+          <ButtonWrapper marginTop="6">
+            {buttonHref ? (
+              <Button element="link" href={buttonHref}>
+                {buttonLabel}
+              </Button>
+            ) : (
+              <Button>{buttonLabel}</Button>
+            )}
+          </ButtonWrapper>
+        )}
+      </div>
+
+      {image && (
+        <div class="capability-split_visual">
+          {leaf && (
+            <Img
+              src={leaf}
+              alt=""
+              transparent
+              class="capability-split_leaf"
+            />
+          )}
+          <Img
+            src={image}
+            alt={imageAlt}
+            variant="constrained"
+            sizes="(width >= 64rem) 45vw, 100vw"
+            class="capability-split_image"
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .capability-split_wrap {
+      position: relative;
+      display: grid;
+      align-items: start;
+      gap: var(--space-8) var(--section-space-small);
+      width: 100%;
+
+      @media (width >= 64rem) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas: "content visual";
+
+        &.reverse {
+          grid-template-areas: "visual content";
+        }
+      }
+    }
+
+    .capability-split_content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 0;
+
+      @media (width >= 64rem) {
+        grid-area: content;
+      }
+    }
+
+    .capability-split_visual {
+      position: relative;
+      min-width: 0;
+
+      @media (width >= 64rem) {
+        grid-area: visual;
+      }
+    }
+
+    .capability-split_image {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      aspect-ratio: 5 / 4;
+      object-fit: cover;
+      border-radius: var(--radius-large);
+    }
+
+    /* Faded well below the photo's own opacity — a hint of the site's leaf
+       motif in the whitespace it leaves, not a competing graphic. */
+    .capability-split_leaf {
+      position: absolute;
+      z-index: 0;
+      inset-block-end: -8%;
+      inset-inline-start: -10%;
+      width: 45%;
+      height: auto;
+      pointer-events: none;
+    }
+  }
+</style>

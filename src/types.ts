@@ -4,8 +4,14 @@ export interface SeoProps {
   title?: string;
   /** Meta description, also used for `og:description` and `twitter:description`. Defaults to `SITE_DESCRIPTION`. */
   description?: string;
-  /** Social share image. Defaults to `/og-image.jpg`. Relative paths resolve against `site` in `astro.config.mjs`. */
-  image?: string;
+  /**
+   * Social share image. Defaults to `/og-image.jpg`.
+   *
+   * A path or URL is used as-is, resolved against `site` in `astro.config.mjs`.
+   * An imported asset is cropped to 1200×630 and converted to JPEG, the size
+   * and format every major platform accepts.
+   */
+  image?: string | ImageMetadata;
   /** Open Graph type. Defaults to `website`; use `article` for posts and news pages. */
   type?: "website" | "article";
   /**

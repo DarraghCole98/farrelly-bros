@@ -5,6 +5,7 @@ import Eyebrow from "@/components/Typography/Eyebrow.astro";
 import Heading from "@/components/Typography/Heading.astro";
 import RichText from "@/components/Typography/RichText.astro";
 import ContentNotice from "@/components/Site/ContentNotice.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
 import {
   SITE_CONTACT,
   FORM_ENDPOINT,
@@ -50,6 +51,10 @@ const OUTSTANDING = [
     </Heading>
   </Section>
 
+  <Breadcrumbs
+    items={[{ label: "Home", href: "/" }, { label: "Privacy Policy" }]}
+  />
+
   <Section paddingTop="none" paddingBottom="large">
     <ContentNotice heading="This policy is a draft" variant="pending">
       <p>
@@ -75,9 +80,14 @@ const OUTSTANDING = [
       </p>
 
       <p>
-        Fonts are served from this website rather than from a third-party
-        font service, so loading a page does not disclose your visit or IP
-        address to a font provider.
+        This website's typefaces are loaded from Adobe Fonts. Adobe's servers
+        receive a request for the font files on every page load, which
+        discloses your IP address and the fact that you visited this site to
+        Adobe. No cookies are set by this request. See{" "}
+        <a href="https://www.adobe.com/privacy/policy.html">
+          Adobe's privacy policy
+        </a>{" "}
+        for how Adobe handles this data.
       </p>
 
       <h2>Cookies and analytics</h2>

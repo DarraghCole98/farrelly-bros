@@ -25,3 +25,9 @@ pnpm-debug.log*
 
 # local agent settings
 .claude/settings.local.json
+
+# local wrangler dev state/cache
+.wrangler/
+
+# local Cloudflare Pages Function secrets, never commit real values
+.dev.vars

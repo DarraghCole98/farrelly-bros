@@ -3,6 +3,7 @@ import { getCollection, getEntries, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import type { SvgComponent } from "astro/types";
 import Layout from "@/layouts/BaseLayout.astro";
+import SectionHeroMedia from "@/components/Site/SectionHeroMedia.astro";
 import Section from "@/components/Wrapper/Section.astro";
 import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
 import Eyebrow from "@/components/Typography/Eyebrow.astro";
@@ -12,7 +13,6 @@ import RichText from "@/components/Typography/RichText.astro";
 import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
 import Button from "@/components/Button.astro";
 import Img from "@/components/Media/Img.astro";
-import Overlay from "@/components/Media/Overlay.astro";
 import GalleryDragRail from "@/components/Interactive/GalleryDragRail.astro";
 import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
 import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
@@ -20,6 +20,7 @@ import ContentTestimonial from "@/components/Site/ContentTestimonial.astro";
 import ContentCardGrid from "@/components/Site/ContentCardGrid.astro";
 import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
 import ContentEnquiryForm from "@/components/Site/ContentEnquiryForm.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
 import Modal from "@/components/Interactive/Modal.astro";
 import Icon from "@/components/Media/Icon.astro";
 import arrowFull from "@/assets/icons/arrow-full.svg";
@@ -171,26 +172,20 @@ const quickLinks = [
   description={data.seo?.description ?? data.summary}
   noindex={data.seo?.noindex}
 >
-  <Section theme="dark" paddingTop="large" paddingBottom="large">
-    <Fragment slot="background">
-      {data.heroImage && (
-        <Img
-          src={data.heroImage}
-          alt=""
-          loading="eager"
-          fetchPriority="high"
-        />
-      )}
-      <Overlay variant="solid" strength={55} />
-    </Fragment>
-    <Eyebrow>{data.sector ?? "Project"}</Eyebrow>
-    <Heading tag="h1" variant="h1" maxWidth={20}>
-      {data.title}
-    </Heading>
-    <Paragraph variant="large" maxWidth={44}>
-      {data.summary}
-    </Paragraph>
-  </Section>
+  <SectionHeroMedia
+    eyebrow={data.sector ?? "Project"}
+    heading={data.title}
+    text={data.summary}
+    image={data.heroImage}
+  />
+
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Projects", href: "/projects/" },
+      { label: data.title },
+    ]}
+  />
 
   {
     hasNarrative ? (
@@ -295,7 +290,7 @@ const quickLinks = [
         <ContentSectionHeader
           eyebrow="Plant &amp; Equipment"
           heading="What the job ran on."
-          variant="h3"
+          variant="h2"
         />
         <ContentCardGrid
           medium={3}
@@ -317,7 +312,7 @@ const quickLinks = [
         <ContentSectionHeader
           eyebrow="Services delivered"
           heading="The work this drew on."
-          variant="h3"
+          variant="h2"
         />
         <ContentCardGrid
           medium={relatedServicesColumns}
@@ -340,7 +335,7 @@ const quickLinks = [
         <ContentSectionHeader
           eyebrow="Keep exploring"
           heading="More projects."
-          variant="h3"
+          variant="h2"
         />
         <div class="project-pager">
           {previousEntry ? (
@@ -388,7 +383,7 @@ const quickLinks = [
     )
   }
 
-  <Section theme="dark" paddingTop="medium" paddingBottom="none">
+  <Section theme="dark" paddingTop="none" paddingBottom="none">
     <ContentCtaMain overlap />
   </Section>
 

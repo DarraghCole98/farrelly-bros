@@ -16,8 +16,8 @@ export const SITE_DESCRIPTION =
  * so builds and the sitemap keep working — replace before launch.
  */
 export const SITE_URL = "http://localhost:4321";
-/** BCP 47 locale tag used to format dates and numbers. TODO: confirm — still the Lumos scaffold default, not yet verified for Farrelly Bros. */
-export const SITE_LOCALE = "en-US";
+/** BCP 47 locale tag used to format dates and numbers. */
+export const SITE_LOCALE = "en-IE";
 /**
  * Routes kept out of search results. Each is excluded from the sitemap and
  * served with a `robots: noindex, nofollow` tag, so the two can't disagree.

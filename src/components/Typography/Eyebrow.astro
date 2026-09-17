@@ -17,8 +17,8 @@ type Props = HTMLAttributes<"div"> & {
   /**
    * How the label is drawn.
    *
-   * - `default` — a marker beside the text (default)
-   * - `tag` — no marker; the text sits in a filled pill
+   * - `tag` — no marker; the text sits in a filled pill (default)
+   * - `default` — a marker beside the text
    */
   variant?: "default" | "tag";
 };
@@ -26,7 +26,7 @@ type Props = HTMLAttributes<"div"> & {
 const {
   render = true,
   tag = "p",
-  variant = "default",
+  variant = "tag",
   class: className,
   ...rest
 } = Astro.props;

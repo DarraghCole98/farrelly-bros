@@ -1,0 +1,66 @@
+---
+import { SITE_CONTACT } from "@/consts.ts";
+
+const emergencyNumber = SITE_CONTACT.mobile;
+---
+
+{
+  emergencyNumber && (
+    <div class="emergency-notice theme-brand" data-emergency-notice hidden>
+      <p class="emergency-notice_heading text-style-h6">
+        Need urgent assistance?
+      </p>
+      <p class="text-style-small">
+        For fallen trees, storm damage or an immediate hazard, calling us
+        will get the quickest response.
+      </p>
+      <a
+        class="emergency-notice_call"
+        href={`tel:${emergencyNumber.replace(/[^+\d]/g, "")}`}
+        data-analytics-event="emergency_call_clicked"
+      >
+        Call Now — {emergencyNumber}
+      </a>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .emergency-notice {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+      width: 100%;
+      padding: var(--space-5);
+      background-color: var(--background);
+      color: var(--text);
+      border-radius: var(--radius-main);
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .emergency-notice_heading {
+      margin: 0;
+    }
+
+    .emergency-notice_call {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.75em 1.5em;
+      background-color: var(--background);
+      color: var(--text);
+      border-radius: 0.5em;
+      transition: background-color var(--hover-duration) var(--hover-ease);
+
+      @media (hover: hover) {
+        &:hover {
+          background-color: var(--background-2);
+        }
+      }
+    }
+  }
+</style>

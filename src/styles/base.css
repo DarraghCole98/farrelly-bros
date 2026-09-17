@@ -11,6 +11,7 @@
   --light-300: #e7ebe6; /* subtle surface, hairlines */
   --ink-900: #17241c; /* body and headings on light */
   --ink-600: #5c6b62; /* muted body text on light */
+  --forest-600: #305036; /* footer base — matches the contour graphic's own fill so the two blend with no seam */
   --forest-700: #1c5a33;
   --forest-800: #14472a;
   --forest-900: #0e3520; /* dark sections and footer */
@@ -22,7 +23,8 @@
   --brand-text: var(--forest-900); /* on .theme-brand: dark on bright green */
 
   /* Typography primitives */
-  --primary-family: var(--font-figtree, system-ui, sans-serif);
+  --primary-family: "mr-eaves-xl-modern", system-ui, sans-serif;
+  --heading-family: "revolution-gothic", system-ui, sans-serif;
   --primary-regular: 400;
   --primary-medium: 500;
   --primary-semibold: 600;
@@ -84,7 +86,7 @@
   --display-text-transform: none;
   --display-margin-top: var(--space-7);
   --display-margin-bottom: var(--space-6);
-  --display-font-family: var(--primary-family);
+  --display-font-family: var(--heading-family);
   --display-font-weight: var(--primary-bold);
   --display-trim-top: var(--primary-trim-top);
   --display-trim-bottom: var(--primary-trim-bottom);
@@ -98,7 +100,7 @@
   --h1-text-transform: none;
   --h1-margin-top: var(--space-7);
   --h1-margin-bottom: var(--space-6);
-  --h1-font-family: var(--primary-family);
+  --h1-font-family: var(--heading-family);
   --h1-font-weight: var(--primary-bold);
   --h1-trim-top: var(--primary-trim-top);
   --h1-trim-bottom: var(--primary-trim-bottom);
@@ -112,7 +114,7 @@
   --h2-text-transform: none;
   --h2-margin-top: var(--space-7);
   --h2-margin-bottom: var(--space-5);
-  --h2-font-family: var(--primary-family);
+  --h2-font-family: var(--heading-family);
   --h2-font-weight: var(--primary-bold);
   --h2-trim-top: var(--primary-trim-top);
   --h2-trim-bottom: var(--primary-trim-bottom);
@@ -126,7 +128,7 @@
   --h3-text-transform: none;
   --h3-margin-top: var(--space-6);
   --h3-margin-bottom: var(--space-5);
-  --h3-font-family: var(--primary-family);
+  --h3-font-family: var(--heading-family);
   --h3-font-weight: var(--primary-semibold);
   --h3-trim-top: var(--primary-trim-top);
   --h3-trim-bottom: var(--primary-trim-bottom);
@@ -140,7 +142,7 @@
   --h4-text-transform: none;
   --h4-margin-top: var(--space-6);
   --h4-margin-bottom: var(--space-4);
-  --h4-font-family: var(--primary-family);
+  --h4-font-family: var(--heading-family);
   --h4-font-weight: var(--primary-semibold);
   --h4-trim-top: var(--primary-trim-top);
   --h4-trim-bottom: var(--primary-trim-bottom);
@@ -154,7 +156,7 @@
   --h5-text-transform: none;
   --h5-margin-top: var(--space-5);
   --h5-margin-bottom: var(--space-4);
-  --h5-font-family: var(--primary-family);
+  --h5-font-family: var(--heading-family);
   --h5-font-weight: var(--primary-semibold);
   --h5-trim-top: var(--primary-trim-top);
   --h5-trim-bottom: var(--primary-trim-bottom);
@@ -168,7 +170,7 @@
   --h6-text-transform: none;
   --h6-margin-top: var(--space-5);
   --h6-margin-bottom: var(--space-3);
-  --h6-font-family: var(--primary-family);
+  --h6-font-family: var(--heading-family);
   --h6-font-weight: var(--primary-semibold);
   --h6-trim-top: var(--primary-trim-top);
   --h6-trim-bottom: var(--primary-trim-bottom);

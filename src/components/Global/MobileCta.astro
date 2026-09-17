@@ -1,0 +1,60 @@
+---
+import Button from "@/components/Button.astro";
+import { SITE_CONTACT } from "@/consts.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+
+/** Already on the page this bar would send someone to — showing it there is redundant. */
+const onContactPage = Astro.url.pathname.replace(/\/+$/, "") === "/contact";
+const hasPhone = !!SITE_CONTACT.phone;
+---
+
+{
+  render && !onContactPage && (
+    <div class="mobile-cta_wrap theme-dark">
+      {hasPhone && (
+        <Button
+          element="link"
+          emphasis="secondary"
+          class="mobile-cta_button"
+          href={`tel:${SITE_CONTACT.phone!.replace(/[^+\d]/g, "")}`}
+        >
+          Call Us
+        </Button>
+      )}
+      <Button element="link" class="mobile-cta_button" href="/contact/">
+        Get a Quote
+      </Button>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .mobile-cta_wrap {
+      display: none;
+      position: fixed;
+      z-index: 80;
+      inset-inline: 0;
+      bottom: 0;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+      background-color: var(--background);
+      border-top: var(--border-width) solid var(--border);
+
+      @media (width < 48rem) {
+        display: flex;
+      }
+    }
+
+    .mobile-cta_button {
+      flex: 1 1 0;
+    }
+  }
+</style>

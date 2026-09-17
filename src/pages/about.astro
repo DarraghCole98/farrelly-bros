@@ -1,5 +1,6 @@
 ---
 import Layout from "@/layouts/BaseLayout.astro";
+import SectionHeroMedia from "@/components/Site/SectionHeroMedia.astro";
 import Section from "@/components/Wrapper/Section.astro";
 import ContentWrapper from "@/components/Wrapper/ContentWrapper.astro";
 import Eyebrow from "@/components/Typography/Eyebrow.astro";
@@ -8,19 +9,29 @@ import Paragraph from "@/components/Typography/Paragraph.astro";
 import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
 import Button from "@/components/Button.astro";
 import Img from "@/components/Media/Img.astro";
-import Overlay from "@/components/Media/Overlay.astro";
 import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentMediaSplit from "@/components/Site/ContentMediaSplit.astro";
 import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
 import ContentFeatureRow from "@/components/Site/ContentFeatureRow.astro";
 import ContentSectors from "@/components/Site/ContentSectors.astro";
+import ContentWhyUs from "@/components/Site/ContentWhyUs.astro";
 import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
 import heroImage from "@/assets/Images/farrelly-brothers-herro4.webp";
 import plantImage from "@/assets/Images/farrelly-brothers-herro7.webp";
 import whatWeDoImage from "@/assets/Images/farrely-bros-chainsaw-closeup.webp";
+import whyUsImage from "@/assets/Images/farrely-bros-in-a-tree-lift-2.webp";
 import iconArboriculture from "@/assets/icons/arboriculture.svg";
 import iconVegetationManagement from "@/assets/icons/vegetation-management.svg";
 import iconSpecialistPlant from "@/assets/icons/specialist-plant.svg";
+import iconCircleUser from "@/assets/icons/circle-user.svg";
+import iconMap from "@/assets/icons/map.svg";
+import iconInfrastructure from "@/assets/icons/infrastructure.svg";
+import iconTriangleAlert from "@/assets/icons/triangle-alert.svg";
+import iconRoute from "@/assets/icons/route.svg";
 import Woodgrain_texture from '@/assets/Images/Woodgrain texture.svg';
+import _5_leaves from '@/assets/Images/pngs/5-leaves.png';
+import _3_leaves from '@/assets/Images/pngs/3-leaves.png';
 
 /**
  * docs/CONTENT.md lists a "company background/history" section here, and
@@ -46,31 +57,38 @@ const WHAT_WE_DO = [
     icon: iconSpecialistPlant,
   },
 ];
+
+/**
+ * Restates positioning already published elsewhere (services/index.astro's
+ * PROMISES, tree-care.md's whyUs points) rather than asserting anything new
+ * — docs/PROJECT.md forbids claiming certifications, insurance figures or
+ * safety statistics that have not been verified, so none of those appear
+ * here even though they are the kind of point this section usually carries.
+ */
+const WHY_US = [
+  { label: "One contractor, every stage", icon: iconCircleUser },
+  { label: "Scoped and priced before work starts", icon: iconMap },
+  { label: "Specialist plant already in the business", icon: iconSpecialistPlant },
+  { label: "Commercial, estate and infrastructure sites", icon: iconInfrastructure },
+  { label: "Hazardous and storm-damage capability", icon: iconTriangleAlert },
+  { label: "Work coordinated across every trade", icon: iconRoute },
+];
 ---
 
 <Layout
   title="About"
   description="Farrelly Bros work across arboriculture, vegetation management, site clearance and land contracting — one contractor covering specialist land and vegetation work end to end."
 >
-  <Section theme="dark" paddingTop="large" paddingBottom="large">
-    <Fragment slot="background">
-      <Img src={heroImage} alt="" loading="eager" fetchPriority="high" />
-      <Overlay variant="solid" strength={55} />
-    </Fragment>
-    <Eyebrow>About Farrelly Bros</Eyebrow>
-    <Heading tag="h1" variant="h1" maxWidth={20}>
-      Built around what specialist sites actually need.
-    </Heading>
-    <Paragraph variant="large" maxWidth={44}>
-      Farrelly Bros work across arboriculture, vegetation management, site
-      clearance and land contracting. The common thread is specialist work on
-      sites that need planning, access and the right machinery — not a single
-      trade applied to every job.
-    </Paragraph>
-    <ButtonWrapper>
-      <Button element="link" href="/services/">Explore Our Services</Button>
-    </ButtonWrapper>
-  </Section>
+  <SectionHeroMedia
+    eyebrow="About Farrelly Bros"
+    heading="Built around what specialist sites actually need."
+    text="Farrelly Bros work across arboriculture, vegetation management, site clearance and land contracting. The common thread is specialist work on sites that need planning, access and the right machinery — not a single trade applied to every job."
+    image={heroImage}
+  >
+    <Button element="link" href="/services/">Explore Our Services</Button>
+  </SectionHeroMedia>
+
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "About" }]} />
 
   <Section paddingTop="large" paddingBottom="large">
     <ContentStatement
@@ -81,11 +99,7 @@ const WHAT_WE_DO = [
 
   <Section paddingTop="large" paddingBottom="large" class="background-2">
     <ContentWrapper variant="columns" reverse>
-      <ContentSectionHeader
-        eyebrow="What we do"
-        heading="Three kinds of work, one contractor."
-        variant="h3"
-      />
+      <ContentSectionHeader eyebrow="What we do" heading="Three kinds of work, one contractor." />
     </ContentWrapper>
     <ContentWrapper variant="columns" reverse>
       <ContentFeatureRow items={WHAT_WE_DO} />
@@ -123,9 +137,13 @@ const WHAT_WE_DO = [
   </Section>
 
   <Section paddingTop="large" paddingBottom="large">
-    <ContentWrapper variant="sticky-content">
+    <ContentMediaSplit
+      variant="panel"
+      image={plantImage}
+      imageAlt="Close-up of tractor cab and grille in the field."
+    >
       <Eyebrow>Plant &amp; Machinery</Eyebrow>
-      <Heading tag="h2" variant="h2" maxWidth={19}>
+      <Heading tag="h2" variant="h2" maxWidth={18}>
         The equipment is the capability.
       </Heading>
       <Paragraph variant="large" maxWidth={38}>
@@ -138,20 +156,16 @@ const WHAT_WE_DO = [
           View Plant &amp; Machinery
         </Button>
       </ButtonWrapper>
-      <Img
-        slot="column2"
-        src={plantImage}
-        alt="Close-up of tractor cab and grille in the field."
-        class="radius-large"
-      />
-    </ContentWrapper>
+    </ContentMediaSplit>
   </Section>
+
+  <ContentWhyUs eyebrow="Why Farrelly Bros" heading="Why Farrelly Bros?" text="One business covering specialist land and vegetation work end to end, with the plant, planning and people that kind of work actually takes." items={WHY_US} image={whyUsImage} imageAlt="Farrelly Bros crew working from an aerial lift, cutting back a mature pine." topLeafImage={_5_leaves} bottomLeafImage={_3_leaves} />
 
   <Section theme="dark" paddingTop="large" paddingBottom="large" gap="8" image={Woodgrain_texture} overlayStrength={90}>
-    <ContentSectors />
+    <ContentSectors variant="h2" />
   </Section>
 
-  <Section paddingBottom="none" theme="light">
+  <Section paddingTop="none" paddingBottom="none" theme="dark" overlayStrength={100}>
     <ContentCtaMain overlap />
   </Section>
 </Layout>

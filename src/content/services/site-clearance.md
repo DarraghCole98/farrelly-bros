@@ -80,7 +80,4 @@ relatedServices:
     id: "wood-chipping"
   - collection: "services"
     id: "plant-hire"
-relatedProjects:
-  - collection: "projects"
-    id: "meath-solar-farm-site-clearance"
 ---

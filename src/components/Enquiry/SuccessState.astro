@@ -1,0 +1,132 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import { SITE_CONTACT } from "@/consts.ts";
+
+const PROCESS_STEPS = [
+  { title: "Details received", text: "Your project details and files have reached us." },
+  { title: "Farrelly reviews the project", text: "We look at the site, access requirements and likely equipment." },
+  { title: "We contact you to discuss the approach", text: "Using the preferred contact method you gave us." },
+  { title: "Site visit / scoped quotation where required", text: "For anything that needs a closer look before pricing." },
+];
+---
+
+<div class="enquiry-success" data-enquiry-success hidden>
+  <Heading tag="h2" variant="h2" maxWidth={20} data-step-heading tabindex="-1">
+    Project details received.
+  </Heading>
+  <Paragraph variant="large" maxWidth={42}>
+    We've received the information and files you've sent. We'll review the
+    site, access requirements and likely equipment before coming back to
+    you.
+  </Paragraph>
+
+  <p class="text-style-small enquiry-success_id" data-success-enquiry-id></p>
+
+  <ol class="enquiry-success_process">
+    {
+      PROCESS_STEPS.map((step, i) => (
+        <li class:list={["enquiry-success_step", i === 0 && "is-complete"]}>
+          <span class="enquiry-success_number text-style-small">
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <span class="enquiry-success_step-body">
+            <span class="text-style-h6">{step.title}</span>
+            <span class="text-style-small enquiry-success_step-text">{step.text}</span>
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+
+  {
+    (SITE_CONTACT.phone || SITE_CONTACT.email) && (
+      <div class="enquiry-success_direct">
+        <p class="text-style-small">Prefer to talk it through directly?</p>
+        <div class="enquiry-success_direct-links">
+          {SITE_CONTACT.phone && (
+            <a class="text-style-h6" href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, "")}`}>
+              {SITE_CONTACT.phone}
+            </a>
+          )}
+          {SITE_CONTACT.email && (
+            <a class="text-style-h6" href={`mailto:${SITE_CONTACT.email}`}>
+              {SITE_CONTACT.email}
+            </a>
+          )}
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style is:global>
+  @layer components {
+    .enquiry-success_id {
+      color: var(--text-2);
+    }
+
+    .enquiry-success_process {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      list-style: none;
+      width: 100%;
+      max-width: 34rem;
+      margin-top: var(--space-3);
+    }
+
+    .enquiry-success_step {
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+      opacity: 0.55;
+    }
+
+    .enquiry-success_step.is-complete {
+      opacity: 1;
+    }
+
+    .enquiry-success_number {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      color: var(--text-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-round);
+    }
+
+    .enquiry-success_step.is-complete .enquiry-success_number {
+      color: var(--background);
+      background-color: var(--text);
+      border-color: var(--text);
+    }
+
+    .enquiry-success_step-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .enquiry-success_step-text {
+      color: var(--text-2);
+    }
+
+    .enquiry-success_direct {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+      padding-top: var(--space-6);
+      border-top: var(--border-width) solid var(--border);
+    }
+
+    .enquiry-success_direct-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-5);
+    }
+  }
+</style>

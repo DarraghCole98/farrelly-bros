@@ -50,11 +50,11 @@ const split = variant === "split";
 const hasContact = split && Object.values(SITE_CONTACT).some(Boolean);
 
 /**
- * docs/DECISIONS.md: no form backend has been chosen, and the site deploys
- * as static assets with no SSR. `Form` reports success when it has no
- * action, so with no endpoint the fields are disabled behind a notice —
- * the same pattern contact.astro uses — rather than silently telling
- * someone their enquiry sent when nothing was transmitted.
+ * Live via Web3Forms since docs/DECISIONS.md, 2026-09-03 — FORM_ENDPOINT is
+ * set. This still falls back to the fields disabled behind a notice — the
+ * same pattern contact.astro uses — if FORM_ENDPOINT is ever cleared,
+ * rather than silently telling someone their enquiry sent when nothing was
+ * transmitted.
  */
 const formLive = FORM_ENDPOINT.length > 0;
 
@@ -79,7 +79,7 @@ const detailsLabel = "Tell us about your project";
       {...rest}
     >
       <div class="enquiry-form_intro">
-        <Heading tag="h2" variant="h3" maxWidth={24}>
+        <Heading tag="h2" variant="h2" maxWidth={24}>
           {heading}
         </Heading>
         {text && (

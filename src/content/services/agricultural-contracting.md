@@ -80,7 +80,4 @@ relatedServices:
     id: "plant-hire"
   - collection: "services"
     id: "site-clearance"
-relatedProjects:
-  - collection: "projects"
-    id: "offaly-pipeline-reinstatement"
 ---

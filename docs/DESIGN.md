@@ -196,10 +196,11 @@ Do not implement automatic operating-system dark mode.
 
 ## Typography
 
-The typeface is Figtree — a geometric-humanist sans, self-hosted at
-weights 400/500/600/700 via Astro's font pipeline as a single variable
-woff2. It replaced Inter, which was only ever loaded at weight 400 and
-left every heading faux-bolded.
+Headings use Revolution Gothic; body text uses Mr Eaves XL Modern. Both
+are served via Adobe Fonts (Typekit kit `cbc6nnx`, linked in
+BaseHead.astro) rather than Astro's self-hosted font pipeline, since
+Adobe's license doesn't permit redistributing the font files. They
+replaced Figtree, which was used for both headings and body text.
 
 Typography should be confident, straightforward and highly legible.
 

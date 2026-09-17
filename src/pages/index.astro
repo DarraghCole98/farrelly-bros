@@ -16,6 +16,7 @@ import TabLink from "@/components/Interactive/TabLink.astro";
 import ContentHeroSplit from "@/components/Site/ContentHeroSplit.astro";
 import ContentHeroGallery from "@/components/Site/ContentHeroGallery.astro";
 import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentMediaSplit from "@/components/Site/ContentMediaSplit.astro";
 import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
 import ContentIconGrid from "@/components/Site/ContentIconGrid.astro";
 import ContentSectors from "@/components/Site/ContentSectors.astro";
@@ -33,12 +34,14 @@ import iconArboriculture from "@/assets/icons/arboriculture.svg";
 import iconVegetationManagement from "@/assets/icons/vegetation-management.svg";
 import iconLandManagement from "@/assets/icons/land-management.svg";
 import iconSpecialistPlant from "@/assets/icons/specialist-plant.svg";
-import hero_full_bleed_glass_illustration from "@/assets/Images/hero_full_bleed_glass_illustration.webp";
 import farrelly_bros_john_deere from '@/assets/Images/farrelly-bros-john-deere.webp';
 import heroGallery2 from "@/assets/Images/farrely-bros-in-a-tree-lift.webp";
 import heroGallery3 from "@/assets/Images/farrely-bros-chainsaw-cutting.webp";
 import heroGallery4 from "@/assets/Images/farrelly-brothers-hedge-cutting.webp";
 import heroGallery5 from "@/assets/Images/farrelly-brothers-woodchipping.webp";
+import Borneo_Misty_Forest from '@/assets/graphics/Borneo Misty Forest.svg';
+import call_us_farrelly from '@/assets/Images/call-us-farrelly.webp';
+import bark_texture_grey_medium from '@/assets/Images/pngs/bark-texture-grey-medium.png';
 import ContentTestimonial, {
   type Testimonial,
 } from "@/components/Site/ContentTestimonial.astro";
@@ -114,9 +117,7 @@ const APPROACH = [
 const TESTIMONIALS: Testimonial[] = [];
 ---
 
-<Layout
-  description="Farrelly Bros provide specialist arboriculture, vegetation management, site clearance and land contracting — working across infrastructure, utility, renewable-energy and agricultural sites."
->
+<Layout description="Farrelly Bros provide specialist arboriculture, vegetation management, site clearance and land contracting — working across infrastructure, utility, renewable-energy and agricultural sites." image={call_us_farrelly}>
   <Section paddingTop="large" paddingBottom="large" class="background-2">
     <ContentHeroSplit eyebrow="Arboriculture & Specialist Contracting" heading="Specialist contracting for land, trees and infrastructure." text="Farrelly Bros work across arboriculture, vegetation management, site clearance and land contracting — bringing the plant, people and experience demanding sites need, from a single tree to large-scale infrastructure work.">
       <ButtonWrapper>
@@ -141,9 +142,9 @@ const TESTIMONIALS: Testimonial[] = [];
     </ContentHeroSplit>
   </Section>
 
-  <Section paddingTop="large" paddingBottom="large" gap="6">
+  <Section paddingTop="large" paddingBottom="large" gap="6" image={bark_texture_grey_medium} overlayStrength={95}>
     <Eyebrow>Working across</Eyebrow>
-    <ContentIconGrid items={CAPABILITIES} />
+    <ContentIconGrid items={CAPABILITIES} texture="" />
   </Section>
 
   <Section paddingTop="large" paddingBottom="large">
@@ -153,7 +154,7 @@ const TESTIMONIALS: Testimonial[] = [];
     />
   </Section>
 
-  <Section theme="dark" paddingTop="large" paddingBottom="large">
+  <Section theme="dark" paddingTop="large" paddingBottom="large" image={Borneo_Misty_Forest}>
     <ContentSectionHeader
       eyebrow="Services"
       heading="Eight specialist services, one contractor."
@@ -184,11 +185,7 @@ const TESTIMONIALS: Testimonial[] = [];
   </Section>
 
   <Section paddingTop="large" paddingBottom="large">
-    <ContentSectionHeader
-      eyebrow="How we work"
-      heading="Planned, resourced and delivered properly."
-      variant="h3"
-    />
+    <ContentSectionHeader eyebrow="How we work" heading="Planned, resourced and delivered properly." />
     <Tabs playback="auto" id="approach">
       <Fragment slot="links">
         {APPROACH.map((item) => <TabLink>{item.label}</TabLink>)}
@@ -196,7 +193,7 @@ const TESTIMONIALS: Testimonial[] = [];
       {
         APPROACH.map((item) => (
           <ContentWrapper variant="columns">
-            <Heading tag="h3" variant="h4" maxWidth={17}>
+            <Heading tag="h3" variant="h3" maxWidth={17}>
               {item.title}
             </Heading>
             <Paragraph maxWidth={36}>{item.text}</Paragraph>
@@ -213,9 +210,9 @@ const TESTIMONIALS: Testimonial[] = [];
   </Section>
 
   <Section paddingTop="large" paddingBottom="large">
-    <ContentWrapper variant="sticky-visual">
+    <ContentMediaSplit image={plantImage} imageAlt="Close-up of tractor cab and grille in the field.">
       <Eyebrow>Plant &amp; Machinery</Eyebrow>
-      <Heading tag="h2" variant="h2" maxWidth={19}>
+      <Heading tag="h2" variant="h2" maxWidth={60}>
         The right equipment changes what's possible.
       </Heading>
       <Paragraph variant="large" maxWidth={38}>
@@ -228,13 +225,7 @@ const TESTIMONIALS: Testimonial[] = [];
           View Plant &amp; Machinery
         </Button>
       </ButtonWrapper>
-      <Img
-        slot="column2"
-        src={plantImage}
-        alt="Close-up of tractor cab and grille in the field."
-        class="radius-large"
-      />
-    </ContentWrapper>
+    </ContentMediaSplit>
   </Section>
 
   {
@@ -244,7 +235,7 @@ const TESTIMONIALS: Testimonial[] = [];
           eyebrow="Selected Work"
           heading="Recent projects."
           text="Specialist work is easiest to judge by the sites it has been done on."
-          variant="h3"
+          variant="h2"
         />
         <Grid variant="columns" xsmall={1} medium={3}>
           {featuredProjects.map((project) => (
@@ -269,23 +260,12 @@ const TESTIMONIALS: Testimonial[] = [];
     )
   }
 
-  <Section
-    theme="dark"
-    paddingTop="large"
-    paddingBottom="large"
-    gap="8"
-    image={hero_full_bleed_glass_illustration}
-    imageAlt=""
-  >
-    <ContentSectors
-      eyebrow="Where our services apply"
-      heading="Working sites, not just gardens."
-      variant="h3"
-    />
+  <Section paddingTop="large" paddingBottom="large" gap="8" imageAlt="" overlayStrength={25}>
+    <ContentSectors eyebrow="Where our services apply" heading="Working sites, not just gardens." variant="h2" />
     <ContentTestimonial testimonials={TESTIMONIALS} />
   </Section>
 
-  <Section paddingBottom="none" theme="light">
+  <Section overlayStrength={0} paddingBottom="none" paddingTop="none" theme="brand">
     <ContentCtaMain
       overlap
       image={ctaImage}

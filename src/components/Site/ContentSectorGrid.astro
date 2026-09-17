@@ -1,0 +1,134 @@
+---
+import type { HTMLAttributes, SvgComponent } from "astro/types";
+import Icon from "@/components/Media/Icon.astro";
+import Img from "@/components/Media/Img.astro";
+
+type ImageSource = ImageMetadata | string;
+
+export interface SectorGridItem {
+  /** The label shown under the image. */
+  label: string;
+  image: ImageSource;
+  imageAlt?: string;
+  /** An SVG imported from `src/assets`, shown as a badge over the image's corner. */
+  icon?: SvgComponent;
+  /** Where the tile leads. Left out, the tile is not a link. */
+  href?: string;
+}
+
+interface Props extends HTMLAttributes<"ul"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The sectors to list. Renders nothing when empty. */
+  items: SectorGridItem[];
+}
+
+const { render = true, items, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <ul class:list={["sector-grid_wrap", className]} {...rest}>
+      {items.map((item) => (
+        <li class="sector-grid_item">
+          <a href={item.href} class="sector-grid_item_content">
+            <span class="sector-grid_item_visual">
+              <Img src={item.image} alt={item.imageAlt ?? ""} />
+              {item.icon && (
+                <span class="sector-grid_item_icon">
+                  <Icon src={item.icon} variant="medium" />
+                </span>
+              )}
+            </span>
+            <span class="sector-grid_item_label text-style-h5">
+              {item.label}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .sector-grid_wrap {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--site-gutter);
+      width: 100%;
+      list-style: none;
+
+      @media (width >= 40rem) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      @media (width >= 64rem) {
+        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      }
+    }
+
+    .sector-grid_item_content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      width: 100%;
+      color: inherit;
+
+      &:not([href]) {
+        cursor: default;
+      }
+    }
+
+    .sector-grid_item_visual {
+      position: relative;
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      overflow: clip;
+      border-radius: var(--radius-main);
+      transition: outline-color var(--hover-duration) var(--hover-ease);
+      outline: var(--border-width) solid var(--border);
+      outline-offset: calc(var(--border-width) * -1);
+
+      @media (hover: hover) {
+        a[href]:hover & {
+          outline-color: var(--text-2);
+        }
+      }
+    }
+
+    .sector-grid_item_visual > .image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transition: scale calc(var(--hover-duration) * 2) var(--hover-ease);
+
+      @media (hover: hover) {
+        a[href]:hover & {
+          scale: 1.04;
+        }
+      }
+    }
+
+    .sector-grid_item_icon {
+      position: absolute;
+      z-index: 1;
+      top: var(--space-4);
+      left: var(--space-4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      background-color: color-mix(in srgb, var(--forest-600) 70%, transparent);
+      border-radius: var(--radius-round);
+      color: var(--light-100);
+    }
+
+    .sector-grid_item_label {
+      overflow-wrap: break-word;
+    }
+  }
+</style>

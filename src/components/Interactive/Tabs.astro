@@ -67,28 +67,19 @@ const panels = await slotContent(Astro.slots);
       </div>
 
       {auto && (
-        <div class="tabs_controls">
-          <div class="tabs_steps">
-            <Button
-              variant="arrow"
-              emphasis="secondary"
-              direction="back"
-              label="Previous tab"
-              data-step="-1"
-            />
-            <Button
-              variant="arrow"
-              emphasis="secondary"
-              label="Next tab"
-              data-step="1"
-            />
-          </div>
+        <div class="tabs_steps">
           <Button
-            variant="play"
+            variant="arrow"
             emphasis="secondary"
-            label="Pause automatic rotation"
-            pressed
-            data-toggle
+            direction="back"
+            label="Previous tab"
+            data-step="-1"
+          />
+          <Button
+            variant="arrow"
+            emphasis="secondary"
+            label="Next tab"
+            data-step="1"
           />
         </div>
       )}
@@ -336,6 +327,7 @@ const panels = await slotContent(Astro.slots);
       transition:
         color var(--hover-duration) var(--hover-ease),
         border-color var(--hover-duration) var(--hover-ease);
+      font-weight: 600;
       &.is-active {
         border-bottom-color: var(--text);
         color: var(--text);
@@ -457,13 +449,6 @@ const panels = await slotContent(Astro.slots);
         translate: calc(var(--_dir) * -100%) 0;
         opacity: 0;
       }
-    }
-
-    .tabs_controls {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
     }
 
     .tabs_steps {

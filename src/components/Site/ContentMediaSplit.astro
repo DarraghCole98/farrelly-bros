@@ -1,0 +1,318 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Img from "@/components/Media/Img.astro";
+import { slotContent } from "@/utils/slots.ts";
+import woodgrainTexture from "@/assets/Images/Woodgrain texture.svg";
+
+type ImageSource = ImageMetadata | string;
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /**
+   * The photo beside the copy. An imported asset, a remote `http(s)` URL, or
+   * a path to a file in `public/`. Left out, the copy keeps its surface and
+   * reads as a single block.
+   */
+  image?: ImageSource;
+  /** Leave unset on decorative images — renders `alt=""`. */
+  imageAlt?: string;
+  /**
+   * How the photo meets its tinted surface.
+   *
+   * - `panel` — the copy sits on a textured panel, and the photo overlaps its far edge and runs past it (default)
+   * - `offset` — the photo sits on a textured block of its own, shifted out from behind it
+   */
+  variant?: "panel" | "offset";
+  /** Put the photo first — on the left on wide screens, above the copy on narrow ones. */
+  reverse?: boolean;
+  /**
+   * Decorative line-work faded into the tinted surface. Defaults to the
+   * site's woodgrain; `false` leaves the surface plain.
+   */
+  texture?: ImageSource | false;
+}
+
+const {
+  render = true,
+  image,
+  imageAlt,
+  variant = "panel",
+  reverse = false,
+  texture = woodgrainTexture,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const content = await slotContent(Astro.slots);
+const panel = variant === "panel";
+---
+
+{
+  render && content && (
+    <div
+      class:list={[
+        "media-split_wrap",
+        variant,
+        reverse && "reverse",
+        !image && "text-only",
+        className,
+      ]}
+      {...rest}
+    >
+      {panel && (
+        <div class="media-split_surface" aria-hidden="true">
+          {texture && (
+            <Img src={texture} alt="" transparent class="media-split_texture" />
+          )}
+        </div>
+      )}
+
+      <div class="media-split_content">
+        <Fragment set:html={content} />
+      </div>
+
+      {image && (
+        <div class="media-split_media">
+          {!panel && (
+            <div class="media-split_surface" aria-hidden="true">
+              {texture && (
+                <Img
+                  src={texture}
+                  alt=""
+                  transparent
+                  class="media-split_texture"
+                />
+              )}
+            </div>
+          )}
+          <Img
+            src={image}
+            alt={imageAlt}
+            variant="constrained"
+            sizes="(width >= 64rem) 50vw, 100vw"
+            class="media-split_image"
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .media-split_wrap {
+      /* Both surfaces are mixed from the section's own ground, so they stay
+         a quiet step away from it on a light or a dark section alike. */
+      --_panel-color: color-mix(in lab, var(--forest-600) 9%, var(--background));
+      --_block-color: color-mix(in lab, var(--forest-600) 30%, var(--background));
+      /* How far the photo stands out from the panel, and from its block. */
+      --_inset: var(--space-7);
+      --_shift: var(--space-7);
+      position: relative;
+      display: grid;
+      align-items: center;
+      gap: var(--space-7) var(--section-space-small);
+      width: 100%;
+
+      @media (width >= 64rem) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+    }
+
+    /* Wide screens lay the columns out by name, so `reverse` only has to
+       swap the areas, not re-state the whole grid. */
+    @media (width >= 64rem) {
+      .media-split_wrap {
+        grid-template-areas: "content media";
+
+        &.reverse {
+          grid-template-areas: "media content";
+        }
+
+        &.text-only {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-areas: "content";
+        }
+      }
+
+      .media-split_content {
+        grid-area: content;
+      }
+
+      .media-split_media {
+        grid-area: media;
+      }
+    }
+
+    /* Narrow screens keep reading order unless the photo is asked for first. */
+    .media-split_wrap.reverse .media-split_media {
+      @media (width < 64rem) {
+        order: -1;
+      }
+    }
+
+    .media-split_content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .media-split_media {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .media-split_image {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      object-fit: cover;
+      border-radius: var(--radius-main);
+    }
+
+    .media-split_surface {
+      position: absolute;
+      overflow: clip;
+      border-radius: var(--radius-main);
+      pointer-events: none;
+    }
+
+    /* The woodgrain is drawn in a mid brown, so multiply lets it darken a
+       light surface; on a dark one soft-light keeps it from going muddy. */
+    .media-split_texture {
+      position: absolute;
+      opacity: 0.14;
+      mix-blend-mode: multiply;
+
+      :where(.theme-dark) & {
+        opacity: 0.35;
+        mix-blend-mode: soft-light;
+      }
+    }
+
+    /* ---------- panel ---------- */
+
+    .media-split_wrap.panel {
+      padding: var(--space-6);
+
+      .media-split_surface {
+        inset: 0;
+        background-color: var(--_panel-color);
+      }
+
+      /* Pooled in the lower half of the panel behind the copy, faded out
+         before it reaches the photo. */
+      .media-split_texture {
+        inset-block-end: -20%;
+        inset-inline-start: 15%;
+        width: 70%;
+        height: auto;
+        mask-image: radial-gradient(closest-side, black 30%, transparent);
+        -webkit-mask-image: radial-gradient(closest-side, black 30%, transparent);
+      }
+
+      @media (width >= 64rem) {
+        padding: var(--_inset) 0;
+
+        /* The panel stops short of the photo's far edge, so the photo reads
+           as laid over it rather than framed inside it. */
+        .media-split_surface {
+          inset-inline-end: 22%;
+        }
+
+        &.reverse .media-split_surface {
+          inset-inline-start: 22%;
+          inset-inline-end: 0;
+        }
+
+        &.text-only .media-split_surface {
+          inset-inline: 0;
+        }
+
+        .media-split_content {
+          padding-block: var(--space-8);
+          padding-inline-start: var(--section-space-small);
+        }
+
+        /* The copy sets the panel's height and the photo fills it, less the
+           inset at top and bottom — so however long the copy runs, the photo
+           stays the same small step inside the panel's edges. */
+        .media-split_media {
+          align-self: stretch;
+        }
+
+        .media-split_image {
+          height: 100%;
+          min-height: 22rem;
+          aspect-ratio: auto;
+        }
+
+        &.reverse .media-split_content {
+          padding-inline-start: 0;
+          padding-inline-end: var(--section-space-small);
+        }
+
+        &.text-only .media-split_content {
+          padding-inline: var(--section-space-small);
+        }
+
+        .media-split_texture {
+          inset-inline-start: 5%;
+          width: 50%;
+        }
+
+        &.reverse .media-split_texture {
+          inset-inline-start: auto;
+          inset-inline-end: 5%;
+        }
+      }
+    }
+
+    /* ---------- offset ---------- */
+
+    /* The block is the photo's own size, pushed out behind it toward the
+       outside edge — down and to the left when the photo leads, down and to
+       the right when it follows. */
+    .media-split_wrap.offset {
+      .media-split_media {
+        padding-block-end: var(--_shift);
+        padding-inline-end: var(--_shift);
+      }
+
+      .media-split_surface {
+        inset-block-end: 0;
+        inset-inline-end: 0;
+        width: calc(100% - var(--_shift));
+        height: calc(100% - var(--_shift));
+        background-color: var(--_block-color);
+      }
+
+      .media-split_texture {
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.16;
+      }
+
+      &.reverse {
+        .media-split_media {
+          padding-inline-end: 0;
+          padding-inline-start: var(--_shift);
+        }
+
+        .media-split_surface {
+          inset-inline-end: auto;
+          inset-inline-start: 0;
+        }
+      }
+    }
+  }
+</style>

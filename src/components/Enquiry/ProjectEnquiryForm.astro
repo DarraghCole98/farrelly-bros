@@ -1,0 +1,1055 @@
+---
+/**
+ * The five-stage "Discuss a Project" enquiry wizard. Every stage's markup
+ * renders into the page up front, broken into one-question-at-a-time
+ * `.enquiry-screen` blocks — the script below shows exactly one at a time
+ * and Continue/Back step through them in sequence, so nothing is ever a
+ * long scroll of options. Plain Astro/vanilla JS, no client framework, per
+ * LUMOS.md's "prefer composition over a new dependency" stance.
+ */
+import ProgressIndicator from "@/components/Enquiry/ProgressIndicator.astro";
+import ProjectSummary from "@/components/Enquiry/ProjectSummary.astro";
+import ServiceStep from "@/components/Enquiry/ServiceStep.astro";
+import SiteStep from "@/components/Enquiry/SiteStep.astro";
+import AccessStep from "@/components/Enquiry/AccessStep.astro";
+import TimingStep from "@/components/Enquiry/TimingStep.astro";
+import ContactStep from "@/components/Enquiry/ContactStep.astro";
+import SuccessState from "@/components/Enquiry/SuccessState.astro";
+import Button from "@/components/Button.astro";
+import { SITE_CONTACT } from "@/consts.ts";
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+---
+
+<div class="project-enquiry" data-enquiry-root data-source-page={Astro.url.pathname}>
+  <noscript>
+    <p class="project-enquiry_noscript">
+      This enquiry form needs JavaScript to work. You can reach us directly
+      instead — {SITE_CONTACT.phone && `call ${SITE_CONTACT.phone}`}
+      {SITE_CONTACT.email && ` or email ${SITE_CONTACT.email}`}.
+    </p>
+  </noscript>
+
+  <div class="project-enquiry_layout" data-enquiry-layout>
+    <aside class="project-enquiry_aside" data-enquiry-aside>
+      <ProjectSummary variant="sticky" />
+    </aside>
+
+    <div class="project-enquiry_main">
+      <div class="project-enquiry_card theme-dark">
+        <div class="project-enquiry_header" data-enquiry-header>
+          <ProgressIndicator />
+          <button
+            type="button"
+            class="project-enquiry_reset text-style-small"
+            data-enquiry-reset
+            hidden
+          >
+            Start over
+          </button>
+        </div>
+
+        <form novalidate data-enquiry-form>
+          <ServiceStep />
+          <SiteStep />
+          <AccessStep />
+          <TimingStep />
+          <ContactStep />
+          <SuccessState />
+        </form>
+
+        <div class="project-enquiry_nav" data-enquiry-nav>
+          <Button type="button" emphasis="secondary" data-enquiry-back>
+            Back
+          </Button>
+          <Button type="button" data-enquiry-continue>Continue</Button>
+        </div>
+      </div>
+
+      <details class="project-enquiry_mobile-summary" data-mobile-summary>
+        <summary class="text-style-h6">View project summary</summary>
+        <ProjectSummary variant="inline" />
+      </details>
+    </div>
+  </div>
+</div>
+
+{
+  turnstileSiteKey && (
+    <script
+      is:inline
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      async
+      defer
+    />
+  )
+}
+
+<script>
+  import {
+    createEmptyEnquiry,
+    DRAFT_STORAGE_KEY,
+    TOTAL_STEPS,
+    type ProjectEnquiry,
+  } from "@/lib/enquiry/types.ts";
+  import {
+    SERVICE_OPTIONS,
+    SITE_TYPE_OPTIONS,
+    ACCESS_OPTIONS,
+    SITE_CONDITION_OPTIONS,
+    TIMING_OPTIONS,
+    SERVICE_QUESTIONS,
+    findOption,
+  } from "@/lib/enquiry/config.ts";
+
+  const STEP_LABELS = [
+    "The Work",
+    "The Site",
+    "Access & Conditions",
+    "Timing & Details",
+    "Your Details",
+  ];
+
+  const root = document.querySelector<HTMLElement>("[data-enquiry-root]");
+  if (root) {
+    initEnquiryForm(root);
+  }
+
+  function initEnquiryForm(root: HTMLElement) {
+    const form = root.querySelector<HTMLFormElement>("[data-enquiry-form]")!;
+    const stepEls = Array.from(
+      form.querySelectorAll<HTMLElement>("[data-enquiry-step]"),
+    );
+    const successEl = form.querySelector<HTMLElement>("[data-enquiry-success]")!;
+    const navEl = root.querySelector<HTMLElement>("[data-enquiry-nav]")!;
+    const backBtn = navEl.querySelector<HTMLButtonElement>("[data-enquiry-back]")!;
+    const continueBtn = navEl.querySelector<HTMLButtonElement>(
+      "[data-enquiry-continue]",
+    )!;
+    const resetBtn = root.querySelector<HTMLButtonElement>("[data-enquiry-reset]")!;
+    const progressLabel = root.querySelector("[data-enquiry-progress-label]")!;
+    const progressStepName = root.querySelector(
+      "[data-enquiry-progress-step-name]",
+    )!;
+    const progressFill = root.querySelector<HTMLElement>(
+      "[data-enquiry-progress-fill]",
+    )!;
+    const progressTrack = root.querySelector<HTMLElement>(
+      "[data-enquiry-progress-track]",
+    )!;
+    const summaryEls = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-project-summary]"),
+    );
+
+    /** The current stage (1–5) while answering, or "success" once sent. */
+    let stage: number | "success" = 1;
+    /** Index into the current stage's `.enquiry-screen` list — the actual unit of navigation. */
+    let screenIndex = 0;
+    let enquiry: ProjectEnquiry = createEmptyEnquiry();
+    let submitting = false;
+
+    // ---- Restore / preselect -----------------------------------------------
+
+    restoreDraft();
+    applyServiceFromQuery();
+    track("enquiry_started");
+
+    root.addEventListener("click", (event) => {
+      const trigger = (event.target as HTMLElement)?.closest<HTMLElement>(
+        "[data-analytics-event]",
+      );
+      if (trigger) track(trigger.dataset.analyticsEvent!);
+    });
+
+    // ---- Screens: the one-question-at-a-time unit within a stage ----------
+
+    /** Every navigable question inside a stage, in document order — recomputed live since Stage 2's service question(s) are added/removed dynamically. */
+    function stageScreens(n: number): HTMLElement[] {
+      return Array.from(stepEls[n - 1].querySelectorAll<HTMLElement>(".enquiry-screen"));
+    }
+
+    function totalScreenCount(): number {
+      let total = 0;
+      for (let n = 1; n <= TOTAL_STEPS; n++) total += Math.max(stageScreens(n).length, 1);
+      return total;
+    }
+
+    function absoluteScreenPosition(): number {
+      if (typeof stage !== "number") return totalScreenCount();
+      let count = 0;
+      for (let n = 1; n < stage; n++) count += Math.max(stageScreens(n).length, 1);
+      return count + screenIndex;
+    }
+
+    // ---- Rendering ----------------------------------------------------
+
+    function render(opts: { focus?: boolean } = { focus: true }) {
+      for (const el of stepEls) {
+        const n = Number(el.dataset.enquiryStep);
+        el.hidden = stage !== n;
+      }
+      successEl.hidden = stage !== "success";
+
+      const isAnswering = typeof stage === "number";
+      navEl.hidden = !isAnswering;
+      root.querySelector("[data-enquiry-header]")!.toggleAttribute(
+        "hidden",
+        stage === "success",
+      );
+      root.querySelector<HTMLElement>("[data-mobile-summary]")!.hidden = stage === "success";
+
+      let currentScreen: HTMLElement | null = null;
+
+      if (typeof stage === "number") {
+        const screens = stageScreens(stage);
+        screens.forEach((screen, i) => (screen.hidden = i !== screenIndex));
+        currentScreen = screens[screenIndex] ?? null;
+
+        const isLastScreenOfLastStage = stage === TOTAL_STEPS && screenIndex === screens.length - 1;
+        backBtn.disabled = stage === 1 && screenIndex === 0;
+        setButtonLabel(continueBtn, isLastScreenOfLastStage ? "Send Project Details" : "Continue");
+        updateProgress();
+      }
+
+      resetBtn.hidden = stage === "success" || !hasAnyProgress();
+
+      if (opts.focus) focusCurrentView(currentScreen);
+    }
+
+    /**
+     * Moves focus (and, only as far as needed, the scroll position) to
+     * whatever just became the relevant thing on screen — the stage heading
+     * for a new stage, or the next question's own control within the same
+     * stage. `block: "nearest"` means this does nothing at all when the
+     * target is already in view, instead of yanking the page back to the
+     * top of the card on every click the way an unconditional `scrollTo`
+     * did — the form stays visually put; only the answered-so-far content
+     * changes.
+     */
+    function focusCurrentView(currentScreen: HTMLElement | null) {
+      const behavior = prefersReducedMotion() ? "auto" : "smooth";
+
+      const focusTarget = (() => {
+        if (stage === "success") return successEl.querySelector<HTMLElement>("[data-step-heading]");
+        if (typeof stage !== "number") return null;
+        // The first question of a new stage focuses the stage heading (so a
+        // screen reader announces which of the five stages this is); every
+        // later question within the same stage focuses straight into itself.
+        if (screenIndex === 0) return stepEls[stage - 1].querySelector<HTMLElement>("[data-step-heading]");
+        return currentScreen?.querySelector<HTMLElement>('input:not([type="hidden"]), textarea, select') ?? currentScreen;
+      })();
+
+      if (!focusTarget) return;
+      const isNativelyFocusable =
+        focusTarget instanceof HTMLInputElement ||
+        focusTarget instanceof HTMLTextAreaElement ||
+        focusTarget instanceof HTMLSelectElement ||
+        focusTarget instanceof HTMLButtonElement ||
+        focusTarget instanceof HTMLAnchorElement;
+      if (!isNativelyFocusable && !focusTarget.hasAttribute("tabindex")) {
+        focusTarget.tabIndex = -1;
+      }
+      focusTarget.scrollIntoView({ behavior, block: "nearest" });
+      focusTarget.focus({ preventScroll: true });
+    }
+
+    function updateProgress() {
+      if (typeof stage !== "number") return;
+      progressLabel.textContent = `Step ${stage} of ${TOTAL_STEPS}`;
+      progressStepName.textContent = STEP_LABELS[stage - 1];
+      const fraction = (absoluteScreenPosition() + 1) / totalScreenCount();
+      progressFill.style.width = `${fraction * 100}%`;
+      progressTrack.setAttribute("aria-valuenow", String(stage));
+    }
+
+    function prefersReducedMotion() {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    /** Button.astro wraps its slotted label in a `.button_text` span — update that, not the button's own textContent, so the wrapper markup survives. */
+    function setButtonLabel(button: HTMLButtonElement, label: string) {
+      const span = button.querySelector<HTMLElement>(".button_text");
+      if (span) span.textContent = label;
+      else button.textContent = label;
+    }
+
+    // ---- Field sync: state -> DOM -----------------------------------------
+
+    function syncFormFromState() {
+      setRadio("service", enquiry.service);
+      setRadio("siteType", enquiry.siteType);
+      setText("location", enquiry.location);
+      setRadio("access", enquiry.access);
+      setCheckboxGroup("siteConditions[]", enquiry.siteConditions);
+      setRadio("timing", enquiry.timing);
+      setText("targetDate", enquiry.targetDate ?? "");
+      setText("notes", enquiry.notes);
+      setText("contactName", enquiry.contact.name);
+      setText("contactCompany", enquiry.contact.company);
+      setText("contactEmail", enquiry.contact.email);
+      setText("contactPhone", enquiry.contact.phone);
+      setText("role", enquiry.contact.role);
+      setCheckbox("privacyAccepted", enquiry.privacyAccepted);
+
+      // Builds this service's question(s) fresh, then applies any saved
+      // answers to the inputs it just created.
+      renderServiceQuestions(enquiry.service);
+      for (const [name, value] of Object.entries(enquiry.serviceDetails)) {
+        if (Array.isArray(value)) setCheckboxGroup(`${name}[]`, value);
+        else setRadio(name, value);
+      }
+
+      updateTimingReveals();
+      updateSummary();
+    }
+
+    /**
+     * Builds only the selected service's question(s) into the Stage 2 slot,
+     * each as its own `.enquiry-screen` — nothing is pre-rendered for the
+     * other seven services, so picking "Pipeline Reinstatement" never even
+     * momentarily has tree-height questions in the page, and Stage 2 stays
+     * exactly as long as the chosen service needs.
+     */
+    function renderServiceQuestions(service: string) {
+      const slot = form.querySelector<HTMLElement>("[data-service-questions-slot]");
+      if (!slot) return;
+      slot.innerHTML = "";
+
+      const questions = SERVICE_QUESTIONS[service];
+      if (!questions) return;
+
+      questions.forEach((question, i) => {
+        const screen = document.createElement("div");
+        screen.className = "enquiry-screen";
+        screen.dataset.screenStage = "2";
+        screen.dataset.screenId = `service-q-${i}`;
+
+        const fieldset = document.createElement("fieldset");
+        fieldset.className = "enquiry-step_subgroup";
+
+        const legend = document.createElement("legend");
+        legend.className = "text-style-h6 enquiry-step_question";
+        legend.append(question.question);
+        if (question.optional) {
+          const optional = document.createElement("span");
+          optional.className = "enquiry-step_optional";
+          optional.textContent = " (optional)";
+          legend.append(optional);
+        }
+        fieldset.append(legend);
+
+        const optionsWrap = document.createElement("div");
+        optionsWrap.className = "enquiry-step_options compact-grid";
+        const inputType = question.type === "checkboxes" ? "checkbox" : "radio";
+        const inputName = question.type === "checkboxes" ? `${question.name}[]` : question.name;
+        for (const option of question.options) {
+          optionsWrap.append(createOptionTile(inputType, inputName, option.value, option.label));
+        }
+        fieldset.append(optionsWrap);
+        screen.append(fieldset);
+        slot.append(screen);
+      });
+    }
+
+    /** Builds the same markup OptionTile.astro renders server-side, so the shared CSS applies identically to dynamically-added tiles. */
+    function createOptionTile(
+      type: "radio" | "checkbox",
+      name: string,
+      value: string,
+      label: string,
+    ): HTMLLabelElement {
+      const el = document.createElement("label");
+      el.className = "option-tile compact";
+
+      const input = document.createElement("input");
+      input.className = "option-tile_input";
+      input.type = type;
+      input.name = name;
+      input.value = value;
+      el.append(input);
+
+      const mark = document.createElement("span");
+      mark.className = "option-tile_mark";
+      mark.setAttribute("aria-hidden", "true");
+      const fill = document.createElement("span");
+      fill.className = "option-tile_mark-fill";
+      mark.append(fill);
+      el.append(mark);
+
+      const body = document.createElement("span");
+      body.className = "option-tile_body";
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "option-tile_label text-style-h6";
+      labelSpan.textContent = label;
+      body.append(labelSpan);
+      el.append(body);
+
+      return el;
+    }
+
+    function setRadio(name: string, value: string) {
+      if (!value) return;
+      const input = form.querySelector<HTMLInputElement>(
+        `input[name="${cssEscape(name)}"][value="${cssEscape(value)}"]`,
+      );
+      if (input) input.checked = true;
+    }
+
+    function setCheckbox(name: string, checked: boolean) {
+      const input = form.querySelector<HTMLInputElement>(
+        `input[name="${cssEscape(name)}"]`,
+      );
+      if (input) input.checked = checked;
+    }
+
+    function setCheckboxGroup(name: string, values: string[]) {
+      const inputs = form.querySelectorAll<HTMLInputElement>(
+        `input[name="${cssEscape(name)}"]`,
+      );
+      inputs.forEach((input) => {
+        input.checked = values.includes(input.value);
+      });
+    }
+
+    function setText(name: string, value: string) {
+      const input = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        `[name="${cssEscape(name)}"]`,
+      );
+      if (input && !Array.isArray(value)) input.value = value ?? "";
+    }
+
+    function cssEscape(value: string) {
+      return typeof CSS !== "undefined" && CSS.escape ? CSS.escape(value) : value;
+    }
+
+    // ---- Field sync: DOM -> state, on every change -------------------------
+
+    form.addEventListener("input", (event) => {
+      const target = event.target as HTMLElement;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) {
+        return;
+      }
+      readFieldIntoState(target);
+      updateTimingReveals();
+      updateSummary();
+      persistDraft();
+      clearFieldError();
+    });
+
+    function readFieldIntoState(target: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+      const name = target.name;
+      if (!name) return;
+
+      if (name === "service" && target instanceof HTMLInputElement && target.checked) {
+        enquiry.service = target.value;
+        enquiry.serviceDetails = {};
+        renderServiceQuestions(target.value);
+        track("enquiry_service_selected", { service: target.value });
+        return;
+      }
+      if (name === "siteType" && target instanceof HTMLInputElement && target.checked) {
+        enquiry.siteType = target.value;
+        return;
+      }
+      if (name === "location") {
+        enquiry.location = target.value;
+        return;
+      }
+      if (name === "access" && target instanceof HTMLInputElement && target.checked) {
+        enquiry.access = target.value;
+        return;
+      }
+      if (name === "siteConditions[]" && target instanceof HTMLInputElement) {
+        applySiteConditionChange(target);
+        return;
+      }
+      if (name === "timing" && target instanceof HTMLInputElement && target.checked) {
+        enquiry.timing = target.value;
+        return;
+      }
+      if (name === "targetDate") {
+        enquiry.targetDate = target.value;
+        return;
+      }
+      if (name === "notes") {
+        enquiry.notes = target.value;
+        return;
+      }
+      if (name === "contactName") return void (enquiry.contact.name = target.value);
+      if (name === "contactCompany") return void (enquiry.contact.company = target.value);
+      if (name === "contactEmail") return void (enquiry.contact.email = target.value);
+      if (name === "contactPhone") return void (enquiry.contact.phone = target.value);
+      if (name === "role") return void (enquiry.contact.role = target.value);
+      if (name === "privacyAccepted" && target instanceof HTMLInputElement) {
+        enquiry.privacyAccepted = target.checked;
+        return;
+      }
+
+      // Everything left is a per-service question field.
+      if (target instanceof HTMLInputElement && target.type === "checkbox" && name.endsWith("[]")) {
+        const fieldName = name.slice(0, -2);
+        const group = form.querySelectorAll<HTMLInputElement>(
+          `input[name="${cssEscape(name)}"]:checked`,
+        );
+        enquiry.serviceDetails[fieldName] = Array.from(group).map((i) => i.value);
+      } else if (target instanceof HTMLInputElement && target.type === "radio") {
+        if (target.checked) enquiry.serviceDetails[name] = target.value;
+      }
+    }
+
+    /** "None that I know of" clears every other selection, and picking anything else clears it. */
+    function applySiteConditionChange(target: HTMLInputElement) {
+      const group = Array.from(
+        form.querySelectorAll<HTMLInputElement>('input[name="siteConditions[]"]'),
+      );
+      if (target.value === "none" && target.checked) {
+        for (const input of group) {
+          if (input !== target) input.checked = false;
+        }
+      } else if (target.checked) {
+        const noneInput = group.find((i) => i.value === "none");
+        if (noneInput) noneInput.checked = false;
+      }
+      enquiry.siteConditions = group.filter((i) => i.checked).map((i) => i.value);
+    }
+
+    function updateTimingReveals() {
+      const scheduledReveal = form.querySelector<HTMLElement>(
+        '[data-timing-reveal="scheduled"]',
+      );
+      if (scheduledReveal) scheduledReveal.hidden = enquiry.timing !== "scheduled";
+
+      const emergencyNotice = form.querySelector<HTMLElement>("[data-emergency-notice]");
+      if (emergencyNotice) emergencyNotice.hidden = enquiry.timing !== "emergency";
+    }
+
+    // ---- Validation: one screen (one question) at a time --------------------
+
+    function validateScreen(stageNum: number, screen: HTMLElement | undefined): boolean {
+      const errorEl = stepEls[stageNum - 1].querySelector<HTMLElement>("[data-step-error]");
+      const problems: string[] = [];
+
+      if (screen) {
+        const radioNames = new Set(
+          Array.from(screen.querySelectorAll<HTMLInputElement>('input[type="radio"][required]')).map(
+            (i) => i.name,
+          ),
+        );
+        for (const name of radioNames) {
+          if (!screen.querySelector<HTMLInputElement>(`input[name="${cssEscape(name)}"]:checked`)) {
+            problems.push("Choose an option to continue.");
+          }
+        }
+
+        const requiredCheckboxes = screen.querySelectorAll<HTMLInputElement>(
+          'input[type="checkbox"][required]',
+        );
+        for (const cb of requiredCheckboxes) {
+          if (!cb.checked) problems.push("Please agree to continue.");
+        }
+
+        const requiredFields = screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+          'input[required]:not([type="radio"]):not([type="checkbox"]), textarea[required]',
+        );
+        for (const field of requiredFields) {
+          if (!field.value.trim()) {
+            problems.push(`${fieldLabel(field)} is needed to continue.`);
+          } else if ("checkValidity" in field && !field.checkValidity()) {
+            problems.push(`Enter a valid ${fieldLabel(field).toLowerCase()} to continue.`);
+          }
+        }
+      }
+
+      const unique = [...new Set(problems)];
+      if (errorEl) {
+        setErrorText(errorEl, unique.join(" "));
+        errorEl.hidden = unique.length === 0;
+      }
+      return unique.length === 0;
+    }
+
+    /** The error element is icon + text now, not a plain text node — this writes only the text span so the icon markup survives. */
+    function setErrorText(errorEl: HTMLElement, text: string) {
+      const span = errorEl.querySelector<HTMLElement>("[data-step-error-text]");
+      if (span) span.textContent = text;
+      else errorEl.textContent = text;
+    }
+
+    function fieldLabel(field: HTMLInputElement | HTMLTextAreaElement): string {
+      const label = field.closest("label")?.querySelector(".field-label span")?.textContent;
+      return label || "This field";
+    }
+
+    function clearFieldError() {
+      if (typeof stage !== "number") return;
+      const errorEl = stepEls[stage - 1].querySelector<HTMLElement>("[data-step-error]");
+      if (errorEl && !errorEl.hidden) {
+        // Re-validate quietly so the message clears as soon as it's fixed.
+        validateScreen(stage, stageScreens(stage)[screenIndex]);
+      }
+    }
+
+    // ---- Navigation: one question forward or back at a time -----------------
+
+    continueBtn.addEventListener("click", () => {
+      if (typeof stage !== "number") return;
+      const screens = stageScreens(stage);
+      const currentScreen = screens[screenIndex];
+      if (!validateScreen(stage, currentScreen)) return;
+
+      if (screenIndex < screens.length - 1) {
+        screenIndex += 1;
+        render();
+      } else if (stage < TOTAL_STEPS) {
+        track(`enquiry_step_${stage}_completed`);
+        stage = stage + 1;
+        screenIndex = 0;
+        render();
+      } else {
+        submitEnquiry();
+        return;
+      }
+      persistDraft();
+    });
+
+    backBtn.addEventListener("click", () => {
+      if (typeof stage !== "number") return;
+      if (screenIndex > 0) {
+        screenIndex -= 1;
+      } else if (stage > 1) {
+        stage = stage - 1;
+        screenIndex = Math.max(stageScreens(stage).length - 1, 0);
+      } else {
+        return;
+      }
+      render();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      if (!window.confirm("Clear this enquiry and start over?")) return;
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      enquiry = createEmptyEnquiry();
+      form.reset();
+      syncFormFromState();
+      stage = 1;
+      screenIndex = 0;
+      render();
+    });
+
+    // ---- localStorage persistence -----------------------------------------
+
+    function persistDraft() {
+      try {
+        localStorage.setItem(
+          DRAFT_STORAGE_KEY,
+          JSON.stringify({
+            enquiry,
+            stage: typeof stage === "number" ? stage : 1,
+            screenIndex,
+            savedAt: new Date().toISOString(),
+          }),
+        );
+      } catch {
+        // Private browsing / storage full — the form still works this visit.
+      }
+      resetBtn.hidden = !hasAnyProgress();
+    }
+
+    function restoreDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw) as {
+          enquiry: ProjectEnquiry;
+          stage: number;
+          screenIndex: number;
+        };
+        if (saved?.enquiry) {
+          enquiry = { ...createEmptyEnquiry(), ...saved.enquiry };
+          syncFormFromState();
+          stage = saved.stage ?? 1;
+          screenIndex = Math.min(
+            saved.screenIndex ?? 0,
+            Math.max(stageScreens(stage).length - 1, 0),
+          );
+          render({ focus: false });
+        }
+      } catch {
+        // A corrupt draft shouldn't block starting fresh.
+      }
+    }
+
+    function hasAnyProgress() {
+      return (
+        !!enquiry.service ||
+        !!enquiry.siteType ||
+        !!enquiry.location ||
+        !!enquiry.contact.name
+      );
+    }
+
+    // ---- ?service= preselection --------------------------------------------
+
+    function applyServiceFromQuery() {
+      const requested = new URLSearchParams(window.location.search).get("service");
+      if (!requested) return;
+      const match = findOption(SERVICE_OPTIONS, requested);
+      if (!match) return;
+      enquiry.service = match.value;
+      syncFormFromState();
+    }
+
+    // ---- Summary panel ---------------------------------------------------
+
+    function updateSummary() {
+      const rows: { key: string; text: string }[] = [];
+
+      const service = findOption(SERVICE_OPTIONS, enquiry.service);
+      if (service) rows.push({ key: "service", text: service.label });
+
+      const siteType = findOption(SITE_TYPE_OPTIONS, enquiry.siteType);
+      if (siteType) rows.push({ key: "siteType", text: siteType.label });
+
+      if (enquiry.location) rows.push({ key: "location", text: enquiry.location });
+
+      const serviceDetailText = summarizeServiceDetails();
+      if (serviceDetailText) rows.push({ key: "serviceDetails", text: serviceDetailText });
+
+      const access = findOption(ACCESS_OPTIONS, enquiry.access);
+      if (access) rows.push({ key: "access", text: access.label });
+
+      const conditions = enquiry.siteConditions
+        .map((v) => findOption(SITE_CONDITION_OPTIONS, v)?.label)
+        .filter(Boolean);
+      if (conditions.length) rows.push({ key: "siteConditions", text: conditions.join(", ") });
+
+      const timing = findOption(TIMING_OPTIONS, enquiry.timing);
+      if (timing) rows.push({ key: "timing", text: timing.label });
+
+      for (const summaryEl of summaryEls) {
+        const rowKeys = Array.from(
+          summaryEl.querySelectorAll<HTMLElement>("[data-summary-row]"),
+        );
+        for (const rowEl of rowKeys) {
+          const key = rowEl.dataset.summaryRow!;
+          const match = rows.find((r) => r.key === key);
+          rowEl.hidden = !match;
+          if (match) {
+            const valueEl = rowEl.querySelector<HTMLElement>("[data-summary-value]")!;
+            valueEl.textContent = match.text;
+          }
+        }
+        summaryEl.classList.toggle("is-empty", rows.length === 0);
+      }
+    }
+
+    function summarizeServiceDetails() {
+      const questions = SERVICE_QUESTIONS[enquiry.service];
+      if (!questions) return "";
+      const parts: string[] = [];
+      for (const q of questions) {
+        const value = enquiry.serviceDetails[q.name];
+        if (!value) continue;
+        if (Array.isArray(value)) {
+          parts.push(...value.map((v) => findOption(q.options, v)?.label).filter(Boolean) as string[]);
+        } else {
+          const label = findOption(q.options, value)?.label;
+          if (label) parts.push(label);
+        }
+      }
+      return parts.join(", ");
+    }
+
+    // ---- Submit ----------------------------------------------------------
+
+    let turnstileToken = "";
+    (window as any).onEnquiryTurnstileSuccess = (token: string) => {
+      turnstileToken = token;
+    };
+
+    async function submitEnquiry() {
+      if (submitting || typeof stage !== "number") return;
+      submitting = true;
+      const errorEl = stepEls[stage - 1].querySelector<HTMLElement>("[data-step-error]");
+      if (errorEl) errorEl.hidden = true;
+      continueBtn.disabled = true;
+      setButtonLabel(continueBtn, "Sending…");
+
+      try {
+        const body = new FormData();
+        enquiry.metadata.sourcePage = root.dataset.sourcePage ?? window.location.pathname;
+        enquiry.metadata.submittedAt = new Date().toISOString();
+        body.append("payload", JSON.stringify(enquiry));
+        if (turnstileToken) body.append("turnstileToken", turnstileToken);
+
+        const response = await fetch("/api/enquiry", { method: "POST", body });
+        if (!response.ok) throw new Error(`Request failed (${response.status})`);
+        const result = (await response.json()) as { success: boolean; enquiryId?: string; error?: string };
+        if (!result.success) throw new Error(result.error || "Submission failed");
+
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+        track("enquiry_completed", { service: enquiry.service });
+
+        const idEl = successEl.querySelector<HTMLElement>("[data-success-enquiry-id]");
+        if (idEl && result.enquiryId) idEl.textContent = `Reference: ${result.enquiryId}`;
+
+        stage = "success";
+        render();
+      } catch {
+        if (errorEl) {
+          setErrorText(
+            errorEl,
+            "That didn't send. Please try again, or contact us directly — nothing has been lost.",
+          );
+          errorEl.hidden = false;
+        }
+      } finally {
+        submitting = false;
+        continueBtn.disabled = false;
+        setButtonLabel(continueBtn, "Send Project Details");
+      }
+    }
+
+    // ---- Analytics -----------------------------------------------------
+
+    function track(event: string, params: Record<string, unknown> = {}) {
+      const w = window as any;
+      w.dataLayer = w.dataLayer || [];
+      w.dataLayer.push({ event, ...params });
+      if (typeof w.gtag === "function") w.gtag("event", event, params);
+    }
+
+    // ---- Init render --------------------------------------------------
+
+    if (typeof stage === "number") render({ focus: false });
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    /* The Section container this renders into (`.container` in
+       patterns.css) is a flex column with `align-items: start`, so a child
+       with no width of its own shrinks to fit its content instead of
+       filling the row — and how wide that content happens to be varies
+       screen to screen, which is why this looked full-width on some steps
+       and narrow on others. Pin it explicitly instead of relying on the
+       parent to stretch it. */
+    .project-enquiry {
+      width: 100%;
+    }
+
+    .project-enquiry_noscript {
+      padding: var(--space-5);
+      background-color: var(--background-2);
+      border-radius: var(--radius-main);
+    }
+
+    /* A bounded, contained panel — not a full-bleed page section — so the
+       wizard reads as one focused surface rather than a long scrolling
+       page, the way the previous single-page form's dark card did. */
+    .project-enquiry_card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: var(--space-7) var(--space-7);
+      background-color: var(--background);
+      border-radius: var(--radius-large);
+      box-shadow: 0 1rem 3rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
+    }
+
+    .project-enquiry_header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-3);
+      width: 100%;
+      margin-bottom: var(--space-6);
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .project-enquiry_header .enquiry-progress {
+      width: 100%;
+    }
+
+    .project-enquiry_reset {
+      flex: none;
+      color: var(--text-2);
+      background: none;
+      border: 0;
+      text-decoration: underline;
+      text-underline-offset: 0.3em;
+      cursor: pointer;
+      white-space: nowrap;
+
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
+
+      /* Carries a text-style-* class, which base.css's unlayered
+         leading-trim rule matches with its own `display` — same fix as
+         `.enquiry-step_error` above. */
+      &[hidden] {
+        display: none !important;
+      }
+    }
+
+    .project-enquiry_layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6);
+      /* Pulls the whole two-column layout up over the hero seam, the way
+         the previous single-page form's card did — now applied to both
+         columns together, since the contact panel sits outside the form
+         card rather than inside it. */
+      margin-top: calc(var(--section-space-large) * -0.6);
+
+      @media (width >= 60rem) {
+        grid-template-columns: 16rem minmax(0, 1fr);
+        align-items: start;
+      }
+    }
+
+    .project-enquiry_main {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      min-width: 0;
+    }
+
+    .enquiry-step {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      width: 100%;
+      padding: 0;
+      border: 0;
+
+      /* `hidden` is a real HTML attribute, not just a JS flag — but an
+         unconditional `display: flex` above outranks the UA stylesheet's
+         `[hidden] { display: none }`, since author rules always beat UA
+         ones regardless of specificity. Without this, every stage renders
+         at once, stacked. */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* A red pill with a round "!" badge — deliberately not the site's
+       green, so an error reads as an error at a glance rather than
+       blending in as another neutral notice. Scoped to this component
+       only, the same way EmergencyNotice.astro carries its own one-off
+       colour rather than adding a sitewide token for a single use. */
+    .enquiry-step_error {
+      --_error: #e5484d;
+      --_error-text: #ffb4b6;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      width: fit-content;
+      max-width: 100%;
+      padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+      background-color: color-mix(in lab, var(--_error) 16%, var(--background));
+      border: var(--border-width) solid color-mix(in lab, var(--_error) 40%, transparent);
+      border-radius: var(--radius-round);
+
+      /* Now a plain <div> with no text-style-* class of its own (only its
+         inner text span carries one), so unlike the old <p> version it
+         isn't caught by base.css's unlayered leading-trim rule — a normal
+         `[hidden]` override is enough here. */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .enquiry-step_error-icon {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 1.375rem;
+      height: 1.375rem;
+      background-color: var(--_error);
+      color: #fff;
+      border-radius: var(--radius-round);
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .enquiry-step_error-text {
+      color: var(--_error-text);
+    }
+
+    .enquiry-success {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+      width: 100%;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .project-enquiry_mobile-summary {
+      display: none;
+      width: 100%;
+      padding: var(--space-4) var(--space-5);
+      background-color: var(--background-2);
+      border-radius: var(--radius-main);
+
+      @media (width < 60rem) {
+        display: block;
+      }
+
+      &[hidden] {
+        display: none;
+      }
+
+      & summary {
+        cursor: pointer;
+      }
+
+      & [data-project-summary] {
+        padding: var(--space-4) 0 0;
+        background: none;
+      }
+    }
+
+    .project-enquiry_nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      width: 100%;
+      padding-top: var(--space-5);
+
+      @media (width < 48rem) {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        padding: var(--space-4) var(--space-5);
+        margin: 0 calc(var(--space-5) * -1) calc(var(--space-5) * -1);
+        background-color: var(--background);
+        border-top: var(--border-width) solid var(--border);
+      }
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .project-enquiry_aside {
+      display: none;
+
+      @media (width >= 60rem) {
+        display: block;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,74 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import Overlay from "@/components/Media/Overlay.astro";
+import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
+import ContentSectorGrid from "@/components/Site/ContentSectorGrid.astro";
+import ContentClientMarquee from "@/components/Site/ContentClientMarquee.astro";
+import Breadcrumbs from "@/components/Site/Breadcrumbs.astro";
+import ContentStatement from "@/components/Site/ContentStatement.astro";
+import ContentCtaMain from "@/components/Site/ContentCtaMain.astro";
+import { SECTORS } from "@/data/sectors.ts";
+import heroImage from "@/assets/Images/farrelly-brothers-herro4.webp";
+
+const items = SECTORS.map((sector) => ({
+  label: sector.label,
+  image: sector.image,
+  imageAlt: sector.imageAlt,
+  icon: sector.icon,
+  href: `/sectors/${sector.slug}/`,
+}));
+---
+
+<Layout
+  title="Sectors"
+  description="The sectors Farrelly Bros works across — infrastructure, construction, utilities, telecommunications, renewable energy, agriculture and commercial land."
+>
+  <Section theme="dark" paddingTop="large" paddingBottom="large" gap="5">
+    <Fragment slot="background">
+      <Img src={heroImage} alt="" loading="eager" fetchPriority="high" />
+      <Overlay variant="solid" strength={55} />
+    </Fragment>
+    <Eyebrow>Sectors</Eyebrow>
+    <Heading tag="h1" variant="h1" maxWidth={20}>
+      Working across every kind of site.
+    </Heading>
+    <Paragraph variant="large" maxWidth={44}>
+      Arboriculture, vegetation management, site clearance and land
+      contracting apply differently depending on what a site is for. Explore
+      how the work fits each sector below.
+    </Paragraph>
+    <ButtonWrapper>
+      <Button element="link" href="/contact/">Discuss a Project</Button>
+    </ButtonWrapper>
+  </Section>
+
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Sectors" }]} />
+
+  <Section paddingTop="large" paddingBottom="large">
+    <ContentSectionHeader
+      eyebrow="Where the work applies"
+      heading="Seven sectors, one contractor."
+      variant="h2"
+    />
+    <ContentSectorGrid items={items} />
+    <ContentClientMarquee />
+  </Section>
+
+  <Section paddingTop="large" paddingBottom="large" class="background-2">
+    <ContentStatement
+      statement="<strong>Not just a tree surgeon.</strong> Farrelly Bros works at the scale specialist land and vegetation projects demand, whatever sector the site sits in."
+      maxWidth={36}
+    />
+  </Section>
+
+  <Section paddingTop="none" paddingBottom="none" theme="light">
+    <ContentCtaMain overlap />
+  </Section>
+</Layout>

@@ -1,4 +1,8 @@
 ---
+import type { SvgComponent } from "astro/types";
+import Icon from "@/components/Media/Icon.astro";
+import circleHelp from "@/assets/icons/circle-help.svg";
+import phoneIcon from "@/assets/icons/phone.svg";
 import { SITE_CONTACT } from "@/consts.ts";
 import { UTILITY_NAV } from "@/components/Global/navigation.ts";
 
@@ -10,25 +14,49 @@ interface Props {
 const { render = true } = Astro.props;
 
 const phone = SITE_CONTACT.phone;
+
+/** Trimmed from the homepage hero copy (src/pages/index.astro) rather than
+ * written fresh, so it doesn't drift from already-approved positioning. */
+const statement = "From a single tree to large-scale infrastructure.";
+
+/** Icon for each utility link, matched by href. Links without an entry render without one. */
+const UTILITY_ICONS: Record<string, SvgComponent> = {
+  "/faq/": circleHelp,
+};
 ---
 
 {
   render && (
-    <div class="nav-utility_wrap">
+    <div class="nav-utility_wrap theme-brand">
       <div class="nav-utility_inner">
+        <p class="nav-utility_statement margin-trim">{statement}</p>
         <ul class="nav-utility_links">
           {UTILITY_NAV.map((item) => (
             <li>
               <a class="nav-utility_link" href={item.href}>
+                {UTILITY_ICONS[item.href] && (
+                  <Icon
+                    class="nav-utility_icon"
+                    src={UTILITY_ICONS[item.href]}
+                    variant="small"
+                  />
+                )}
                 {item.label}
               </a>
             </li>
           ))}
         </ul>
         {phone && (
-          <a class="nav-utility_phone" href={`tel:${phone.replace(/[^+\d]/g, "")}`}>
-            {phone}
-          </a>
+          <>
+            <span class="nav-utility_divider" aria-hidden="true" />
+            <a
+              class="nav-utility_phone"
+              href={`tel:${phone.replace(/[^+\d]/g, "")}`}
+            >
+              <Icon class="nav-utility_icon" src={phoneIcon} variant="small" />
+              {phone}
+            </a>
+          </>
         )}
       </div>
     </div>
@@ -41,6 +69,7 @@ const phone = SITE_CONTACT.phone;
       display: none;
       justify-content: center;
       padding-inline: var(--site-margin);
+      background-color: var(--background);
       color: var(--text);
 
       @media (width >= 48rem) {
@@ -52,22 +81,43 @@ const phone = SITE_CONTACT.phone;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: var(--space-6);
+      gap: var(--space-4);
       width: 100%;
       max-width: var(--max-width-main);
       min-height: var(--nav-utility-height);
       font-size: var(--text-small);
     }
 
+    .nav-utility_statement {
+      display: none;
+      font-weight: var(--primary-semibold);
+      opacity: 0.85;
+
+      @media (width >= 64rem) {
+        display: block;
+        margin-right: auto;
+      }
+    }
+
     .nav-utility_links {
       display: flex;
       align-items: center;
-      gap: var(--space-6);
+      gap: var(--space-4);
+    }
+
+    .nav-utility_divider {
+      width: var(--border-width);
+      height: 1em;
+      background-color: currentcolor;
+      opacity: 0.25;
     }
 
     .nav-utility_link,
     .nav-utility_phone {
-      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      color: color-mix(in lab, currentcolor 75%, transparent);
       text-decoration: none;
       transition: color var(--hover-duration) var(--hover-ease);
 
@@ -78,9 +128,17 @@ const phone = SITE_CONTACT.phone;
       }
     }
 
+    .nav-utility_icon {
+      opacity: 0.8;
+    }
+
     .nav-utility_phone {
       color: var(--text);
       font-weight: var(--primary-semibold);
+
+      & .nav-utility_icon {
+        opacity: 1;
+      }
     }
   }
 </style>

@@ -1,0 +1,159 @@
+---
+/**
+ * "Your Project" — the live-updating recap. Rendered once; the client
+ * script fills `data-summary-*` slots in as each stage is answered, and
+ * toggles `data-summary-row` visibility so unanswered rows don't show as
+ * empty lines.
+ *
+ * Reused both as the sticky desktop panel and, unstyled differently, inside
+ * the mobile "View project summary" disclosure.
+ */
+import { SITE_CONTACT } from "@/consts.ts";
+
+interface Props {
+  variant?: "sticky" | "inline";
+}
+
+const { variant = "sticky" } = Astro.props;
+---
+
+<div class:list={["project-summary", variant]} data-project-summary>
+  {
+    (SITE_CONTACT.phone || SITE_CONTACT.mobile || SITE_CONTACT.email || SITE_CONTACT.address) && (
+      <div class="project-summary_contact">
+        {SITE_CONTACT.phone && (
+          <div class="project-summary_contact-row">
+            <span class="text-style-small project-summary_contact-label">Telephone</span>
+            <a class="text-style-h6" href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, "")}`}>
+              {SITE_CONTACT.phone}
+            </a>
+          </div>
+        )}
+        {SITE_CONTACT.mobile && (
+          <div class="project-summary_contact-row">
+            <span class="text-style-small project-summary_contact-label">Emergency</span>
+            <a class="text-style-h6" href={`tel:${SITE_CONTACT.mobile.replace(/[^+\d]/g, "")}`}>
+              {SITE_CONTACT.mobile}
+            </a>
+          </div>
+        )}
+        {SITE_CONTACT.email && (
+          <div class="project-summary_contact-row">
+            <span class="text-style-small project-summary_contact-label">Email</span>
+            <a class="text-style-h6" href={`mailto:${SITE_CONTACT.email}`}>
+              {SITE_CONTACT.email}
+            </a>
+          </div>
+        )}
+        {SITE_CONTACT.address && (
+          <div class="project-summary_contact-row">
+            <span class="text-style-small project-summary_contact-label">Address</span>
+            <span class="text-style-h6">{SITE_CONTACT.address}</span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  <p class="project-summary_eyebrow text-style-small">Your Project</p>
+
+  <ul class="project-summary_list" data-summary-list>
+    <li class="project-summary_row" data-summary-row="service" hidden>
+      <span data-summary-value="service"></span>
+    </li>
+    <li class="project-summary_row" data-summary-row="siteType" hidden>
+      <span data-summary-value="siteType"></span>
+    </li>
+    <li class="project-summary_row" data-summary-row="location" hidden>
+      <span data-summary-value="location"></span>
+    </li>
+    <li class="project-summary_row" data-summary-row="serviceDetails" hidden>
+      <span data-summary-value="serviceDetails"></span>
+    </li>
+    <li class="project-summary_row" data-summary-row="access" hidden>
+      <span data-summary-value="access"></span>
+    </li>
+    <li class="project-summary_row" data-summary-row="siteConditions" hidden>
+      <span data-summary-value="siteConditions"></span>
+    </li>
+    <li class="project-summary_row" data-summary-row="timing" hidden>
+      <span data-summary-value="timing"></span>
+    </li>
+  </ul>
+
+  <p class="project-summary_empty text-style-small" data-summary-empty>
+    Answers will appear here as you go.
+  </p>
+</div>
+
+<style is:global>
+  @layer components {
+    .project-summary {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      width: 100%;
+      padding: var(--space-6);
+      background-color: var(--background-2);
+      border-radius: var(--radius-main);
+    }
+
+    .project-summary.sticky {
+      position: sticky;
+      top: calc(var(--nav-height, 5rem) + var(--space-6));
+    }
+
+    .project-summary_eyebrow {
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .project-summary_list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      list-style: none;
+    }
+
+    .project-summary_row {
+      padding-block: var(--space-2);
+      border-bottom: var(--border-width) solid var(--border);
+
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+
+    .project-summary_empty {
+      color: var(--text-2);
+    }
+
+    .project-summary:not(.is-empty) .project-summary_empty {
+      display: none;
+    }
+
+    .project-summary.is-empty .project-summary_list {
+      display: none;
+    }
+
+    .project-summary_contact {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding-bottom: var(--space-5);
+      margin-bottom: var(--space-2);
+      border-bottom: var(--border-width) solid var(--border);
+    }
+
+    .project-summary_contact-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .project-summary_contact-label {
+      color: var(--text-2);
+    }
+  }
+</style>

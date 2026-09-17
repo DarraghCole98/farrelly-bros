@@ -5,6 +5,7 @@ import Paragraph from "@/components/Typography/Paragraph.astro";
 import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
 import Button from "@/components/Button.astro";
 import Img from "@/components/Media/Img.astro";
+import contourLines from "@/assets/graphics/Footer-contour-lines-clip-path-group.svg";
 
 type ImageSource = ImageMetadata | string;
 
@@ -83,47 +84,54 @@ const opening = lead ?? (banner ? "Have a challenging project?" : undefined);
 
 {
   render && banner && (
-    <div
-      class:list={[
-        "cta-main_wrap",
-        "theme-brand",
-        overlap && "overlap",
-        image && "has-image",
-        className,
-      ]}
-      {...rest}
-    >
-      {image && (
-        <div class="cta-main_media">
-          <Img src={image} alt={imageAlt} />
-          <div class="cta-main_gradient" />
+    <>
+      {overlap && (
+        <div class="cta-main_graphic_band" aria-hidden="true">
+          <Img src={contourLines} alt="" loading="eager" />
         </div>
       )}
-      <div class="cta-main_statement">
-        {opening && <p class="cta-main_lead text-style-h3">{opening}</p>}
-        <Heading tag="h2" variant="h3" maxWidth={22}>
-          {heading}
-        </Heading>
-        {text && (
-          <Paragraph variant="large" maxWidth={40}>
-            {text}
-          </Paragraph>
+      <div
+        class:list={[
+          "cta-main_wrap",
+          "theme-brand",
+          overlap && "overlap",
+          image && "has-image",
+          className,
+        ]}
+        {...rest}
+      >
+        {image && (
+          <div class="cta-main_media">
+            <Img src={image} alt={imageAlt} />
+            <div class="cta-main_gradient" />
+          </div>
         )}
+        <div class="cta-main_statement">
+          {opening && <p class="cta-main_lead text-style-h3">{opening}</p>}
+          <Heading tag="h2" variant="h2" maxWidth={22}>
+            {heading}
+          </Heading>
+          {text && (
+            <Paragraph variant="large" maxWidth={40}>
+              {text}
+            </Paragraph>
+          )}
+        </div>
+        <ButtonWrapper class="cta-main_action">
+          {
+            modalId ? (
+              <Button type="button" data-modal-open={modalId}>
+                {buttonLabel}
+              </Button>
+            ) : (
+              <Button element="link" href={buttonHref}>
+                {buttonLabel}
+              </Button>
+            )
+          }
+        </ButtonWrapper>
       </div>
-      <ButtonWrapper class="cta-main_action">
-        {
-          modalId ? (
-            <Button type="button" data-modal-open={modalId}>
-              {buttonLabel}
-            </Button>
-          ) : (
-            <Button element="link" href={buttonHref}>
-              {buttonLabel}
-            </Button>
-          )
-        }
-      </ButtonWrapper>
-    </div>
+    </>
   )
 }
 
@@ -131,7 +139,7 @@ const opening = lead ?? (banner ? "Have a challenging project?" : undefined);
   render && panel && (
     <div class:list={["cta-main_panel", "alignment-center", className]} {...rest}>
       {opening && <p class="cta-main_lead text-style-h3">{opening}</p>}
-      <Heading tag="h2" variant="h3" maxWidth={24}>
+      <Heading tag="h2" variant="h2" maxWidth={24}>
         {heading}
       </Heading>
       {text && (
@@ -159,7 +167,7 @@ const opening = lead ?? (banner ? "Have a challenging project?" : undefined);
 {
   render && !banner && !panel && (
     <div class:list={["alignment-center", className]} {...rest}>
-      <Heading tag="h2" variant="h1" maxWidth={20}>
+      <Heading tag="h2" variant="h2" maxWidth={20}>
         {heading}
       </Heading>
       {text && (
@@ -186,6 +194,53 @@ const opening = lead ?? (banner ? "Have a challenging project?" : undefined);
 
 <style is:global>
   @layer components {
+    /* The graphic's native size is 2560×1014 (viewBox `0 0 2560 1014`) — a
+       wide, short banner, aspect ratio ~2.52:1. It must never be stretched
+       or cover-cropped to fill this section's own (much taller, card-
+       driven) height: `height: auto` + a matching `aspect-ratio` keep it
+       at its true proportions, full width, nothing scaled up or cropped
+       away. `object-position: top` anchors it to the top of the band
+       rather than centering, so nothing is pushed off-screen. Full-bleed
+       past this section's max-width container via the 100vw breakout.
+
+       The viewBox is the artwork's original, uncropped framing — an
+       earlier attempt trimmed off what looked like a blank top margin,
+       but that made the visible portion start abruptly mid-shape, which
+       read as a crop rather than an intentional edge. Showing the whole
+       original composition, even with a quieter top few percent, looks
+       like a real top edge instead.
+
+       `--light-100` (plain white) fills whatever space below the artwork
+       the band's own height doesn't need — matching the plain white
+       background used elsewhere on the site, per direct request. Sits
+       behind the card and the section's other content (z-index 0; the
+       card is z-index 1 — see `.cta-main_wrap.overlap` below). */
+    .cta-main_graphic_band {
+      position: absolute;
+      /* `inset: 0` alone would only span `.container`'s own box (it has
+         `position: relative`, making it — not the full-width `.section`
+         — the containing block here), so width uses the 100vw breakout
+         instead to reach the true edges of the viewport. */
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      background-color: var(--light-100);
+
+      & .image {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2560 / 1014;
+        object-fit: contain;
+        object-position: top;
+      }
+    }
+
     .cta-main_wrap {
       /* Overridable per-instance (e.g. from Stacki's style field on this
          component) to swap in a different tint or direction. */
@@ -267,10 +322,23 @@ const opening = lead ?? (banner ? "Have a challenging project?" : undefined);
     }
 
     /* Overlapping the footer: the banner lifts itself over the seam, and the
-       footer opens up enough top padding to receive it. */
+       footer opens up enough top padding to receive it. The margin-top
+       sets how tall the section — and so the graphic band behind it, which
+       matches the section's own height exactly (`bottom: 0` in
+       `.cta-main_graphic_band`) so it always meets the footer with no gap
+       — ends up.
+
+       Kept deliberately small relative to the image's own height (~39.6vw
+       at aspect ratio 2560/1014) so the card starts well before the image
+       ends, overlapping it by a wide margin rather than lining up close to
+       its bottom edge — a close-to-exact match risked a sliver of the
+       band's own background showing between them. The section still ends
+       up tall enough to clear the image overall once the card's own
+       height is added on top of this margin. */
     .cta-main_wrap.overlap {
       position: relative;
       z-index: 1;
+      margin-top: min(27vw, 22rem);
       margin-bottom: calc(var(--section-space-small) * -1);
     }
 

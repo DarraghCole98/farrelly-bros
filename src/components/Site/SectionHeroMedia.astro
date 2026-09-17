@@ -1,0 +1,164 @@
+---
+import Section from "@/components/Wrapper/Section.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import ButtonWrapper from "@/components/Wrapper/ButtonWrapper.astro";
+import Img from "@/components/Media/Img.astro";
+import { slotContent } from "@/utils/slots.ts";
+import logEndGrain from "@/assets/Images/Woodgrain log dark.webp";
+
+type ImageSource = ImageMetadata | string;
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** Small label above the heading. */
+  eyebrow?: string;
+  /** The page's title. Always the page's `h1`. */
+  heading: string;
+  /** The supporting line under the title. */
+  text?: string;
+  /**
+   * The photo held to the right of the hero, fading into the dark ground
+   * behind the text. An imported asset, a remote `http(s)` URL, or a path
+   * to a file in `public/`. Left out, the hero keeps its texture alone.
+   */
+  image?: ImageSource;
+  /**
+   * Decorative grain across the dark ground behind the text. Defaults to
+   * the end-grain of a cut log, whose rings read through the green; `false`
+   * leaves the ground plain.
+   */
+  texture?: ImageSource | false;
+  /**
+   * How the texture is laid over the dark ground.
+   *
+   * - `blend` — a photographic texture, softened into the green so only its pattern shows (default)
+   * - `as-supplied` — line art already toned for a dark ground, drawn exactly as the file is
+   */
+  textureStyle?: "blend" | "as-supplied";
+}
+
+const {
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  image,
+  texture = logEndGrain,
+  textureStyle = "blend",
+} = Astro.props;
+
+const actions = await slotContent(Astro.slots);
+---
+
+<Section
+  render={render}
+  theme="dark"
+  paddingTop="large"
+  paddingBottom="large"
+  gap="5"
+  class="hero-media_wrap"
+>
+  <div
+    slot="background"
+    class:list={[
+      "hero-media_backdrop",
+      textureStyle !== "blend" && textureStyle,
+    ]}
+  >
+    {texture && <Img src={texture} alt="" class="hero-media_texture" />}
+    {
+      image && (
+        <Img
+          src={image}
+          alt=""
+          loading="eager"
+          fetchPriority="high"
+          class="hero-media_image"
+        />
+      )
+    }
+  </div>
+
+  {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+  <Heading tag="h1" variant="h1" maxWidth={20}>
+    {heading}
+  </Heading>
+  {text && (
+    <Paragraph variant="large" maxWidth={44}>
+      {text}
+    </Paragraph>
+  )}
+  {actions && (
+    <ButtonWrapper>
+      <Fragment set:html={actions} />
+    </ButtonWrapper>
+  )}
+</Section>
+
+<style is:global>
+  @layer components {
+    .hero-media_backdrop {
+      overflow: clip;
+    }
+
+    /* Grain across the dark ground. Soft-light lets the rings take on the
+       green rather than sitting on it as grey; faded out toward the photo so
+       the two never compete. */
+    .hero-media_texture {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      background-color: transparent;
+      opacity: 0.35;
+      mix-blend-mode: soft-light;
+      mask-image: linear-gradient(to right, black 20%, transparent 70%);
+      -webkit-mask-image: linear-gradient(to right, black 20%, transparent 70%);
+
+      /* Line art that carries its own faintness — white at a few percent
+         alpha — would all but vanish under the blend's extra dimming, so it
+         is drawn exactly as supplied. */
+      .hero-media_backdrop.as-supplied & {
+        opacity: 1;
+        mix-blend-mode: normal;
+      }
+    }
+
+    /* Below the two-column width the photo sits behind all of the text, so
+       it is held back far enough for the copy to read over any part of it. */
+    .hero-media_image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.3;
+
+      /* From here the text keeps to the left half: the photo takes the
+         right half at full strength and fades in across its first stretch,
+         so the dark ground and the picture meet without a hard edge. */
+      @media (width >= 64rem) {
+        inset-inline-start: 45%;
+        width: 55%;
+        opacity: 1;
+        mask-image: linear-gradient(to right, transparent 0%, black 45%);
+        -webkit-mask-image: linear-gradient(
+          to right,
+          transparent 0%,
+          black 45%
+        );
+      }
+    }
+
+    /* The heading and copy sit above the backdrop layers. */
+    .hero-media_wrap > .container {
+      z-index: 1;
+    }
+  }
+</style>

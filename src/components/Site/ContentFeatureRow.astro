@@ -1,13 +1,17 @@
 ---
 import type { HTMLAttributes, SvgComponent } from "astro/types";
 import Icon from "@/components/Media/Icon.astro";
+import Img from "@/components/Media/Img.astro";
+import woodgrainTexture from "@/assets/Images/Woodgrain texture.svg";
+
+type ImageSource = ImageMetadata | string;
 
 export interface FeatureItem {
   /** The point being made, in a few words. */
   title: string;
   /** A sentence or two supporting it. */
   text?: string;
-  /** An SVG imported from `src/assets`. Replaces the rule/hairline marker when set. */
+  /** An SVG imported from `src/assets`. Shown in a badge in the card's corner when set. */
   icon?: SvgComponent;
 }
 
@@ -17,21 +21,49 @@ interface Props extends HTMLAttributes<"ul"> {
   /** The points to make. Renders nothing when empty. */
   items: FeatureItem[];
   /**
-   * How each item is marked.
+   * How each item is presented.
    *
-   * - `rule` — a short brand rule above it, for a few strong points (default)
+   * - `card` — a tinted card with an icon badge, for a few strong points (default)
    * - `hairline` — a thin line above it, for a longer run of steps
    */
-  variant?: "rule" | "hairline";
+  variant?: "card" | "hairline";
+  /**
+   * Colour tinting each card's gradient and filling the icon badge behind
+   * it. Any CSS colour. Card variant only.
+   */
+  gradientColor?: string;
+  /**
+   * How strong that tint reads at the gradient's start, from 0 (invisible)
+   * to 100 (solid colour). Card variant only.
+   *
+   * @min 0
+   * @max 100
+   * @int
+   */
+  gradientStrength?: number;
+  /**
+   * Decorative texture faded into each card's corner. An imported asset, a
+   * remote `http(s)` URL, or a path to a file in `public/`. Set to `false`
+   * to leave cards without one. Card variant only.
+   */
+  texture?: ImageSource | false;
 }
 
 const {
   render = true,
   items,
-  variant = "rule",
+  variant = "card",
+  gradientColor = "var(--brand-400)",
+  gradientStrength = 14,
+  texture = woodgrainTexture,
   class: className,
   ...rest
 } = Astro.props;
+
+const locals =
+  variant === "card"
+    ? `--_feature-gradient-color: ${gradientColor}; --_feature-gradient-strength: ${gradientStrength}%;`
+    : undefined;
 ---
 
 {
@@ -39,14 +71,22 @@ const {
     <ul
       class:list={[
         "feature-row_wrap",
-        variant !== "rule" && variant,
+        variant !== "card" && variant,
         className,
       ]}
+      style={locals}
       {...rest}
     >
       {items.map((item) => (
         <li class:list={["feature-row_item", item.icon && "has-icon"]}>
-          {item.icon && <Icon src={item.icon} variant="large" />}
+          {variant === "card" && texture && (
+            <Img src={texture} alt="" class="feature-row_item_texture" />
+          )}
+          {item.icon && (
+            <span class="feature-row_icon">
+              <Icon src={item.icon} variant="medium" />
+            </span>
+          )}
           <h3 class="feature-row_title text-style-h5">{item.title}</h3>
           {item.text && <p class="feature-row_text">{item.text}</p>}
         </li>
@@ -58,8 +98,10 @@ const {
 <style is:global>
   @layer components {
     .feature-row_wrap {
+      --_feature-gradient-color: var(--brand-400);
+      --_feature-gradient-strength: 14%;
       display: grid;
-      gap: var(--space-7) var(--site-gutter);
+      gap: var(--space-6) var(--site-gutter);
       width: 100%;
 
       @media (width >= 48rem) {
@@ -75,25 +117,89 @@ const {
       }
     }
 
-    /* A short brand rule stands in for an icon — it marks the item without
-       adding another set of glyphs to the page. */
+    /* The card variant (default): a tinted, textured surface rather than a
+       bare rule — the icon sits in its own badge at the top rather than
+       floating above the title, and a faded woodgrain corner (the same
+       texture and masking `ContentIconGrid` uses, for one consistent
+       decorative language) keeps it from reading as a flat block of text.
+       Colour, strength and texture all come from the `--_feature-*`
+       variables above, set inline from this component's own props, so
+       Stacki can edit them per instance without touching this stylesheet. */
     .feature-row_item {
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: var(--space-3);
-      padding-top: var(--space-4);
-      border-top: 0.1875rem solid var(--heading-accent);
+      padding: var(--space-6);
+      background-image: linear-gradient(
+        135deg,
+        color-mix(
+          in srgb,
+          var(--_feature-gradient-color) var(--_feature-gradient-strength),
+          var(--background-2)
+        )
+          0%,
+        var(--background-2) 60%
+      );
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-main);
+      overflow: clip;
 
       .feature-row_wrap.hairline & {
         gap: var(--space-2);
-        border-top-width: var(--border-width);
-        border-top-color: var(--border);
+        padding: 0;
+        padding-top: var(--space-4);
+        background-image: none;
+        border: none;
+        border-top: var(--border-width) solid var(--border);
+        border-radius: 0;
       }
+    }
 
-      &.has-icon {
-        padding-top: 0;
-        border-top: none;
-      }
+    /* Faded into the card's corner behind the icon and copy, echoing the
+       same texture treatment used on `ContentIconGrid`'s tiles. */
+    .feature-row_item_texture {
+      position: absolute;
+      z-index: 0;
+      inset-block-end: -15%;
+      inset-inline-end: -15%;
+      width: 60%;
+      height: auto;
+      /* `multiply`, not `soft-light`: the card's own surface is light (a
+         near-white gradient over --background-2), and soft-light's effect
+         fades out as the base colour approaches white — it was rendering
+         but effectively invisible. Multiply actually darkens against a
+         light base, which is what makes the texture read here. */
+      opacity: 0.3;
+      mix-blend-mode: multiply;
+      mask-image: radial-gradient(circle at bottom right, black 0%, transparent 70%);
+      -webkit-mask-image: radial-gradient(
+        circle at bottom right,
+        black 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+
+    /* The icon's own badge, pinned to the card's top-left rather than
+       floating loose above the title. */
+    .feature-row_icon {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      background-color: var(--_feature-gradient-color);
+      border-radius: var(--radius-small);
+      color: var(--light-100);
+    }
+
+    .feature-row_title,
+    .feature-row_text {
+      position: relative;
+      z-index: 1;
     }
 
     .feature-row_text {

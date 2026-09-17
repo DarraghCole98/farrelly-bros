@@ -45,6 +45,7 @@ export function sortByServiceOrder<T extends { id: string }>(
 export const PRIMARY_NAV: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about/" },
+  { label: "Sectors", href: "/sectors/" },
   { label: "Projects", href: "/projects/" },
   { label: "Plant & Machinery", href: "/plant-machinery/" },
   { label: "Contact", href: "/contact/" },
@@ -54,13 +55,12 @@ export const PRIMARY_NAV: NavItem[] = [
 export const FOOTER_NAV: NavItem[] = [
   { label: "About", href: "/about/" },
   { label: "Services", href: "/services/" },
+  { label: "Sectors", href: "/sectors/" },
   { label: "Projects", href: "/projects/" },
   { label: "Plant & Machinery", href: "/plant-machinery/" },
+  { label: "FAQ", href: "/faq/" },
   { label: "Contact", href: "/contact/" },
 ];
 
-/** Thin utility bar above the main nav — secondary destinations only. */
-export const UTILITY_NAV: NavItem[] = [
-  { label: "Plant & Machinery", href: "/plant-machinery/" },
-  { label: "Projects", href: "/projects/" },
-];
+/** Thin utility bar above the main nav — secondary destinations not already in the main nav. */
+export const UTILITY_NAV: NavItem[] = [{ label: "FAQ", href: "/faq/" }];

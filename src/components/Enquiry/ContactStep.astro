@@ -1,0 +1,62 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import Fieldset from "@/components/Form/Fieldset.astro";
+import Input from "@/components/Form/Input.astro";
+import Select from "@/components/Form/Select.astro";
+import Choice from "@/components/Form/Choice.astro";
+import { ROLE_OPTIONS } from "@/lib/enquiry/config.ts";
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+---
+
+<fieldset class="enquiry-step" data-enquiry-step="5" hidden>
+  <legend class="sr-only">Your Details</legend>
+  <Heading tag="h2" variant="h3" maxWidth={22} data-step-heading tabindex="-1">
+    Who should we contact?
+  </Heading>
+
+  <div class="enquiry-screen" data-screen-stage="5" data-screen-id="details">
+    <Fieldset legend="Your details" legendStyle="hidden" variant="columns">
+      <Input label="Your name" name="contactName" variant="text" required />
+      <Input label="Company / organisation" name="contactCompany" variant="text" />
+      <Input label="Email" name="contactEmail" variant="email" required />
+      <Input label="Telephone" name="contactPhone" variant="phone" required />
+      <Select
+        label="Job title"
+        name="role"
+        variant="list"
+        options={ROLE_OPTIONS}
+        placeholder="Select one… (optional)"
+      />
+    </Fieldset>
+  </div>
+
+  <div class="enquiry-screen" data-screen-stage="5" data-screen-id="consent">
+    <Choice
+      type="checkbox"
+      name="privacyAccepted"
+      value="yes"
+      label="I agree to Farrelly Bros storing and using these details to respond to my enquiry."
+      required
+    />
+    <p class="text-style-small enquiry-step_hint">
+      See our <a href="/privacy-policy/">Privacy Policy</a> for how your information is handled. We won't sign you up to any marketing lists from this form.
+    </p>
+
+    {
+      turnstileSiteKey && (
+        <div
+          class="cf-turnstile"
+          data-sitekey={turnstileSiteKey}
+          data-callback="onEnquiryTurnstileSuccess"
+          data-turnstile-widget
+        />
+      )
+    }
+  </div>
+
+  <div class="enquiry-step_error" data-step-error hidden role="alert">
+    <span class="enquiry-step_error-icon" aria-hidden="true">!</span>
+    <span class="enquiry-step_error-text text-style-small" data-step-error-text></span>
+  </div>
+</fieldset>

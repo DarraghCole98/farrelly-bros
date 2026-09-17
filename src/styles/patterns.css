@@ -15,13 +15,12 @@
 .section {
   padding-top: var(--section-space-medium);
   padding-bottom: var(--section-space-medium);
-  background-color: var(--background);
-  color: var(--text);
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   position: relative;
+  background-color: var(--background);
 }
 
 .container {

@@ -1,7 +1,16 @@
 ---
 import ContentSectionHeader from "@/components/Site/ContentSectionHeader.astro";
-import ContentIconGrid from "@/components/Site/ContentIconGrid.astro";
+import ContentSectorGrid from "@/components/Site/ContentSectorGrid.astro";
+import ContentClientMarquee from "@/components/Site/ContentClientMarquee.astro";
 import { SECTORS } from "@/data/sectors.ts";
+
+const items = SECTORS.map((sector) => ({
+  label: sector.label,
+  image: sector.image,
+  imageAlt: sector.imageAlt,
+  icon: sector.icon,
+  href: `/sectors/${sector.slug}/`,
+}));
 
 interface Props {
   /** Set to `false` to skip rendering this component and its children. */
@@ -11,6 +20,8 @@ interface Props {
   text?: string;
   /** Heading size. Matches `ContentSectionHeader`'s scale. */
   variant?: "h1" | "h2" | "h3";
+  /** Shows a placeholder logo strip below the sector grid. */
+  trustedBy?: boolean;
 }
 
 const {
@@ -19,6 +30,7 @@ const {
   heading = "Where the work takes us.",
   text,
   variant = "h3",
+  trustedBy = true,
 } = Astro.props;
 ---
 
@@ -31,7 +43,8 @@ const {
         text={text}
         variant={variant}
       />
-      <ContentIconGrid items={SECTORS} />
+      <ContentSectorGrid items={items} />
+      <ContentClientMarquee render={trustedBy} />
     </Fragment>
   )
 }

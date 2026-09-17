@@ -7,6 +7,7 @@ import logo from "@/assets/Images/farrelly-brothers-logo.svg";
 import arrow from "@/assets/icons/arrow.svg";
 import { SITE_NAME } from "@/consts.ts";
 import { PRIMARY_NAV, SERVICE_LINKS } from "@/components/Global/navigation.ts";
+import { SECTORS } from "@/data/sectors.ts";
 
 interface Props {
   /** Set to `false` to skip rendering this component and its children. */
@@ -22,9 +23,11 @@ interface Props {
 const { render = true, overlap = false } = Astro.props;
 
 const onServicesPage = Astro.url.pathname.startsWith("/services");
-const [homeLink, ...restLinks] = PRIMARY_NAV;
-const beforeServices = [homeLink];
-const afterServices = restLinks;
+const onSectorsPage = Astro.url.pathname.startsWith("/sectors");
+/** Home sits before Services; About sits between Services and Sectors;
+ * everything else (Projects, Plant & Machinery, Contact) sits after
+ * Sectors. The Sectors entry itself is replaced by the dropdown below. */
+const [homeLink, aboutLink, , ...afterSectors] = PRIMARY_NAV;
 ---
 
 {
@@ -59,9 +62,7 @@ const afterServices = restLinks;
         <nav class="nav_menu" id="nav-menu" aria-label="Main">
           <div class="nav_menu_inner">
             <ul class="nav_links">
-              {beforeServices.map((item) => (
-                <NavLink href={item.href}>{item.label}</NavLink>
-              ))}
+              <NavLink href={homeLink.href}>{homeLink.label}</NavLink>
               <li>
                 <div
                   class:list={["dropdown_wrap", onServicesPage && "current"]}
@@ -95,7 +96,43 @@ const afterServices = restLinks;
                   </div>
                 </div>
               </li>
-              {afterServices.map((item) => (
+              <NavLink href={aboutLink.href}>{aboutLink.label}</NavLink>
+              <li>
+                <div
+                  class:list={["dropdown_wrap", onSectorsPage && "current"]}
+                  data-nav-dropdown
+                >
+                  <div class="dropdown_control">
+                    <a class="dropdown_toggle" href="/sectors/">
+                      <span class="dropdown_label text-style-trim">
+                        Sectors
+                      </span>
+                    </a>
+                    <button
+                      type="button"
+                      class="dropdown_expand"
+                      aria-expanded="false"
+                      aria-controls="nav-sectors-menu"
+                      aria-label="Show sectors menu"
+                    >
+                      <Icon class="dropdown_icon" src={arrow} variant="small" />
+                    </button>
+                  </div>
+                  <div class="dropdown_content" id="nav-sectors-menu">
+                    <div class="dropdown_body margin-trim">
+                      <ul class="nav_dropdown_links">
+                        <NavLink href="/sectors/">All Sectors</NavLink>
+                        {SECTORS.map((sector) => (
+                          <NavLink href={`/sectors/${sector.slug}/`}>
+                            {sector.label}
+                          </NavLink>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {afterSectors.map((item) => (
                 <NavLink href={item.href}>{item.label}</NavLink>
               ))}
             </ul>
@@ -164,46 +201,52 @@ const afterServices = restLinks;
       });
   }
 
-  const servicesDropdown = nav?.querySelector<HTMLElement>(
+  const navDropdowns = nav?.querySelectorAll<HTMLElement>(
     "[data-nav-dropdown]",
   );
-  const servicesExpand =
-    servicesDropdown?.querySelector<HTMLButtonElement>(".dropdown_expand");
 
-  if (servicesDropdown && servicesExpand) {
-    const setServicesOpen = (open: boolean) => {
-      servicesDropdown.classList.toggle("open", open);
-      servicesExpand.setAttribute("aria-expanded", String(open));
+  navDropdowns?.forEach((dropdown) => {
+    const expand = dropdown.querySelector<HTMLButtonElement>(
+      ".dropdown_expand",
+    );
+    if (!expand) return;
+
+    const setDropdownOpen = (open: boolean) => {
+      dropdown.classList.toggle("open", open);
+      expand.setAttribute("aria-expanded", String(open));
     };
 
-    servicesExpand.addEventListener("click", () => {
-      setServicesOpen(!servicesDropdown.classList.contains("open"));
+    expand.addEventListener("click", () => {
+      const opening = !dropdown.classList.contains("open");
+      if (opening) {
+        navDropdowns.forEach((other) => {
+          if (other !== dropdown) other.classList.remove("open");
+          other
+            .querySelector<HTMLButtonElement>(".dropdown_expand")
+            ?.setAttribute("aria-expanded", "false");
+        });
+      }
+      setDropdownOpen(opening);
     });
 
     document.addEventListener("keydown", (event) => {
-      if (
-        event.key === "Escape" &&
-        servicesDropdown.classList.contains("open")
-      ) {
-        setServicesOpen(false);
-        servicesExpand.focus();
+      if (event.key === "Escape" && dropdown.classList.contains("open")) {
+        setDropdownOpen(false);
+        expand.focus();
       }
     });
 
     document.addEventListener("click", (event) => {
       const target = event.target;
-      if (
-        !servicesDropdown.classList.contains("open") ||
-        !(target instanceof Node)
-      )
+      if (!dropdown.classList.contains("open") || !(target instanceof Node))
         return;
-      if (!servicesDropdown.contains(target)) setServicesOpen(false);
+      if (!dropdown.contains(target)) setDropdownOpen(false);
     });
 
     window
       .matchMedia("(width >= 48rem)")
-      .addEventListener("change", () => setServicesOpen(false));
-  }
+      .addEventListener("change", () => setDropdownOpen(false));
+  });
 </script>
 
 <style is:global>
@@ -534,42 +577,54 @@ const afterServices = restLinks;
       }
 
       /* Restore the floating flyout for the desktop dropdown — opens on
-         hover, keyboard focus, or the expand control's tap-toggle. */
+         hover, keyboard focus, or the expand control's tap-toggle.
+
+         .dropdown_content itself is the hoverable hit area: it starts flush
+         against the toggle (top: 100%, no gap) and pushes its visible card
+         down with padding-top instead. That keeps the padding strip inside
+         .dropdown_wrap's hover box, so moving the pointer from the toggle
+         down into the card never crosses a dead zone that drops :hover
+         early. The card's own look (background, border, shadow) and its
+         open/close motion live on .dropdown_body instead. */
       .nav_menu .dropdown_content {
         display: block;
         position: absolute;
-        top: calc(100% + var(--space-2));
+        top: 100%;
         inset-inline-start: 0;
+        padding-top: var(--space-2);
         opacity: 0;
         pointer-events: none;
-        translate: 0 -0.5rem;
-        scale: 0.98;
         width: max-content;
         min-width: 100%;
         max-width: min(22rem, calc(100vw - var(--site-margin) * 2));
-        background-color: var(--background-2);
-        border: var(--border-width) solid var(--border);
-        border-radius: var(--radius-main);
-        box-shadow: 0 1rem 2.5rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
-        transition:
-          opacity var(--hover-duration) var(--hover-ease),
-          translate var(--hover-duration) var(--hover-ease),
-          scale var(--hover-duration) var(--hover-ease);
+        transition: opacity var(--hover-duration) var(--hover-ease);
       }
 
       .nav_menu .dropdown_wrap:is(:hover, :focus-within, .open) .dropdown_content {
         opacity: 1;
         pointer-events: auto;
-        translate: 0 0;
-        scale: 1;
-        transition:
-          opacity var(--open-duration) var(--open-ease),
-          translate var(--open-duration) var(--open-ease),
-          scale var(--open-duration) var(--open-ease);
+        transition: opacity var(--open-duration) var(--open-ease);
       }
 
       .nav_menu .dropdown_body {
         padding: var(--space-5);
+        background-color: var(--background-2);
+        border: var(--border-width) solid var(--border);
+        border-radius: var(--radius-main);
+        box-shadow: 0 1rem 2.5rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
+        translate: 0 -0.5rem;
+        scale: 0.98;
+        transition:
+          translate var(--hover-duration) var(--hover-ease),
+          scale var(--hover-duration) var(--hover-ease);
+      }
+
+      .nav_menu .dropdown_wrap:is(:hover, :focus-within, .open) .dropdown_body {
+        translate: 0 0;
+        scale: 1;
+        transition:
+          translate var(--open-duration) var(--open-ease),
+          scale var(--open-duration) var(--open-ease);
       }
 
       .nav_cta {

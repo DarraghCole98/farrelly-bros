@@ -1,0 +1,151 @@
+---
+/**
+ * A large, editorial selectable option — the primary input across the
+ * enquiry form, standing in for both dropdowns and small radio buttons.
+ * A real `radio`/`checkbox` sits underneath an `aria-hidden` mark, so
+ * keyboard and screen-reader behaviour stays exactly what it would be for
+ * a native control.
+ */
+interface Props {
+  type: "radio" | "checkbox";
+  name: string;
+  value: string;
+  label: string;
+  description?: string;
+  checked?: boolean;
+  required?: boolean;
+  /** Denser presentation for a short label with no description. */
+  compact?: boolean;
+}
+
+const {
+  type,
+  name,
+  value,
+  label,
+  description,
+  checked = false,
+  required = false,
+  compact = false,
+} = Astro.props;
+---
+
+<label class:list={["option-tile", compact && "compact"]}>
+  <input
+    class="option-tile_input"
+    type={type}
+    name={name}
+    value={value}
+    checked={checked || undefined}
+    required={required || undefined}
+  />
+  <span class="option-tile_mark" aria-hidden="true">
+    <span class="option-tile_mark-fill"></span>
+  </span>
+  <span class="option-tile_body">
+    <span class="option-tile_label text-style-h6">{label}</span>
+    {description && <span class="option-tile_description text-style-small">{description}</span>}
+  </span>
+</label>
+
+<style is:global>
+  @layer components {
+    .option-tile {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      width: 100%;
+      padding: var(--space-4);
+      background-color: var(--background);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-small);
+      cursor: pointer;
+      transition:
+        border-color var(--hover-duration) var(--hover-ease),
+        background-color var(--hover-duration) var(--hover-ease);
+
+      &.compact {
+        align-items: center;
+        padding: var(--space-3) var(--space-4);
+      }
+    }
+
+    @media (hover: hover) {
+      .option-tile:hover {
+        border-color: var(--text-2);
+      }
+    }
+
+    .option-tile_input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .option-tile_mark {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 1.25em;
+      height: 1.25em;
+      margin-top: 0.15em;
+      background-color: var(--background-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-small);
+      transition: border-color var(--hover-duration) var(--hover-ease);
+
+      .compact & {
+        margin-top: 0;
+      }
+
+      .option-tile:has(input[type="radio"]) & {
+        border-radius: var(--radius-round);
+      }
+    }
+
+    .option-tile_mark-fill {
+      width: 0.65em;
+      height: 0.65em;
+      background-color: var(--text);
+      border-radius: 0.15em;
+      scale: 0;
+      transition: scale var(--hover-duration) var(--hover-ease);
+
+      .option-tile:has(input[type="radio"]) & {
+        border-radius: var(--radius-round);
+      }
+    }
+
+    .option-tile_body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      min-width: 0;
+    }
+
+    .option-tile_description {
+      color: var(--text-2);
+    }
+
+    .option-tile:has(:checked) {
+      border-color: var(--text);
+      background-color: var(--background-2);
+
+      & .option-tile_mark {
+        border-color: var(--text);
+      }
+
+      & .option-tile_mark-fill {
+        scale: 1;
+      }
+    }
+
+    .option-tile_input:focus-visible ~ .option-tile_mark {
+      outline: var(--focus-width) solid var(--text);
+      outline-offset: var(--focus-offset);
+    }
+  }
+</style>

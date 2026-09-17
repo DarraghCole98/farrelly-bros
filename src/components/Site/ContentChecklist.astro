@@ -8,14 +8,25 @@ interface Props extends HTMLAttributes<"ul"> {
   render?: boolean;
   /** The points being confirmed. Renders nothing when empty. */
   items: string[];
+  /** Columns from 30rem up. Defaults to 1. */
+  columns?: 1 | 2;
 }
 
-const { render = true, items, class: className, ...rest } = Astro.props;
+const {
+  render = true,
+  items,
+  columns = 1,
+  class: className,
+  ...rest
+} = Astro.props;
 ---
 
 {
   render && items.length > 0 && (
-    <ul class:list={["checklist_wrap", className]} {...rest}>
+    <ul
+      class:list={["checklist_wrap", columns === 2 && "columns-2", className]}
+      {...rest}
+    >
       {items.map((item) => (
         <li class="checklist_item">
           <span class="checklist_marker">
@@ -38,6 +49,14 @@ const { render = true, items, class: className, ...rest } = Astro.props;
       flex-direction: column;
       gap: var(--space-3);
       width: 100%;
+
+      &.columns-2 {
+        @media (width >= 30rem) {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          column-gap: var(--space-6);
+        }
+      }
     }
 
     .checklist_item {

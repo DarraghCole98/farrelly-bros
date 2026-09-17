@@ -1,0 +1,57 @@
+---
+import Heading from "@/components/Typography/Heading.astro";
+import OptionTile from "@/components/Enquiry/OptionTile.astro";
+import { ACCESS_OPTIONS, SITE_CONDITION_OPTIONS } from "@/lib/enquiry/config.ts";
+---
+
+<fieldset class="enquiry-step" data-enquiry-step="3" hidden>
+  <legend class="sr-only">Access and Site Conditions</legend>
+  <Heading tag="h2" variant="h3" maxWidth={22} data-step-heading tabindex="-1">
+    Access and site conditions.
+  </Heading>
+
+  <div class="enquiry-screen" data-screen-stage="3" data-screen-id="access">
+    <p class="text-style-h6 enquiry-step_question">
+      Can machinery access the work area?
+    </p>
+    <div class="enquiry-step_options compact-grid">
+      {
+        ACCESS_OPTIONS.map((option) => (
+          <OptionTile
+            type="radio"
+            name="access"
+            value={option.value}
+            label={option.label}
+            required
+            compact
+          />
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="enquiry-screen" data-screen-stage="3" data-screen-id="conditions">
+    <p class="text-style-h6 enquiry-step_question">
+      Are any of these present?
+      <span class="enquiry-step_optional"> (select any that apply)</span>
+    </p>
+    <div class="enquiry-step_options compact-grid">
+      {
+        SITE_CONDITION_OPTIONS.map((option) => (
+          <OptionTile
+            type="checkbox"
+            name="siteConditions[]"
+            value={option.value}
+            label={option.label}
+            compact
+          />
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="enquiry-step_error" data-step-error hidden role="alert">
+    <span class="enquiry-step_error-icon" aria-hidden="true">!</span>
+    <span class="enquiry-step_error-text text-style-small" data-step-error-text></span>
+  </div>
+</fieldset>

@@ -1,0 +1,75 @@
+---
+import type { HTMLAttributes, SvgComponent } from "astro/types";
+import Icon from "@/components/Media/Icon.astro";
+
+export interface ReasonItem {
+  /** An SVG imported from `src/assets`. */
+  icon: SvgComponent;
+  /** The point being made, in a few words. */
+  label: string;
+}
+
+interface Props extends HTMLAttributes<"ul"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The points to list. Renders nothing when empty. */
+  items: ReasonItem[];
+}
+
+const { render = true, items, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <ul class:list={["reason-list_wrap", className]} {...rest}>
+      {items.map((item) => (
+        <li class="reason-list_item">
+          <span class="reason-list_icon">
+            <Icon src={item.icon} variant="medium" />
+          </span>
+          <span class="reason-list_text">{item.label}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .reason-list_wrap {
+      margin-top: var(--space-6);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4) var(--space-6);
+      width: 100%;
+
+      @media (width >= 30rem) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .reason-list_item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* An outlined badge rather than a filled one — a lighter mark for a list
+       this long, on a section already carrying a photo and two decorative
+       leaves. */
+    .reason-list_icon {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: var(--border-width) solid var(--heading-accent);
+      border-radius: var(--radius-round);
+      color: var(--heading-accent);
+    }
+
+    .reason-list_text {
+      color: var(--text-2);
+    }
+  }
+</style>
