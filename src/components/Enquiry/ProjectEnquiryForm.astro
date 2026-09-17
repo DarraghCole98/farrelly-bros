@@ -855,6 +855,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
       background-color: var(--background);
       border-radius: var(--radius-large);
       box-shadow: 0 1rem 3rem -1rem color-mix(in lab, var(--ink-900) 25%, transparent);
+
+      /* Reserves room for the fixed mobile nav bar below, so it never
+         overlaps the last question's own content. */
+      @media (width < 48rem) {
+        padding-bottom: calc(var(--space-7) + 4.75rem);
+      }
     }
 
     .project-enquiry_header {
@@ -1030,11 +1036,21 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
       padding-top: var(--space-5);
 
       @media (width < 48rem) {
-        position: sticky;
+        /* `fixed`, not `sticky` — sticky only holds at the viewport edge
+           while its own parent box is still passing through the viewport,
+           so it lets go and drifts with the content as soon as that parent
+           scrolls past, which is the "moves when I scroll" jump. Anchoring
+           to the viewport itself keeps it planted the whole time, like a
+           native app's bottom bar — and `inset-inline: 0` measures from the
+           viewport, not this element's padded parent, which is what
+           actually made it full width. */
+        position: fixed;
+        inset-inline: 0;
         bottom: 0;
-        z-index: 2;
+        z-index: 20;
+        width: 100%;
+        margin: 0;
         padding: var(--space-4) var(--space-5);
-        margin: 0 calc(var(--space-5) * -1) calc(var(--space-5) * -1);
         background-color: var(--background);
         border-top: var(--border-width) solid var(--border);
       }
